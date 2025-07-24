@@ -1,7 +1,6 @@
 package editor
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -36,10 +35,10 @@ type editor struct {
 	filenameIn  string
 	filenameOut string
 	renderCh    chan View
-	loadCtx     context.Context
 	reader      *mmap.ReaderAt
 
 	mu         sync.Mutex // the fields below are protected by mu
+	loaded     bool
 	text       text.Text
 	textCursor Cursor
 	window     window
@@ -47,27 +46,27 @@ type editor struct {
 }
 
 func NewEditor(height int, width int, filenameIn string, filenameOut string) (Editor, error) {
-	e := &editor{}
-
-	e.filenameIn = filenameIn
-	e.filenameOut = filenameOut
-
-	// some basic properties
-
-	e.textCursor = Cursor{
-		Row: 0,
-		Col: 0,
-	}
-	e.window = window{
-		tlRow:  0,
-		tlCol:  0,
-		height: height,
-		width:  width,
-	}
-	e.view = internalView{
-		winName:    "telescope",
-		message:    "",
-		background: "",
+	e := &editor{
+		filenameIn:  filenameIn,
+		filenameOut: filenameOut,
+		renderCh:    make(chan View),
+		reader:      nil,
+		loaded:      false,
+		text:        nil,
+		textCursor: Cursor{
+			Row: 0, Col: 0,
+		},
+		window: window{
+			tlRow:  0,
+			tlCol:  0,
+			height: height,
+			width:  width,
+		},
+		view: internalView{
+			winName:    "telescope",
+			message:    "",
+			background: "",
+		},
 	}
 
 	if len(e.filenameOut) > 0 {
@@ -75,15 +74,11 @@ func NewEditor(height int, width int, filenameIn string, filenameOut string) (Ed
 	}
 
 	// text
-
-	e.renderCh = make(chan View, 1)
-	var cancelLoadCtx func()
-	e.loadCtx, cancelLoadCtx = context.WithCancel(context.Background())
 	if !fileExists(e.filenameIn) {
 		e.reader = nil
 		e.text = text.New(nil)
 		e.view.message = fmt.Sprintf("file does not exists %s", filepath.Base(e.filenameIn))
-		cancelLoadCtx()
+		e.loaded = true
 	} else {
 		r, err := mmap.Open(filenameIn)
 		if err != nil {
@@ -105,7 +100,7 @@ func NewEditor(height int, width int, filenameIn string, filenameOut string) (Ed
 				percentage := int(100 * float64(loadedSize) / float64(totalSize))
 				if percentage > lastPercentage || t2.Sub(t1) >= time.Second {
 					lastPercentage = percentage
-					e.view.background = fmt.Sprintf("background %s %d/%d (%d%%)", filepath.Base(e.filenameIn), loadedSize, totalSize, lastPercentage)
+					e.view.background = fmt.Sprintf("loading %s %d/%d (%d%%)", filepath.Base(e.filenameIn), loadedSize, totalSize, lastPercentage)
 					t1 = t2
 					e.renderWithoutLock()
 				}
@@ -115,8 +110,8 @@ func NewEditor(height int, width int, filenameIn string, filenameOut string) (Ed
 				totalTime := time.Now().Sub(t0)
 				e.view.background = ""
 				e.view.message = fmt.Sprintf("loaded %s in %d seconds", filepath.Base(e.filenameIn), int(totalTime.Seconds()))
+				e.loaded = true
 			})
-			cancelLoadCtx()
 		})
 	}
 
@@ -172,21 +167,6 @@ func (e *editor) renderWithoutLock() {
 		for row := 0; row < e.window.height; row++ {
 			view.WinData[row] = getRowForView(e.text, row+e.window.tlRow)
 		}
-		/*
-			view.Status = make([]rune, win.width)
-			head := []rune(fmt.Sprintf("%s (%d, %d): ", stat.winName, cur.Row, cur.Col))
-			copy(view.Status, head)
-
-			if len(stat.message) > 0 {
-				// write message after head
-				copy(view.Status[len(head):], []rune(stat.message))
-			}
-			if len(stat.background) > 0 {
-				// write background at the end
-				copy(view.Status[len(view.Status)-len(stat.background):], []rune(stat.background))
-			}
-		*/
-
 		return view
 	}
 
@@ -250,15 +230,13 @@ func (e *editor) Save() {
 		e.setStatusWithoutLock("read only mode, cannot save")
 		return
 	}
-	select {
-	case <-e.loadCtx.Done():
-	default:
-		e.setStatusWithoutLock("cannot save, still background")
-		return
-	}
 	// saving is a synchronous task - can be made async but not needed
 	var m text.Text
 	e.lockUpdateRender(func() {
+		if !e.loaded {
+			e.setStatusWithoutLock("cannot save, still loading")
+			return
+		}
 		m = e.text
 		file, err := os.Create(e.filenameOut)
 		if err != nil {
