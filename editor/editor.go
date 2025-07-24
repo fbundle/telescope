@@ -426,3 +426,8 @@ func (e *editor) Enter() {
 func (e *editor) Escape() {
 	// do nothing
 }
+func (e *editor) Tabular() {
+	// tab is two spaces
+	e.Type(' ')
+	e.Type(' ')
+}

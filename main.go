@@ -80,6 +80,8 @@ func handleKey(ev *tcell.EventKey) {
 		backendEditor.Enter()
 	case tcell.KeyEsc:
 		backendEditor.Escape()
+	case tcell.KeyTab:
+		backendEditor.Tabular()
 	case tcell.KeyRune:
 		backendEditor.Type(ev.Rune())
 	}

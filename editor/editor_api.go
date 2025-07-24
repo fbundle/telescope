@@ -24,6 +24,7 @@ type Controller interface {
 	Delete()
 
 	Escape()
+	Tabular()
 
 	MoveLeft()
 	MoveRight()
