@@ -7,3 +7,11 @@
 - [experimental] added parallel indexing - use environment variable to enable `PARALLEL_INDEXING=1`
 - fixed for too short characters - render give the whole row not according to window width anymore
 - change frontend to tcell - much better
+
+TODO - add saving progress - possibly requires a bit of abstraction for unconditionally update
+TODO - add vim-like command at status bar
+TODO - fix bug with reading and writing to the same file
+TODO - add journaling, crash recovery
+TODO - add undo,redo
+TODO - add search
+TODO - add goto line number
