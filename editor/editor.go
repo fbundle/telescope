@@ -33,11 +33,11 @@ type window struct {
 // add a command buffer, press ESC reset command buffer
 
 type editor struct {
-	ctx         context.Context
-	filenameIn  string
-	filenameOut string
-	renderCh    chan View
-	reader      *mmap.ReaderAt
+	ctx          context.Context
+	filenameText string
+	filenameOut  string
+	renderCh     chan View
+	reader       *mmap.ReaderAt
 
 	mu         sync.Mutex // the fields below are protected by mu
 	loaded     bool
@@ -51,17 +51,17 @@ func NewEditor(
 	ctx context.Context,
 	height int,
 	width int,
-	filenameIn string,
-	filenameOut string,
+	filenameText string,
+	filenameJournal string,
 ) (Editor, error) {
 	e := &editor{
-		ctx:         ctx,
-		filenameIn:  filenameIn,
-		filenameOut: filenameOut,
-		renderCh:    make(chan View),
-		reader:      nil,
-		loaded:      false,
-		text:        nil,
+		ctx:          ctx,
+		filenameText: filenameText,
+		filenameOut:  filenameJournal,
+		renderCh:     make(chan View),
+		reader:       nil,
+		loaded:       false,
+		text:         nil,
 		textCursor: Cursor{
 			Row: 0, Col: 0,
 		},
@@ -83,13 +83,13 @@ func NewEditor(
 	}
 
 	// text
-	if !fileExists(e.filenameIn) {
+	if !fileExists(e.filenameText) {
 		e.reader = nil
 		e.text = text.New(nil)
-		e.view.message = fmt.Sprintf("file does not exists %s", filepath.Base(e.filenameIn))
+		e.view.message = fmt.Sprintf("file does not exists %s", filepath.Base(e.filenameText))
 		e.loaded = true
 	} else {
-		r, err := mmap.Open(filenameIn)
+		r, err := mmap.Open(filenameText)
 		if err != nil {
 			return nil, err
 		}
@@ -103,32 +103,34 @@ func NewEditor(
 		}()
 		e.text = text.New(e.reader)
 		// load file asynchronously
-		totalSize := fileSize(e.filenameIn)
-		loadedSize := 0
-		lastPercentage := 0
-		t0 := time.Now()
-		t1 := t0
-		go text.LoadFile(e.ctx, e.filenameIn, func(l text.Line) {
-			loadedSize += l.Size()
-			e.lockUpdate(func() {
-				t2 := time.Now()
-				e.text = e.text.Append(l)
-				percentage := int(100 * float64(loadedSize) / float64(totalSize))
-				if percentage > lastPercentage || t2.Sub(t1) >= time.Second {
-					lastPercentage = percentage
-					e.view.background = fmt.Sprintf("loading %s %d/%d (%d%%)", filepath.Base(e.filenameIn), loadedSize, totalSize, lastPercentage)
-					t1 = t2
-					e.renderWithoutLock()
-				}
+		go func() {
+			totalSize := fileSize(e.filenameText)
+			loadedSize := 0
+			lastPercentage := 0
+			t0 := time.Now()
+			t1 := t0
+			text.LoadFile(e.ctx, e.filenameText, func(l text.Line) {
+				loadedSize += l.Size()
+				e.lockUpdate(func() {
+					t2 := time.Now()
+					e.text = e.text.Append(l)
+					percentage := int(100 * float64(loadedSize) / float64(totalSize))
+					if percentage > lastPercentage || t2.Sub(t1) >= time.Second {
+						lastPercentage = percentage
+						e.view.background = fmt.Sprintf("loading %s %d/%d (%d%%)", filepath.Base(e.filenameText), loadedSize, totalSize, lastPercentage)
+						t1 = t2
+						e.renderWithoutLock()
+					}
+				})
+			}, func() {
+				e.lockUpdateRender(func() {
+					totalTime := time.Now().Sub(t0)
+					e.view.background = ""
+					e.view.message = fmt.Sprintf("loaded %s in %d seconds", filepath.Base(e.filenameText), int(totalTime.Seconds()))
+					e.loaded = true
+				})
 			})
-		}, func() {
-			e.lockUpdateRender(func() {
-				totalTime := time.Now().Sub(t0)
-				e.view.background = ""
-				e.view.message = fmt.Sprintf("loaded %s in %d seconds", filepath.Base(e.filenameIn), int(totalTime.Seconds()))
-				e.loaded = true
-			})
-		})
+		}()
 	}
 
 	return e, nil
