@@ -47,6 +47,7 @@ type Controller interface {
 	Escape()
 	Tabular()
 
+	Jump(col int, row int)
 	MoveLeft()
 	MoveRight()
 	MoveUp()
@@ -65,7 +66,6 @@ type Editor interface {
 	Renderer
 	Controller
 }
-
 ```
 
 ## NOTE
