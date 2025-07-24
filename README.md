@@ -68,10 +68,4 @@ type Editor interface {
 
 ```
 
-## TECH
-
-- [gocui](https://github.com/jroimartin/gocui)
-
-- persistent vector based on weight-balanced tree
-
 ## NOTE
