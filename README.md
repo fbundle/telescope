@@ -2,7 +2,7 @@
 
 an extremely fast text editor
 
-![screenshot](./screenshots/0_1_0.png)
+![screenshot](./screenshots/0_1_2.png)
 
 ## FEATURE SET
 
@@ -27,9 +27,12 @@ type Cursor struct {
 }
 
 type View struct {
-	Data   [][]rune // pixels
-	Cursor Cursor
-	Status string
+	WinName    string
+	WinData    [][]rune
+	WinCursor  Cursor
+	TextCursor Cursor
+	Background string
+	Message    string
 }
 
 type Controller interface {
@@ -40,6 +43,9 @@ type Controller interface {
 	Enter()
 	Backspace()
 	Delete()
+
+	Escape()
+	Tabular()
 
 	MoveLeft()
 	MoveRight()
@@ -59,6 +65,7 @@ type Editor interface {
 	Renderer
 	Controller
 }
+
 ```
 
 ## TECH
