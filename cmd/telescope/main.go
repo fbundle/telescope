@@ -98,8 +98,9 @@ func handleKey(ev *tcell.EventKey) {
 }
 
 func printHelp() {
+	printVersion()
 	help := `
-Usage: telescope_extra [option] <input_file> <output_file>
+Usage: telescope [option] <input_file> <output_file>
 Option:
   -h --help	: show help
   -v --version	: get version
