@@ -29,7 +29,7 @@ func draw(s tcell.Screen, view editor.View) {
 	s.ShowCursor(view.Cursor.Col, view.Cursor.Row)
 
 	// Draw status bar at the bottom
-	status := []rune(view.Status)
+	status := view.Status
 	for len(status) < screenWidth {
 		status = append(status, ' ')
 	}

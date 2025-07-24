@@ -49,45 +49,7 @@ func NewEditor(height int, width int, filenameIn string, filenameOut string) (Ed
 	e.filenameIn = filenameIn
 	e.filenameOut = filenameOut
 
-	e.renderCh = make(chan View, 1)
-	var cancelLoadCtx func()
-	e.loadCtx, cancelLoadCtx = context.WithCancel(context.Background())
-	if !fileExists(e.filenameIn) {
-		e.reader = nil
-		e.model = model.NewModel(nil)
-		cancelLoadCtx()
-	} else {
-		r, err := mmap.Open(filenameIn)
-		if err != nil {
-			return nil, err
-		}
-		e.reader = r
-		e.model = model.NewModel(e.reader)
-		// load file asynchronously
-		totalSize := fileSize(e.filenameIn)
-		loadedSize := 0
-		lastPercentage := 0
-		t0 := time.Now()
-		go model.LoadFile(e.filenameIn, func(l model.Line) {
-			loadedSize += l.Size()
-			e.lockUpdate(func() {
-				t1 := time.Now()
-				e.model = e.model.Append(l)
-				percentage := int(100 * float64(loadedSize) / float64(totalSize))
-				if percentage > lastPercentage || t1.Sub(t0) >= time.Second {
-					lastPercentage = percentage
-					e.status.loading = fmt.Sprintf("loading %s ... %d/%d (%d%%)", filepath.Base(e.filenameIn), loadedSize, totalSize, lastPercentage)
-					t0 = t1
-					e.renderWithoutLock()
-				}
-			})
-		}, func() {
-			e.lockUpdateRender(func() {
-				e.status.loading = ""
-			})
-			cancelLoadCtx()
-		})
-	}
+	// some basic properties
 
 	e.cursor = Cursor{
 		Row: 0,
@@ -108,6 +70,53 @@ func NewEditor(height int, width int, filenameIn string, filenameOut string) (Ed
 	if len(e.filenameOut) > 0 {
 		e.status.name += " " + filepath.Base(e.filenameOut)
 	}
+
+	// model
+
+	e.renderCh = make(chan View, 1)
+	var cancelLoadCtx func()
+	e.loadCtx, cancelLoadCtx = context.WithCancel(context.Background())
+	if !fileExists(e.filenameIn) {
+		e.reader = nil
+		e.model = model.NewModel(nil)
+		e.status.message = fmt.Sprintf("file does not exists %s", filepath.Base(e.filenameIn))
+		cancelLoadCtx()
+	} else {
+		r, err := mmap.Open(filenameIn)
+		if err != nil {
+			return nil, err
+		}
+		e.reader = r
+		e.model = model.NewModel(e.reader)
+		// load file asynchronously
+		totalSize := fileSize(e.filenameIn)
+		loadedSize := 0
+		lastPercentage := 0
+		t0 := time.Now()
+		t1 := t0
+		go model.LoadFile(e.filenameIn, func(l model.Line) {
+			loadedSize += l.Size()
+			e.lockUpdate(func() {
+				t2 := time.Now()
+				e.model = e.model.Append(l)
+				percentage := int(100 * float64(loadedSize) / float64(totalSize))
+				if percentage > lastPercentage || t2.Sub(t1) >= time.Second {
+					lastPercentage = percentage
+					e.status.loading = fmt.Sprintf("loading %s %d/%d (%d%%)", filepath.Base(e.filenameIn), loadedSize, totalSize, lastPercentage)
+					t1 = t2
+					e.renderWithoutLock()
+				}
+			})
+		}, func() {
+			e.lockUpdateRender(func() {
+				totalTime := time.Now().Sub(t0)
+				e.status.loading = ""
+				e.status.message = fmt.Sprintf("loaded %s in %d seconds", filepath.Base(e.filenameIn), int(totalTime.Seconds()))
+			})
+			cancelLoadCtx()
+		})
+	}
+
 	return e, nil
 }
 
@@ -159,12 +168,17 @@ func (e *editor) renderWithoutLock() {
 			Col: cur.Col - win.tlCol,
 		}
 		// status
-		view.Status = fmt.Sprintf("%s - (%d, %d)", stat.name, cur.Row, cur.Col)
+		view.Status = make([]rune, win.width)
+		head := []rune(fmt.Sprintf("%s (%d, %d): ", stat.name, cur.Row, cur.Col))
+		copy(view.Status, head)
+
 		if len(stat.message) > 0 {
-			view.Status += " - " + stat.message
+			// write message after head
+			copy(view.Status[len(head):], []rune(stat.message))
 		}
 		if len(stat.loading) > 0 {
-			view.Status += " - " + stat.loading
+			// write loading at the end
+			copy(view.Status[len(view.Status)-len(stat.loading):], []rune(stat.loading))
 		}
 
 		return view

@@ -8,7 +8,7 @@ type Cursor struct {
 type View struct {
 	Data   [][]rune // pixels
 	Cursor Cursor
-	Status string
+	Status []rune
 }
 
 type Controller interface {
