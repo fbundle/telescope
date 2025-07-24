@@ -2,6 +2,7 @@ package text
 
 import (
 	"bufio"
+	"context"
 	"io"
 	"os"
 	"runtime"
@@ -39,7 +40,7 @@ func endOfLineSize(line []byte) int {
 	return 1
 }
 
-func indexFile(filename string, update func(offset int, line []byte), done func()) {
+func indexFile(ctx context.Context, filename string, update func(offset int, line []byte), done func()) {
 	defer done()
 	f, err := os.Open(filename)
 	if err != nil {
@@ -49,6 +50,11 @@ func indexFile(filename string, update func(offset int, line []byte), done func(
 	var offset int = 0
 	reader := bufio.NewReader(f)
 	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
 		line, err := reader.ReadBytes('\n')
 		if len(line) > 0 {
 			if flag.Debug() {
@@ -186,44 +192,4 @@ func indexFileParallel(filename string, update func(offset int, line []byte), do
 
 	return
 
-}
-
-func LoadModel1(filename string, update func(func(Text) Text), done func(), parallel bool) {
-	defer done()
-	if !fileExists(filename) {
-		return
-	}
-	// text with mmap
-	r, err := mmap.Open(filename)
-	if err != nil {
-		panic(err)
-	}
-
-	// TODO - think of any logic to close mmap
-	update(func(m Text) Text {
-		return &model{
-			r:   r,
-			vec: m.(*model).vec,
-		}
-	})
-
-	indexLine := indexFile
-	if parallel {
-		indexLine = indexFileParallel
-	}
-
-	indexLine(filename, func(offset int, line []byte) {
-		update(func(m Text) Text {
-			// TODO - potentially update vec every 10000 lines instead of 1
-			line := padNewLine(line)
-			size := len(line) - endOfLineSize(line)
-
-			vec := m.(*model).vec
-			vec = vec.Ins(vec.Len(), makeLineFromFile(offset, size))
-			return &model{
-				r:   r,
-				vec: vec,
-			}
-		})
-	}, done)
 }

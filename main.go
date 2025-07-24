@@ -116,15 +116,14 @@ func main() {
 	}
 	defer s.Fini()
 
-	width, height := s.Size()
-	backendEditor, err = editor.NewEditor(height-1, width, filenameIn, filenameOut)
-	if err != nil {
-		panic(err)
-	}
-
 	// draw loop
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	width, height := s.Size()
+	backendEditor, err = editor.NewEditor(ctx, height-1, width, filenameIn, filenameOut)
+	if err != nil {
+		panic(err)
+	}
 	go func() {
 		for {
 			select {

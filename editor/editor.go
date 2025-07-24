@@ -1,6 +1,7 @@
 package editor
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -32,6 +33,7 @@ type window struct {
 // add a command buffer, press ESC reset command buffer
 
 type editor struct {
+	ctx         context.Context
 	filenameIn  string
 	filenameOut string
 	renderCh    chan View
@@ -45,8 +47,9 @@ type editor struct {
 	view       internalView
 }
 
-func NewEditor(height int, width int, filenameIn string, filenameOut string) (Editor, error) {
+func NewEditor(ctx context.Context, height int, width int, filenameIn string, filenameOut string) (Editor, error) {
 	e := &editor{
+		ctx:         ctx,
 		filenameIn:  filenameIn,
 		filenameOut: filenameOut,
 		renderCh:    make(chan View),
@@ -85,6 +88,10 @@ func NewEditor(height int, width int, filenameIn string, filenameOut string) (Ed
 			return nil, err
 		}
 		e.reader = r
+		go func() {
+			<-ctx.Done()
+			r.Close()
+		}()
 		e.text = text.New(e.reader)
 		// load file asynchronously
 		totalSize := fileSize(e.filenameIn)
@@ -92,7 +99,7 @@ func NewEditor(height int, width int, filenameIn string, filenameOut string) (Ed
 		lastPercentage := 0
 		t0 := time.Now()
 		t1 := t0
-		go text.LoadFile(e.filenameIn, func(l text.Line) {
+		go text.LoadFile(e.ctx, e.filenameIn, func(l text.Line) {
 			loadedSize += l.Size()
 			e.lockUpdate(func() {
 				t2 := time.Now()
@@ -116,13 +123,6 @@ func NewEditor(height int, width int, filenameIn string, filenameOut string) (Ed
 	}
 
 	return e, nil
-}
-
-func (e *editor) Close() error {
-	if e.reader == nil {
-		return nil
-	}
-	return e.reader.Close()
 }
 
 func (e *editor) lockUpdate(f func()) {
