@@ -55,7 +55,7 @@ func indexFile(ctx context.Context, filename string, update func(offset int, lin
 		}
 		if len(line) > 0 {
 			if feature.Debug() {
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(feature.DEBUG_IO_INTERVAL_MS * time.Millisecond)
 			}
 			update(offset, line)
 		}
@@ -153,7 +153,7 @@ func indexFileParallel(ctx context.Context, filename string, update func(offset 
 			for i, b := range buf {
 				if b == '\n' {
 					if feature.Debug() {
-						time.Sleep(100 * time.Millisecond)
+						time.Sleep(feature.DEBUG_IO_INTERVAL_MS * time.Millisecond)
 					}
 					select {
 					case <-ctx.Done():

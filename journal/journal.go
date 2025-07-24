@@ -37,7 +37,7 @@ func Read(ctx context.Context, filename string, apply func(e Entry)) error {
 				return err
 			}
 			if feature.Debug() {
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(feature.DEBUG_IO_INTERVAL_MS * time.Millisecond)
 			}
 			apply(e)
 		}
@@ -58,7 +58,7 @@ func NewWriter(ctx context.Context, filename string) (Writer, error) {
 		entryCh: make(chan Entry, 1024),
 	}
 	go func() {
-		ticker := time.NewTicker(10 * time.Second)
+		ticker := time.NewTicker(feature.JOURNAL_INTERVAL_S * time.Second)
 		defer ticker.Stop()
 		for {
 			select {

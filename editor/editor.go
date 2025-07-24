@@ -282,7 +282,7 @@ func (e *editor) Save() {
 
 		for _, line := range m.Iter {
 			if feature.Debug() {
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(feature.DEBUG_IO_INTERVAL_MS * time.Millisecond)
 			}
 			_, err = file.WriteString(string(line) + "\n")
 			if err != nil {
