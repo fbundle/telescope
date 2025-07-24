@@ -122,13 +122,12 @@ func NewEditor(
 						e.renderWithoutLock()
 					}
 				})
-			}, func() {
-				e.lockUpdateRender(func() {
-					totalTime := time.Now().Sub(t0)
-					e.view.background = ""
-					e.view.message = fmt.Sprintf("loaded %s in %d seconds", filepath.Base(e.filenameText), int(totalTime.Seconds()))
-					e.loaded = true
-				})
+			})
+			e.lockUpdateRender(func() {
+				totalTime := time.Now().Sub(t0)
+				e.view.background = ""
+				e.view.message = fmt.Sprintf("loaded %s in %d seconds", filepath.Base(e.filenameText), int(totalTime.Seconds()))
+				e.loaded = true
 			})
 		}()
 	}

@@ -1,7 +1,5 @@
 package journal
 
-import "context"
-
 type Command string
 
 const (
@@ -20,8 +18,4 @@ type Entry struct {
 
 type Writer interface {
 	Write(e Entry) Writer
-}
-
-var NewJournalWriter = func(ctx context.Context, filename string) (Writer, error) {
-	return NewWriter[Entry](ctx, filename)
 }

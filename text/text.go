@@ -25,7 +25,7 @@ func New(r *mmap.ReaderAt) Text {
 	}
 }
 
-func LoadFile(ctx context.Context, filename string, update func(Line), done func()) {
+func LoadFile(ctx context.Context, filename string, update func(Line)) {
 	indexFileFunc := indexFile
 	if flag.ParallelIndexing() {
 		indexFileFunc = indexFileParallel
@@ -36,7 +36,7 @@ func LoadFile(ctx context.Context, filename string, update func(Line), done func
 		size := len(line) - endOfLineSize(line)
 		l := makeLineFromFile(offset, size)
 		update(l)
-	}, done)
+	})
 }
 
 type model struct {

@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func Read[T any](ctx context.Context, filename string, apply func(e T), done func()) error {
+func Read(ctx context.Context, filename string, apply func(e Entry), done func()) error {
 	defer done()
 	f, err := os.Open(filename)
 	if err != nil {
@@ -33,7 +33,7 @@ func Read[T any](ctx context.Context, filename string, apply func(e T), done fun
 		}
 		line = bytes.TrimSpace(line)
 		if len(line) > 0 {
-			var e T
+			var e Entry
 			if err := json.Unmarshal(line, &e); err != nil {
 				return err
 			}
@@ -48,15 +48,15 @@ func Read[T any](ctx context.Context, filename string, apply func(e T), done fun
 	}
 }
 
-func NewWriter[T any](ctx context.Context, filename string) (*writer[T], error) {
+func NewWriter(ctx context.Context, filename string) (Writer, error) {
 	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		return nil, err
 	}
-	w := &writer[T]{
+	w := &writer{
 		mu:      sync.Mutex{},
 		file:    f,
-		entryCh: make(chan T, 1024),
+		entryCh: make(chan Entry, 1024),
 	}
 	go func() {
 		ticker := time.NewTicker(10 * time.Second)
@@ -76,13 +76,13 @@ func NewWriter[T any](ctx context.Context, filename string) (*writer[T], error) 
 	return w, nil
 }
 
-type writer[T any] struct {
+type writer struct {
 	mu      sync.Mutex
 	file    *os.File
-	entryCh chan T
+	entryCh chan Entry
 }
 
-func (w *writer[T]) flush() {
+func (w *writer) flush() {
 	for {
 		select {
 		case entry := <-w.entryCh:
@@ -100,7 +100,7 @@ func (w *writer[T]) flush() {
 	}
 }
 
-func (w *writer[T]) Write(e T) Writer {
+func (w *writer) Write(e Entry) Writer {
 	for {
 		select {
 		case w.entryCh <- e:
