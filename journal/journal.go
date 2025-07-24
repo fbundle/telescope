@@ -2,6 +2,7 @@ package journal
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"io"
@@ -11,7 +12,7 @@ import (
 	"time"
 )
 
-func Read(ctx context.Context, filename string, apply func(entry Entry), done func()) error {
+func Read[T any](ctx context.Context, filename string, apply func(e T), done func()) error {
 	defer done()
 	f, err := os.Open(filename)
 	if err != nil {
@@ -30,32 +31,36 @@ func Read(ctx context.Context, filename string, apply func(entry Entry), done fu
 		if err != nil && err != io.EOF {
 			return err
 		}
-		e := Entry{}
-		if err := json.Unmarshal(line, &e); err != nil {
-			return err
+		line = bytes.TrimSpace(line)
+		if len(line) > 0 {
+			var e T
+			if err := json.Unmarshal(line, &e); err != nil {
+				return err
+			}
+			if flag.Debug() {
+				time.Sleep(100 * time.Millisecond)
+			}
+			apply(e)
 		}
-		if flag.Debug() {
-			time.Sleep(100 * time.Millisecond)
-		}
-		apply(e)
 		if err == io.EOF {
 			return nil
 		}
 	}
 }
 
-type Writer interface {
-	Write(e Entry)
+type Writer[T any] interface {
+	Write(e T) Writer[T]
 }
 
-func NewWriter(ctx context.Context, filename string) (Writer, error) {
+func NewWriter[T any](ctx context.Context, filename string) (Writer[T], error) {
 	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		return nil, err
 	}
-	w := &writer{
-		f:          f,
-		entryQueue: make(chan Entry, 1024),
+	w := &writer[T]{
+		mu:      sync.Mutex{},
+		file:    f,
+		entryCh: make(chan T, 1024),
 	}
 	go func() {
 		ticker := time.NewTicker(10 * time.Second)
@@ -63,6 +68,8 @@ func NewWriter(ctx context.Context, filename string) (Writer, error) {
 		for {
 			select {
 			case <-ctx.Done():
+				w.flush()
+				_ = w.file.Close()
 				return
 			case <-ticker.C: // flush every 10 seconds
 				w.flush()
@@ -73,23 +80,21 @@ func NewWriter(ctx context.Context, filename string) (Writer, error) {
 	return w, nil
 }
 
-type writer struct {
-	f          *os.File
-	entryQueue chan Entry
-	mu         sync.Mutex
+type writer[T any] struct {
+	mu      sync.Mutex
+	file    *os.File
+	entryCh chan T
 }
 
-func (w *writer) flush() {
-	w.mu.Lock()
-	defer w.mu.Unlock()
+func (w *writer[T]) flush() {
 	for {
 		select {
-		case entry := <-w.entryQueue:
+		case entry := <-w.entryCh:
 			b, err := json.Marshal(entry)
 			if err != nil {
 				panic(err)
 			}
-			_, err = w.f.Write(append(b, '\n'))
+			_, err = w.file.Write(append(b, '\n'))
 			if err != nil {
 				panic(err)
 			}
@@ -99,13 +104,13 @@ func (w *writer) flush() {
 	}
 }
 
-func (w *writer) Write(e Entry) {
+func (w *writer[T]) Write(e T) Writer[T] {
 	for {
 		select {
-		case w.entryQueue <- e:
-			return
+		case w.entryCh <- e:
+			return w
 		default:
-			w.flush() // flush if entryQueue is full
+			w.flush() // flush if entryCh is full and try again
 		}
 	}
 }
