@@ -45,6 +45,7 @@ func draw(s tcell.Screen, view editor.View) {
 		copy(status[len(head)+len(sep):], foreground) // leave 1 space between head and foreground
 	}
 	if len(background) > 0 {
+		background = append(sep, background...)
 		copy(status[len(status)-len(background):], background)
 	}
 
