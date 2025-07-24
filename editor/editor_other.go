@@ -22,7 +22,7 @@ func (e *editor) Save() {
 	// saving is a synchronous task - can be made async but not needed
 	var m text.Text
 	e.lockUpdateRender(func() {
-		if len(e.filenameTextOut) == 0 {
+		if len(e.outputFilename) == 0 {
 			e.setStatusWithoutLock("read only mode, cannot save")
 			return
 		}
@@ -31,7 +31,7 @@ func (e *editor) Save() {
 			return
 		}
 		m = e.text
-		file, err := os.Create(e.filenameTextOut)
+		file, err := os.Create(e.outputFilename)
 		if err != nil {
 			panic(err)
 		}

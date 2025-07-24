@@ -15,9 +15,6 @@ import (
 
 const VERSION = "0.1.3"
 
-var filenameTextIn, filenameTextOut string
-var backendEditor editor.Editor
-
 var statusStyle = tcell.StyleDefault.
 	Background(tcell.ColorLightGray).
 	Foreground(tcell.ColorBlack)
@@ -60,41 +57,94 @@ func draw(s tcell.Screen, view editor.View) {
 	s.Show()
 }
 
-func handleKey(ev *tcell.EventKey) {
-	switch ev.Key() {
-	case tcell.KeyCtrlC:
-		// do nothing
-	case tcell.KeyCtrlS:
-		backendEditor.Save()
-	case tcell.KeyBackspace, tcell.KeyBackspace2:
-		backendEditor.Backspace()
-	case tcell.KeyDelete:
-		backendEditor.Delete()
-	case tcell.KeyRight:
-		backendEditor.MoveRight()
-	case tcell.KeyLeft:
-		backendEditor.MoveLeft()
-	case tcell.KeyUp:
-		backendEditor.MoveUp()
-	case tcell.KeyDown:
-		backendEditor.MoveDown()
-	case tcell.KeyHome:
-		backendEditor.MoveHome()
-	case tcell.KeyEnd:
-		backendEditor.MoveEnd()
-	case tcell.KeyPgUp:
-		backendEditor.MovePageUp()
-	case tcell.KeyPgDn:
-		backendEditor.MovePageDown()
-	case tcell.KeyEnter:
-		backendEditor.Enter()
-	case tcell.KeyEsc:
-		backendEditor.Escape()
-	case tcell.KeyTab:
-		backendEditor.Tabular()
-	case tcell.KeyRune:
-		backendEditor.Type(ev.Rune())
+func handleKey(e editor.Editor) func(ev *tcell.EventKey) {
+	return func(event *tcell.EventKey) {
+		switch event.Key() {
+		case tcell.KeyCtrlC:
+			// do nothing
+		case tcell.KeyCtrlS:
+			e.Save()
+		case tcell.KeyBackspace, tcell.KeyBackspace2:
+			e.Backspace()
+		case tcell.KeyDelete:
+			e.Delete()
+		case tcell.KeyRight:
+			e.MoveRight()
+		case tcell.KeyLeft:
+			e.MoveLeft()
+		case tcell.KeyUp:
+			e.MoveUp()
+		case tcell.KeyDown:
+			e.MoveDown()
+		case tcell.KeyHome:
+			e.MoveHome()
+		case tcell.KeyEnd:
+			e.MoveEnd()
+		case tcell.KeyPgUp:
+			e.MovePageUp()
+		case tcell.KeyPgDn:
+			e.MovePageDown()
+		case tcell.KeyEnter:
+			e.Enter()
+		case tcell.KeyEsc:
+			e.Escape()
+		case tcell.KeyTab:
+			e.Tabular()
+		case tcell.KeyRune:
+			e.Type(event.Rune())
+		default:
+		}
 	}
+}
+
+func runEditorApp(inputFilename string, outputFilename string) error {
+	s, err := tcell.NewScreen()
+	if err != nil {
+		return err
+	}
+	if err = s.Init(); err != nil {
+		return err
+	}
+	defer s.Fini()
+
+	// draw loop
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	width, height := s.Size()
+	e, err := editor.NewEditor(ctx, height-1, width, inputFilename, outputFilename, nil)
+	if err != nil {
+		return err
+	}
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case view := <-e.Update():
+				draw(s, view)
+			}
+		}
+	}()
+
+	// event loop
+	running := true
+	for running {
+		ev := s.PollEvent()
+		switch ev := ev.(type) {
+		case *tcell.EventKey:
+			handleKey(e)(ev)
+			if tcell.KeyCtrlC == ev.Key() {
+				running = false
+			}
+		case *tcell.EventResize:
+			s.Sync()
+			width, height = s.Size()
+			e.Resize(height-1, width)
+		default:
+			// nothing
+		}
+	}
+	return nil
 }
 
 func printHelp() {
@@ -128,14 +178,15 @@ func main() {
 	}
 
 	// text editor
+	var inputFilename, outputFilename string
 	if len(os.Args) < 3 {
-		filenameTextIn, filenameTextOut = os.Args[1], ""
+		inputFilename, outputFilename = os.Args[1], ""
 	} else {
-		filenameTextIn, filenameTextOut = os.Args[1], os.Args[2]
+		inputFilename, outputFilename = os.Args[1], os.Args[2]
 	}
 
 	if !feature.DisableJournal() {
-		journalFilename := journal.GetJournalFilename(filenameTextIn)
+		journalFilename := journal.GetJournalFilename(inputFilename)
 		if fileExists(journalFilename) && fileSize(journalFilename) > 0 {
 			ok := promptYesNo(fmt.Sprintf("journal file exists (%s), delete it?", journalFilename), false)
 			if !ok {
@@ -148,52 +199,15 @@ func main() {
 		}
 	}
 
-	s, err := tcell.NewScreen()
+	err := runEditorApp(inputFilename, outputFilename)
 	if err != nil {
-		log.Fatalf("cannot create screen: %v", err)
+		log.Fatal(err)
 	}
-	if err = s.Init(); err != nil {
-		log.Fatalf("cannot initialize screen: %v", err)
-	}
-	defer s.Fini()
 
-	// draw loop
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	width, height := s.Size()
-	backendEditor, err = editor.NewEditor(ctx, height-1, width, filenameTextIn, filenameTextOut, nil)
-	if err != nil {
-		panic(err)
-	}
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case view := <-backendEditor.Update():
-				draw(s, view)
-			}
-		}
-	}()
+}
 
-	// event loop
-	running := true
-	for running {
-		ev := s.PollEvent()
-		switch ev := ev.(type) {
-		case *tcell.EventKey:
-			handleKey(ev)
-			if tcell.KeyCtrlC == ev.Key() {
-				running = false
-			}
-		case *tcell.EventResize:
-			s.Sync()
-			width, height = s.Size()
-			backendEditor.Resize(height-1, width)
-		default:
-			// nothing
-		}
-	}
+func recoverFromJournal() {
+
 }
 
 func fileExists(filename string) bool {
