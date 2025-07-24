@@ -26,6 +26,8 @@ type Controller interface {
 	Escape()
 	Tabular()
 
+	Jump(col int, row int)
+
 	MoveLeft()
 	MoveRight()
 	MoveUp()
@@ -34,7 +36,6 @@ type Controller interface {
 	MoveEnd()
 	MovePageUp()
 	MovePageDown()
-	Jump(col int, row int)
 }
 
 type Renderer interface {
