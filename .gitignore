@@ -33,5 +33,4 @@ go.work.sum
 .DS_Store
 *.txt
 bin
-export_to_chat
 
