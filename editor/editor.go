@@ -252,13 +252,13 @@ func (e *editor) Resize(height int, width int) {
 }
 
 func (e *editor) Save() {
-	if len(e.filenameTextOut) == 0 {
-		e.setStatusWithoutLock("read only mode, cannot save")
-		return
-	}
 	// saving is a synchronous task - can be made async but not needed
 	var m text.Text
 	e.lockUpdateRender(func() {
+		if len(e.filenameTextOut) == 0 {
+			e.setStatusWithoutLock("read only mode, cannot save")
+			return
+		}
 		if !e.loaded {
 			e.setStatusWithoutLock("cannot save, still loading")
 			return
@@ -270,7 +270,7 @@ func (e *editor) Save() {
 		}
 		defer file.Close()
 
-		for line := range m.Iter {
+		for _, line := range m.Iter {
 			if flag.Debug() {
 				time.Sleep(100 * time.Millisecond)
 			}
