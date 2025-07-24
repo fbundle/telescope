@@ -19,20 +19,14 @@ var backendEditor editor.Editor
 func draw(s tcell.Screen, view editor.View) {
 	s.Clear()
 	screenWidth, screenHeight := s.Size()
-	// Draw the title bar in reverse color
-	title := []rune(fmt.Sprintf("Telescope: Editting \"%s\" - Ctrl+S to save Ctrl+C to quit", filenameOut))
-	for len(title) < screenWidth {
-		title = append(title, ' ')
-	}
-	for col, ch := range title {
-		s.SetContent(col, 0, ch, nil, tcell.StyleDefault.Reverse(true))
-	}
-	// Draw editor content 1 row from the top
+	// Draw editor content from (0, 0)
 	for row, line := range view.Data {
 		for col, ch := range line {
-			s.SetContent(col, row+1, ch, nil, tcell.StyleDefault)
+			s.SetContent(col, row, ch, nil, tcell.StyleDefault)
 		}
 	}
+	// Draw cursor from (0, 0)
+	s.ShowCursor(view.Cursor.Col, view.Cursor.Row)
 
 	// Draw status bar at the bottom
 	status := []rune(view.Status)
@@ -43,8 +37,6 @@ func draw(s tcell.Screen, view editor.View) {
 		s.SetContent(col, screenHeight-1, ch, nil, tcell.StyleDefault.Reverse(true))
 	}
 
-	// Draw cursor 1 row from the top
-	s.ShowCursor(view.Cursor.Col, view.Cursor.Row+1)
 	s.Show()
 }
 
@@ -106,7 +98,7 @@ func main() {
 	defer s.Fini()
 
 	width, height := s.Size()
-	backendEditor = editor.NewEditor(height-2, width, filenameIn, filenameOut)
+	backendEditor = editor.NewEditor(height-1, width, filenameIn, filenameOut)
 
 	// initial draw
 	draw(s, backendEditor.Render())
@@ -139,7 +131,7 @@ func main() {
 		case *tcell.EventResize:
 			s.Sync()
 			width, height = s.Size()
-			backendEditor.Resize(height-2, width)
+			backendEditor.Resize(height-1, width)
 			draw(s, backendEditor.Render())
 		default:
 			// nothing
