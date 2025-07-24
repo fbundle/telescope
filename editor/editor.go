@@ -57,10 +57,7 @@ func NewEditor(
 	filenameTextOut string,
 ) (Editor, error) {
 	// make journal
-	dir := filepath.Dir(filenameTextIn)
-	name := "." + filepath.Base(filenameTextIn) + ".journal"
-	journalPath := filepath.Join(dir, name)
-	journerWriter, err := journal.NewWriter(ctx, journalPath)
+	journerWriter, err := journal.NewWriter(ctx, journal.GetJournalFilename(filenameTextIn))
 	if err != nil {
 		return nil, err
 	}
