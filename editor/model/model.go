@@ -7,4 +7,5 @@ type Model interface {
 	Del(i int) Model
 	Iter(f func(i int, val []rune) bool)
 	Len() int
+	Append(line Line) Model
 }

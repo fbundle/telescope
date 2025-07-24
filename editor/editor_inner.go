@@ -10,6 +10,8 @@ import (
 	"telescope/editor/model"
 	"telescope/flag"
 	"time"
+
+	"golang.org/x/exp/mmap"
 )
 
 type Model = model.Model
@@ -30,8 +32,9 @@ type window struct {
 type editor struct {
 	filenameIn  string
 	filenameOut string
-	loadCtx     context.Context
 	renderCh    chan View
+	loadCtx     context.Context
+	reader      *mmap.ReaderAt
 
 	mu     sync.Mutex // the fields below are protected by mu
 	model  Model
@@ -40,74 +43,82 @@ type editor struct {
 	status status
 }
 
-func NewEditor(height int, width int, filenameIn string, filenameOut string) Editor {
-	var name string
-	if len(filenameOut) == 0 {
-		name = "telescope"
+func NewEditor(height int, width int, filenameIn string, filenameOut string) (Editor, error) {
+	e := &editor{}
+
+	e.filenameIn = filenameIn
+	e.filenameOut = filenameOut
+	e.renderCh = make(chan View, 1)
+	var cancelLoadCtx func()
+	e.loadCtx, cancelLoadCtx = context.WithCancel(context.Background())
+	if !fileExists(e.filenameIn) {
+		e.reader = nil
+		e.model = model.NewModel(nil)
 	} else {
-		name = fmt.Sprintf("telescope %s", filepath.Base(filenameOut))
-	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	e := &editor{
-		filenameIn:  filenameIn,
-		filenameOut: filenameOut,
-		mu:          sync.Mutex{},
-		model:       model.EmptyModel(),
-		loadCtx:     ctx,
-		cursor: Cursor{
-			Row: 0,
-			Col: 0,
-		},
-		window: window{
-			tlRow:  0,
-			tlCol:  0,
-			height: height,
-			width:  width,
-		},
-		status: status{
-			name:    name,
-			loading: "loading 0 lines",
-		},
-		renderCh: make(chan View, 1),
-	}
-
-	parallel := flag.ParallelIndexing()
-	t0 := time.Now()
-	go model.LoadModel(filenameIn, func(f func(model.Model) model.Model) {
-		e.lockUpdateAndRender(func() {
-			e.model = f(e.model)
-		})
-	}, cancel, parallel)
-	go func() {
-		ticker := time.NewTicker(time.Second) // update loading status every second
-		for {
-			select {
-			case <-e.loadCtx.Done():
-				e.lockUpdateAndRender(func() {
-					elapsed := time.Since(t0)
-					e.status.loading = ""
-					e.setStatusWithoutLock("loaded %d lines in %ds", e.model.Len(), int(elapsed.Seconds()))
-					if parallel {
-						e.setStatusWithoutLock("parallel loaded %d lines in %ds", e.model.Len(), int(elapsed.Seconds()))
-					}
-				})
-				return
-			case <-ticker.C:
-				e.lockUpdateAndRender(func() {
-					elapsed := time.Since(t0)
-					e.status.loading = fmt.Sprintf("loading %d lines in %ds", e.model.Len(), int(elapsed.Seconds()))
-					if parallel {
-						e.status.loading = fmt.Sprintf("parallel loading %d lines in %ds", e.model.Len(), int(elapsed.Seconds()))
-					}
-				})
-			}
+		r, err := mmap.Open(filenameIn)
+		if err != nil {
+			return nil, err
 		}
-	}()
-	return e
+		e.reader = r
+		e.model = model.NewModel(e.reader)
+		// load file asynchronously
+		totalSize := fileSize(e.filenameIn)
+		loadedSize := 0
+		lastPercentage := 0
+		go model.LoadFile(e.filenameIn, func(l model.Line) {
+			loadedSize += l.Size()
+			e.lockUpdate(func() {
+				e.model.Append(l)
+				percentage := int(100 * float64(loadedSize) / float64(totalSize))
+				if percentage > lastPercentage {
+					lastPercentage = percentage
+					e.status.loading = fmt.Sprintf("loading ... %d%", lastPercentage)
+				}
+			})
+		}, func() {
+			e.lockUpdateRender(func() {
+				e.status.loading = ""
+			})
+			cancelLoadCtx()
+		})
+	}
+
+	e.cursor = Cursor{
+		Row: 0,
+		Col: 0,
+	}
+	e.window = window{
+		tlRow:  0,
+		tlCol:  0,
+		height: height,
+		width:  width,
+	}
+	e.status = status{}
+
+	if len(filenameOut) == 0 {
+		e.status.name = "telescope"
+	} else {
+		e.status.name = fmt.Sprintf("telescope %s", filepath.Base(filenameOut))
+	}
+	e.status.loading = "loading ... 0%"
+	return e, nil
 }
 
-func (e *editor) lockUpdateAndRender(f func()) {
+func (e *editor) Close() error {
+	if e.reader == nil {
+		return nil
+	}
+	return e.reader.Close()
+}
+
+func (e *editor) lockUpdate(f func()) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	f()
+}
+
+func (e *editor) lockUpdateRender(f func()) {
 	getRowForView := func(m Model, row int) []rune {
 		if row < m.Len() {
 			return m.Get(row)
@@ -194,7 +205,7 @@ func (e *editor) setStatusWithoutLock(format string, a ...any) {
 }
 
 func (e *editor) Resize(height int, width int) {
-	e.lockUpdateAndRender(func() {
+	e.lockUpdateRender(func() {
 		if e.window.height == height && e.window.width == width {
 			return
 		}
@@ -217,7 +228,7 @@ func (e *editor) Save() {
 	}
 	// saving is a synchronous task - can be made async but not needed
 	var m Model
-	e.lockUpdateAndRender(func() {
+	e.lockUpdateRender(func() {
 		m = e.model
 		file, err := os.Create(e.filenameOut)
 		if err != nil {
@@ -239,57 +250,57 @@ func (e *editor) Save() {
 }
 
 func (e *editor) MoveLeft() {
-	e.lockUpdateAndRender(func() {
+	e.lockUpdateRender(func() {
 		e.moveAndFixWithoutLock(0, -1)
 		e.setStatusWithoutLock("move left")
 	})
 }
 func (e *editor) MoveRight() {
-	e.lockUpdateAndRender(func() {
+	e.lockUpdateRender(func() {
 		e.moveAndFixWithoutLock(0, 1)
 		e.setStatusWithoutLock("move right")
 	})
 }
 func (e *editor) MoveUp() {
-	e.lockUpdateAndRender(func() {
+	e.lockUpdateRender(func() {
 		e.moveAndFixWithoutLock(-1, 0)
 		e.setStatusWithoutLock("move up")
 	})
 }
 func (e *editor) MoveDown() {
-	e.lockUpdateAndRender(func() {
+	e.lockUpdateRender(func() {
 		e.moveAndFixWithoutLock(1, 0)
 		e.setStatusWithoutLock("move down")
 	})
 }
 func (e *editor) MoveHome() {
-	e.lockUpdateAndRender(func() {
+	e.lockUpdateRender(func() {
 		e.moveAndFixWithoutLock(0, -e.cursor.Col)
 		e.setStatusWithoutLock("move home")
 	})
 }
 func (e *editor) MoveEnd() {
-	e.lockUpdateAndRender(func() {
+	e.lockUpdateRender(func() {
 		m := e.model
 		e.moveAndFixWithoutLock(0, len(m.Get(e.cursor.Row))-e.cursor.Col)
 		e.setStatusWithoutLock("move end")
 	})
 }
 func (e *editor) MovePageUp() {
-	e.lockUpdateAndRender(func() {
+	e.lockUpdateRender(func() {
 		e.moveAndFixWithoutLock(-e.window.height, 0)
 		e.setStatusWithoutLock("move page up")
 	})
 }
 func (e *editor) MovePageDown() {
-	e.lockUpdateAndRender(func() {
+	e.lockUpdateRender(func() {
 		e.moveAndFixWithoutLock(e.window.height, 0)
 		e.setStatusWithoutLock("move page down")
 	})
 }
 
 func (e *editor) Type(ch rune) {
-	e.lockUpdateAndRender(func() {
+	e.lockUpdateRender(func() {
 		e.model = func(m Model) Model {
 			row, col := e.cursor.Row, e.cursor.Col
 			// NOTE - handle empty file
@@ -315,7 +326,7 @@ func (e *editor) Type(ch rune) {
 }
 
 func (e *editor) Backspace() {
-	e.lockUpdateAndRender(func() {
+	e.lockUpdateRender(func() {
 		e.model = func(m Model) Model {
 			row, col := e.cursor.Row, e.cursor.Col
 			// NOTE - handle empty file
@@ -347,7 +358,7 @@ func (e *editor) Backspace() {
 }
 
 func (e *editor) Delete() {
-	e.lockUpdateAndRender(func() {
+	e.lockUpdateRender(func() {
 		e.model = func(m Model) Model {
 			row, col := e.cursor.Row, e.cursor.Col
 			// NOTE - handle empty file
@@ -376,7 +387,7 @@ func (e *editor) Delete() {
 }
 
 func (e *editor) Enter() {
-	e.lockUpdateAndRender(func() {
+	e.lockUpdateRender(func() {
 		e.model = func(m Model) Model {
 			// NOTE - handle empty file
 			if m.Len() == 0 {

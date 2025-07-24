@@ -98,7 +98,10 @@ func main() {
 	defer s.Fini()
 
 	width, height := s.Size()
-	backendEditor = editor.NewEditor(height-1, width, filenameIn, filenameOut)
+	backendEditor, err = editor.NewEditor(height-1, width, filenameIn, filenameOut)
+	if err != nil {
+		panic(err)
+	}
 
 	// draw loop
 	ctx, cancel := context.WithCancel(context.Background())
