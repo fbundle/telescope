@@ -88,6 +88,6 @@ func (e *editor) Jump(col int, row int) {
 		// move to absolute position
 		moveCol := col - e.textCursor.Col
 		moveRow := row - e.textCursor.Row
-		e.moveRelativeAndFixWithoutLock(moveCol, moveRow)
+		e.moveRelativeAndFixWithoutLock(moveRow, moveCol)
 	})
 }
