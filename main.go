@@ -100,10 +100,7 @@ func main() {
 	width, height := s.Size()
 	backendEditor = editor.NewEditor(height-1, width, filenameIn, filenameOut)
 
-	// initial draw
-	draw(s, backendEditor.Render())
-
-	// update loop
+	// draw loop
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	go func() {
@@ -111,20 +108,19 @@ func main() {
 			select {
 			case <-ctx.Done():
 				return
-			case <-backendEditor.Update():
-				draw(s, backendEditor.Render())
+			case view := <-backendEditor.Update():
+				draw(s, view)
 			}
 		}
 	}()
 
-	// even loop
+	// event loop
 	running := true
 	for running {
 		ev := s.PollEvent()
 		switch ev := ev.(type) {
 		case *tcell.EventKey:
 			handleKey(ev)
-			draw(s, backendEditor.Render())
 			if tcell.KeyCtrlC == ev.Key() {
 				running = false
 			}
@@ -132,7 +128,6 @@ func main() {
 			s.Sync()
 			width, height = s.Size()
 			backendEditor.Resize(height-1, width)
-			draw(s, backendEditor.Render())
 		default:
 			// nothing
 		}

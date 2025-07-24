@@ -31,7 +31,7 @@ type editor struct {
 	filenameIn  string
 	filenameOut string
 	loadCtx     context.Context
-	updateCh    chan struct{}
+	renderCh    chan View
 
 	mu     sync.Mutex // the fields below are protected by mu
 	model  Model
@@ -69,105 +69,91 @@ func NewEditor(height int, width int, filenameIn string, filenameOut string) Edi
 			name:    name,
 			loading: "loading 0 lines",
 		},
-		updateCh: make(chan struct{}, 1),
+		renderCh: make(chan View, 1),
 	}
 
 	parallel := flag.ParallelIndexing()
 	t0 := time.Now()
 	go model.LoadModel(filenameIn, func(f func(model.Model) model.Model) {
-		e.lock(func() {
+		e.lockUpdateAndRender(func() {
 			e.model = f(e.model)
 		})
 	}, cancel, parallel)
 	go func() {
-		defer func() {
-			// finally delete loading status
-			e.lock(func() {
-				elapsed := time.Now().Sub(t0)
-				e.status.loading = ""
-				e.setStatusWithoutLock("loaded %d lines in %ds", e.model.Len(), int(elapsed.Seconds()))
-				if parallel {
-					e.setStatusWithoutLock("parallel loaded %d lines in %ds", e.model.Len(), int(elapsed.Seconds()))
-				}
-			})
-			select {
-			case e.updateCh <- struct{}{}: //trigger redraw
-			default:
-			}
-		}()
 		ticker := time.NewTicker(time.Second) // update loading status every second
 		for {
 			select {
+			case <-e.loadCtx.Done():
+				e.lockUpdateAndRender(func() {
+					elapsed := time.Since(t0)
+					e.status.loading = ""
+					e.setStatusWithoutLock("loaded %d lines in %ds", e.model.Len(), int(elapsed.Seconds()))
+					if parallel {
+						e.setStatusWithoutLock("parallel loaded %d lines in %ds", e.model.Len(), int(elapsed.Seconds()))
+					}
+				})
+				return
 			case <-ticker.C:
-				e.lock(func() {
-					elapsed := time.Now().Sub(t0)
+				e.lockUpdateAndRender(func() {
+					elapsed := time.Since(t0)
 					e.status.loading = fmt.Sprintf("loading %d lines in %ds", e.model.Len(), int(elapsed.Seconds()))
 					if parallel {
 						e.status.loading = fmt.Sprintf("parallel loading %d lines in %ds", e.model.Len(), int(elapsed.Seconds()))
 					}
 				})
-				select {
-				case e.updateCh <- struct{}{}: //trigger redraw
-				default:
-				}
-			case <-e.loadCtx.Done():
-				return
 			}
 		}
 	}()
 	return e
 }
 
-func (e *editor) lock(f func()) {
+func (e *editor) lockUpdateAndRender(f func()) {
+	getRowForView := func(m Model, row int) []rune {
+		if row < m.Len() {
+			return m.Get(row)
+		} else {
+			return []rune{'~'}
+		}
+	}
+	renderWithoutLock := func() View {
+		m := e.model
+		win := e.window
+		cur := e.cursor
+		stat := e.status
+
+		view := View{}
+		// data
+		view.Data = make([][]rune, win.height)
+		for row := 0; row < win.height; row++ {
+			view.Data[row] = getRowForView(m, row+win.tlRow)
+		}
+		// cursor
+		view.Cursor = Cursor{
+			Row: cur.Row - win.tlRow,
+			Col: cur.Col - win.tlCol,
+		}
+		// status
+		view.Status = fmt.Sprintf("%s - (%d, %d)", stat.name, cur.Row, cur.Col)
+		if len(stat.message) > 0 {
+			view.Status += " - " + stat.message
+		}
+		if len(stat.loading) > 0 {
+			view.Status += " - " + stat.loading
+		}
+
+		return view
+	}
+
 	e.mu.Lock()
 	defer e.mu.Unlock()
+
 	f()
+
+	e.renderCh <- renderWithoutLock()
 }
 
-func getRowForView(m Model, row int) []rune {
-	if row < m.Len() {
-		return m.Get(row)
-	} else {
-		return []rune{'~'}
-	}
-}
-
-func (e *editor) Update() <-chan struct{} {
-	return e.updateCh
-}
-
-func (e *editor) Render() View {
-	var m Model
-	var win window
-	var cur Cursor
-	var stat status
-	e.lock(func() {
-		m = e.model
-		win = e.window
-		cur = e.cursor
-		stat = e.status
-	})
-
-	view := View{}
-	// data
-	view.Data = make([][]rune, win.height)
-	for row := 0; row < win.height; row++ {
-		view.Data[row] = getRowForView(m, row+win.tlRow)
-	}
-	// cursor
-	view.Cursor = Cursor{
-		Row: cur.Row - win.tlRow,
-		Col: cur.Col - win.tlCol,
-	}
-	// status
-	view.Status = fmt.Sprintf("%s - (%d, %d)", stat.name, cur.Row, cur.Col)
-	if len(stat.message) > 0 {
-		view.Status += " - " + stat.message
-	}
-	if len(stat.loading) > 0 {
-		view.Status += " - " + stat.loading
-	}
-	return view
+func (e *editor) Update() <-chan View {
+	return e.renderCh
 }
 
 // moveAndFixWithoutLock - cursor is either in the text or at the end of a line
@@ -208,7 +194,7 @@ func (e *editor) setStatusWithoutLock(format string, a ...any) {
 }
 
 func (e *editor) Resize(height int, width int) {
-	e.lock(func() {
+	e.lockUpdateAndRender(func() {
 		if e.window.height == height && e.window.width == width {
 			return
 		}
@@ -231,7 +217,7 @@ func (e *editor) Save() {
 	}
 	// saving is a synchronous task - can be made async but not needed
 	var m Model
-	e.lock(func() {
+	e.lockUpdateAndRender(func() {
 		m = e.model
 		file, err := os.Create(e.filenameOut)
 		if err != nil {
@@ -253,57 +239,57 @@ func (e *editor) Save() {
 }
 
 func (e *editor) MoveLeft() {
-	e.lock(func() {
+	e.lockUpdateAndRender(func() {
 		e.moveAndFixWithoutLock(0, -1)
 		e.setStatusWithoutLock("move left")
 	})
 }
 func (e *editor) MoveRight() {
-	e.lock(func() {
+	e.lockUpdateAndRender(func() {
 		e.moveAndFixWithoutLock(0, 1)
 		e.setStatusWithoutLock("move right")
 	})
 }
 func (e *editor) MoveUp() {
-	e.lock(func() {
+	e.lockUpdateAndRender(func() {
 		e.moveAndFixWithoutLock(-1, 0)
 		e.setStatusWithoutLock("move up")
 	})
 }
 func (e *editor) MoveDown() {
-	e.lock(func() {
+	e.lockUpdateAndRender(func() {
 		e.moveAndFixWithoutLock(1, 0)
 		e.setStatusWithoutLock("move down")
 	})
 }
 func (e *editor) MoveHome() {
-	e.lock(func() {
+	e.lockUpdateAndRender(func() {
 		e.moveAndFixWithoutLock(0, -e.cursor.Col)
 		e.setStatusWithoutLock("move home")
 	})
 }
 func (e *editor) MoveEnd() {
-	e.lock(func() {
+	e.lockUpdateAndRender(func() {
 		m := e.model
 		e.moveAndFixWithoutLock(0, len(m.Get(e.cursor.Row))-e.cursor.Col)
 		e.setStatusWithoutLock("move end")
 	})
 }
 func (e *editor) MovePageUp() {
-	e.lock(func() {
+	e.lockUpdateAndRender(func() {
 		e.moveAndFixWithoutLock(-e.window.height, 0)
 		e.setStatusWithoutLock("move page up")
 	})
 }
 func (e *editor) MovePageDown() {
-	e.lock(func() {
+	e.lockUpdateAndRender(func() {
 		e.moveAndFixWithoutLock(e.window.height, 0)
 		e.setStatusWithoutLock("move page down")
 	})
 }
 
 func (e *editor) Type(ch rune) {
-	e.lock(func() {
+	e.lockUpdateAndRender(func() {
 		e.model = func(m Model) Model {
 			row, col := e.cursor.Row, e.cursor.Col
 			// NOTE - handle empty file
@@ -329,7 +315,7 @@ func (e *editor) Type(ch rune) {
 }
 
 func (e *editor) Backspace() {
-	e.lock(func() {
+	e.lockUpdateAndRender(func() {
 		e.model = func(m Model) Model {
 			row, col := e.cursor.Row, e.cursor.Col
 			// NOTE - handle empty file
@@ -361,7 +347,7 @@ func (e *editor) Backspace() {
 }
 
 func (e *editor) Delete() {
-	e.lock(func() {
+	e.lockUpdateAndRender(func() {
 		e.model = func(m Model) Model {
 			row, col := e.cursor.Row, e.cursor.Col
 			// NOTE - handle empty file
@@ -390,7 +376,7 @@ func (e *editor) Delete() {
 }
 
 func (e *editor) Enter() {
-	e.lock(func() {
+	e.lockUpdateAndRender(func() {
 		e.model = func(m Model) Model {
 			// NOTE - handle empty file
 			if m.Len() == 0 {
