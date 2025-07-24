@@ -48,12 +48,14 @@ func NewEditor(height int, width int, filenameIn string, filenameOut string) (Ed
 
 	e.filenameIn = filenameIn
 	e.filenameOut = filenameOut
+
 	e.renderCh = make(chan View, 1)
 	var cancelLoadCtx func()
 	e.loadCtx, cancelLoadCtx = context.WithCancel(context.Background())
 	if !fileExists(e.filenameIn) {
 		e.reader = nil
 		e.model = model.NewModel(nil)
+		cancelLoadCtx()
 	} else {
 		r, err := mmap.Open(filenameIn)
 		if err != nil {
@@ -65,14 +67,18 @@ func NewEditor(height int, width int, filenameIn string, filenameOut string) (Ed
 		totalSize := fileSize(e.filenameIn)
 		loadedSize := 0
 		lastPercentage := 0
+		t0 := time.Now()
 		go model.LoadFile(e.filenameIn, func(l model.Line) {
 			loadedSize += l.Size()
 			e.lockUpdate(func() {
-				e.model.Append(l)
+				t1 := time.Now()
+				e.model = e.model.Append(l)
 				percentage := int(100 * float64(loadedSize) / float64(totalSize))
-				if percentage > lastPercentage {
+				if percentage > lastPercentage || t1.Sub(t0) >= time.Second {
 					lastPercentage = percentage
-					e.status.loading = fmt.Sprintf("loading ... %d%", lastPercentage)
+					e.status.loading = fmt.Sprintf("loading %s ... %d/%d (%d%%)", filepath.Base(e.filenameIn), loadedSize, totalSize, lastPercentage)
+					t0 = t1
+					e.renderWithoutLock()
 				}
 			})
 		}, func() {
@@ -93,14 +99,15 @@ func NewEditor(height int, width int, filenameIn string, filenameOut string) (Ed
 		height: height,
 		width:  width,
 	}
-	e.status = status{}
-
-	if len(filenameOut) == 0 {
-		e.status.name = "telescope"
-	} else {
-		e.status.name = fmt.Sprintf("telescope %s", filepath.Base(filenameOut))
+	e.status = status{
+		name:    "telescope",
+		message: "",
+		loading: "",
 	}
-	e.status.loading = "loading ... 0%"
+
+	if len(e.filenameOut) > 0 {
+		e.status.name += " " + filepath.Base(e.filenameOut)
+	}
 	return e, nil
 }
 
@@ -119,6 +126,14 @@ func (e *editor) lockUpdate(f func()) {
 }
 
 func (e *editor) lockUpdateRender(f func()) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	defer e.renderWithoutLock()
+
+	f()
+}
+
+func (e *editor) renderWithoutLock() {
 	getRowForView := func(m Model, row int) []rune {
 		if row < m.Len() {
 			return m.Get(row)
@@ -126,7 +141,7 @@ func (e *editor) lockUpdateRender(f func()) {
 			return []rune{'~'}
 		}
 	}
-	renderWithoutLock := func() View {
+	render := func() View {
 		m := e.model
 		win := e.window
 		cur := e.cursor
@@ -155,12 +170,7 @@ func (e *editor) lockUpdateRender(f func()) {
 		return view
 	}
 
-	e.mu.Lock()
-	defer e.mu.Unlock()
-
-	f()
-
-	e.renderCh <- renderWithoutLock()
+	e.renderCh <- render()
 }
 
 func (e *editor) Update() <-chan View {
