@@ -1,6 +1,6 @@
 package vector
 
-import "telescope/flag"
+import "telescope/feature"
 
 type Vector[T any] interface {
 	Get(i int) T
@@ -16,7 +16,7 @@ type Vector[T any] interface {
 }
 
 func NewVector[T any]() Vector[T] {
-	if flag.Debug() {
+	if feature.Debug() {
 		return &pseudoVector[T]{}
 	}
 	return &vector[T]{node: nil}

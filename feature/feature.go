@@ -1,4 +1,4 @@
-package flag
+package feature
 
 import "os"
 

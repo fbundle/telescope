@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"slices"
 	"sync"
-	"telescope/flag"
+	"telescope/feature"
 	"telescope/journal"
 	"telescope/text"
 	"time"
@@ -271,7 +271,7 @@ func (e *editor) Save() {
 		defer file.Close()
 
 		for _, line := range m.Iter {
-			if flag.Debug() {
+			if feature.Debug() {
 				time.Sleep(100 * time.Millisecond)
 			}
 			_, err = file.WriteString(string(line) + "\n")

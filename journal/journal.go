@@ -8,7 +8,7 @@ import (
 	"io"
 	"os"
 	"sync"
-	"telescope/flag"
+	"telescope/feature"
 	"time"
 )
 
@@ -37,7 +37,7 @@ func Read(ctx context.Context, filename string, apply func(e Entry), done func()
 			if err := json.Unmarshal(line, &e); err != nil {
 				return err
 			}
-			if flag.Debug() {
+			if feature.Debug() {
 				time.Sleep(100 * time.Millisecond)
 			}
 			apply(e)

@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"slices"
 	"sync"
-	"telescope/flag"
+	"telescope/feature"
 	"time"
 
 	"golang.org/x/exp/mmap"
@@ -54,7 +54,7 @@ func indexFile(ctx context.Context, filename string, update func(offset int, lin
 			panic(err)
 		}
 		if len(line) > 0 {
-			if flag.Debug() {
+			if feature.Debug() {
 				time.Sleep(100 * time.Millisecond)
 			}
 			update(offset, line)
@@ -152,7 +152,7 @@ func indexFileParallel(ctx context.Context, filename string, update func(offset 
 			relOffset := 0
 			for i, b := range buf {
 				if b == '\n' {
-					if flag.Debug() {
+					if feature.Debug() {
 						time.Sleep(100 * time.Millisecond)
 					}
 					select {

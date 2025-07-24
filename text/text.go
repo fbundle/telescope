@@ -2,7 +2,7 @@ package text
 
 import (
 	"context"
-	"telescope/flag"
+	"telescope/feature"
 	"telescope/persistent/vector"
 
 	"golang.org/x/exp/mmap"
@@ -27,7 +27,7 @@ func New(r *mmap.ReaderAt) Text {
 
 func LoadFile(ctx context.Context, filename string, update func(Line)) {
 	indexFileFunc := indexFile
-	if flag.ParallelIndexing() {
+	if feature.ParallelIndexing() {
 		indexFileFunc = indexFileParallel
 	}
 
