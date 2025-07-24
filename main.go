@@ -43,8 +43,12 @@ func draw(s tcell.Screen, view editor.View) {
 	if len(background) > 0 {
 		copy(status[len(status)-len(background):], background)
 	}
+
+	statusStyle := tcell.StyleDefault.
+		Background(tcell.ColorLightGray).
+		Foreground(tcell.ColorBlack)
 	for col, ch := range status {
-		s.SetContent(col, screenHeight-1, ch, nil, tcell.StyleDefault.Reverse(true))
+		s.SetContent(col, screenHeight-1, ch, nil, statusStyle)
 	}
 
 	s.Show()
