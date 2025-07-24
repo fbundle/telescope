@@ -15,7 +15,7 @@ func DisableJournal() bool {
 }
 
 const (
-	JOURNAL_INTERVAL_S           = 60
+	JOURNAL_INTERVAL_S           = 1
 	DEBUG_IO_INTERVAL_MS         = 100
 	LOADING_PROGRESS_INTERVAL_MS = 100
 )

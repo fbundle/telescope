@@ -26,7 +26,7 @@ type Controller interface {
 	Escape()
 	Tabular()
 
-	Jump(col int, row int)
+	Jump(row int, col int)
 	MoveLeft()
 	MoveRight()
 	MoveUp()

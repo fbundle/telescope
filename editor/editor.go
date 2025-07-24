@@ -32,7 +32,6 @@ type window struct {
 // add a command buffer, press ESC reset command buffer
 
 type editor struct {
-	ctx            context.Context
 	inputFilename  string
 	outputFilename string
 	journalWriter  journal.Writer
@@ -52,12 +51,12 @@ func NewEditor(
 	height int,
 	width int,
 	inputFilename string,
+	journalFilename string,
 	outputFilename string,
 	loadDone func(),
 ) (Editor, error) {
 
 	e := &editor{
-		ctx:            ctx,
 		inputFilename:  inputFilename,
 		outputFilename: outputFilename,
 		journalWriter:  nil,
@@ -97,13 +96,13 @@ func NewEditor(
 
 	// journal
 	var err error
-	if feature.DisableJournal() {
-		e.journalWriter, err = journal.NewDummyWriter()
-	} else {
-		e.journalWriter, err = journal.NewWriter(ctx, journal.GetJournalFilename(inputFilename))
+	if len(journalFilename) > 0 {
+		e.journalWriter, err = journal.NewWriter(ctx, journalFilename)
 		if err != nil {
 			return nil, err
 		}
+	} else {
+		e.journalWriter, err = journal.NewDummyWriter()
 	}
 
 	// text
@@ -130,7 +129,7 @@ func NewEditor(
 			lastPercentage := 0
 			t0 := time.Now()
 			t1 := t0
-			text.LoadFile(e.ctx, e.inputFilename, func(l text.Line) {
+			text.LoadFile(ctx, e.inputFilename, func(l text.Line) {
 				loadedSize += l.Size()
 				e.lockUpdate(func() {
 					t2 := time.Now()
