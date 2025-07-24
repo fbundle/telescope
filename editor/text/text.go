@@ -1,4 +1,4 @@
-package model
+package text
 
 import (
 	"telescope/flag"
@@ -7,7 +7,17 @@ import (
 	"golang.org/x/exp/mmap"
 )
 
-func NewModel(r *mmap.ReaderAt) Model {
+type Text interface {
+	Get(i int) []rune
+	Set(i int, val []rune) Text
+	Ins(i int, val []rune) Text
+	Del(i int) Text
+	Iter(f func(i int, val []rune) bool)
+	Len() int
+	Append(line Line) Text
+}
+
+func New(r *mmap.ReaderAt) Text {
 	return &model{
 		r:   r,
 		vec: vector.NewVector[Line](),
@@ -32,7 +42,7 @@ type model struct {
 	vec vector.Vector[Line]
 }
 
-func (m *model) Append(line Line) Model {
+func (m *model) Append(line Line) Text {
 	return &model{
 		r:   m.r,
 		vec: m.vec.Ins(m.vec.Len(), line),
@@ -43,21 +53,21 @@ func (m *model) Get(i int) []rune {
 	return m.vec.Get(i).repr(m.r)
 }
 
-func (m *model) Set(i int, val []rune) Model {
+func (m *model) Set(i int, val []rune) Text {
 	return &model{
 		r:   m.r,
 		vec: m.vec.Set(i, makeLineFromData(val)),
 	}
 }
 
-func (m *model) Ins(i int, val []rune) Model {
+func (m *model) Ins(i int, val []rune) Text {
 	return &model{
 		r:   m.r,
 		vec: m.vec.Ins(i, makeLineFromData(val)),
 	}
 }
 
-func (m *model) Del(i int) Model {
+func (m *model) Del(i int) Text {
 	return &model{
 		r:   m.r,
 		vec: m.vec.Del(i),

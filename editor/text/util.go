@@ -1,4 +1,4 @@
-package model
+package text
 
 import (
 	"bufio"
@@ -188,19 +188,19 @@ func indexFileParallel(filename string, update func(offset int, line []byte), do
 
 }
 
-func LoadModel1(filename string, update func(func(Model) Model), done func(), parallel bool) {
+func LoadModel1(filename string, update func(func(Text) Text), done func(), parallel bool) {
 	defer done()
 	if !fileExists(filename) {
 		return
 	}
-	// model with mmap
+	// text with mmap
 	r, err := mmap.Open(filename)
 	if err != nil {
 		panic(err)
 	}
 
 	// TODO - think of any logic to close mmap
-	update(func(m Model) Model {
+	update(func(m Text) Text {
 		return &model{
 			r:   r,
 			vec: m.(*model).vec,
@@ -213,7 +213,7 @@ func LoadModel1(filename string, update func(func(Model) Model), done func(), pa
 	}
 
 	indexLine(filename, func(offset int, line []byte) {
-		update(func(m Model) Model {
+		update(func(m Text) Text {
 			// TODO - potentially update vec every 10000 lines instead of 1
 			line := padNewLine(line)
 			size := len(line) - endOfLineSize(line)

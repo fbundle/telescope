@@ -20,18 +20,28 @@ func draw(s tcell.Screen, view editor.View) {
 	s.Clear()
 	screenWidth, screenHeight := s.Size()
 	// Draw editor content from (0, 0)
-	for row, line := range view.Data {
+	for row, line := range view.WinData {
 		for col, ch := range line {
 			s.SetContent(col, row, ch, nil, tcell.StyleDefault)
 		}
 	}
 	// Draw cursor from (0, 0)
-	s.ShowCursor(view.Cursor.Col, view.Cursor.Row)
+	s.ShowCursor(view.WinCursor.Col, view.WinCursor.Row)
 
 	// Draw status bar at the bottom
-	status := view.Status
-	for len(status) < screenWidth {
-		status = append(status, ' ')
+	head := []rune(fmt.Sprintf("%s (%d, %d)", view.WinName, view.TextCursor.Col, view.TextCursor.Row))
+	foreground := []rune(view.Message)
+	background := []rune(view.Background)
+
+	status := make([]rune, screenWidth)
+	if len(head) > 0 {
+		copy(status, head)
+	}
+	if len(foreground) > 0 {
+		copy(status[len(head)+1:], foreground) // leave 1 space between head and foreground
+	}
+	if len(background) > 0 {
+		copy(status[len(status)-len(background):], background)
 	}
 	for col, ch := range status {
 		s.SetContent(col, screenHeight-1, ch, nil, tcell.StyleDefault.Reverse(true))
