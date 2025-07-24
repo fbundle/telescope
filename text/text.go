@@ -2,6 +2,7 @@ package text
 
 import (
 	"context"
+	"telescope/flag"
 	"telescope/persistent/vector"
 
 	"golang.org/x/exp/mmap"
@@ -25,7 +26,12 @@ func New(r *mmap.ReaderAt) Text {
 }
 
 func LoadFile(ctx context.Context, filename string, update func(Line), done func()) {
-	indexFile(ctx, filename, func(offset int, line []byte) {
+	indexFileFunc := indexFile
+	if flag.ParallelIndexing() {
+		indexFileFunc = indexFileParallel
+	}
+
+	indexFileFunc(ctx, filename, func(offset int, line []byte) {
 		line = padNewLine(line)
 		size := len(line) - endOfLineSize(line)
 		l := makeLineFromFile(offset, size)
