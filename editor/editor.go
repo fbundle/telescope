@@ -349,7 +349,7 @@ func (e *editor) MovePageDown() {
 	})
 }
 
-func (e *editor) Move(col int, row int) {
+func (e *editor) Jump(col int, row int) {
 	e.lockUpdateRender(func() {
 		// move to absolute position
 		moveCol := col - e.textCursor.Col
