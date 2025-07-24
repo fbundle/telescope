@@ -52,8 +52,7 @@ type Controller interface {
 }
 
 type Renderer interface {
-	Render() View
-	Update() <-chan struct{}
+	Update() <-chan View
 }
 
 type Editor interface {
