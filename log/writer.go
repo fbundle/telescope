@@ -52,13 +52,3 @@ func (w *writer) Write(e Entry) Writer {
 	}
 	return w
 }
-
-func NewDummyWriter() (Writer, error) {
-	return &dummyWriter{}, nil
-}
-
-type dummyWriter struct{}
-
-func (w *dummyWriter) Write(Entry) Writer {
-	return w
-}

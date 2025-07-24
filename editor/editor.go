@@ -98,8 +98,6 @@ func NewEditor(
 		if err != nil {
 			return nil, err
 		}
-	} else {
-		e.logWriter, err = log.NewDummyWriter()
 	}
 
 	// text
@@ -181,4 +179,11 @@ func (e *editor) Update() <-chan View {
 
 func (e *editor) setStatusWithoutLock(format string, a ...any) {
 	e.view.message = fmt.Sprintf(format, a...)
+}
+
+func (e *editor) writeLog(entry log.Entry) {
+	if e.logWriter == nil {
+		return
+	}
+	e.logWriter.Write(entry)
 }
