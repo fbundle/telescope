@@ -10,9 +10,11 @@
 - fixed for too short characters - render give the whole row not according to window width anymore
 - change frontend to tcell - much better
 - improved structure, improve frontend
+- added journal file (file is saved every 10 seconds or when buffer is full)
 
 # TODO
 
+- add journal file recover
 - add saving progress
 - add vim-like command at status bar
 - fix bug with reading and writing to the same file
@@ -20,4 +22,3 @@
 - add undo,redo
 - add search
 - add goto line number
-- change to journalling mode, there is no save, just the original file and change history and a separate command to combine into a new file
