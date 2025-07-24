@@ -18,7 +18,6 @@
 - add saving progress
 - add vim-like command at status bar
 - fix bug with reading and writing to the same file
-- add journaling, crash recovery
 - add undo,redo
 - add search
 - add goto line number
