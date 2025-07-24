@@ -38,11 +38,11 @@ func draw(s tcell.Screen, view editor.View) {
 	background := []rune(view.Background)
 
 	status := make([]rune, screenWidth)
-	if len(head) > 0 {
-		copy(status, head)
-	}
+	copy(status, head)
+	sep := []rune(" > ")
+	copy(status[len(head):len(head)+len(sep)], sep)
 	if len(foreground) > 0 {
-		copy(status[len(head)+1:], foreground) // leave 1 space between head and foreground
+		copy(status[len(head)+len(sep):], foreground) // leave 1 space between head and foreground
 	}
 	if len(background) > 0 {
 		copy(status[len(status)-len(background):], background)
