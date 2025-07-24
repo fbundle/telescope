@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"os"
 	"sync"
-	"telescope/feature"
-	"time"
 )
 
 type Writer interface {
@@ -19,22 +17,16 @@ func NewWriter(ctx context.Context, filename string) (Writer, error) {
 		return nil, err
 	}
 	w := &writer{
-		mu:      sync.Mutex{},
-		file:    f,
-		entryCh: make(chan Entry, 1024),
+		mu:   sync.Mutex{},
+		file: f,
 	}
 	go func() {
-		ticker := time.NewTicker(feature.JOURNAL_INTERVAL_S * time.Second)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				w.flush()
-				_ = w.file.Close()
-				return
-			case <-ticker.C: // flush every 10 seconds
-				w.flush()
-			}
+		<-ctx.Done()
+		w.mu.Lock()
+		defer w.mu.Unlock()
+		err := w.file.Close()
+		if err != nil {
+			panic(err)
 		}
 	}()
 
@@ -42,38 +34,23 @@ func NewWriter(ctx context.Context, filename string) (Writer, error) {
 }
 
 type writer struct {
-	mu      sync.Mutex
-	file    *os.File
-	entryCh chan Entry
-}
-
-func (w *writer) flush() {
-	for {
-		select {
-		case entry := <-w.entryCh:
-			b, err := json.Marshal(entry)
-			if err != nil {
-				panic(err)
-			}
-			_, err = w.file.Write(append(b, '\n'))
-			if err != nil {
-				panic(err)
-			}
-		default:
-			return
-		}
-	}
+	mu   sync.Mutex
+	file *os.File
 }
 
 func (w *writer) Write(e Entry) Writer {
-	for {
-		select {
-		case w.entryCh <- e:
-			return w
-		default:
-			w.flush() // flush if entryCh is full and try again
-		}
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
+	b, err := json.Marshal(e)
+	if err != nil {
+		panic(err)
 	}
+	_, err = w.file.Write(append(b, '\n'))
+	if err != nil {
+		panic(err)
+	}
+	return w
 }
 
 func NewDummyWriter() (Writer, error) {

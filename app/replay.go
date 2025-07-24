@@ -16,7 +16,7 @@ func RunReplay(inputFilename string, journalFilename string) error {
 	e, err := editor.NewEditor(
 		ctx,
 		20, 20,
-		inputFilename, "", "",
+		inputFilename, "",
 		loadCancel,
 	)
 	if err != nil {

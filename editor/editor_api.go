@@ -16,7 +16,6 @@ type View struct {
 
 type Controller interface {
 	Resize(height int, width int)
-	Save()
 
 	Type(ch rune)
 	Enter()

@@ -53,8 +53,6 @@ func handleKey(e editor.Editor) func(ev *tcell.EventKey) {
 		switch event.Key() {
 		case tcell.KeyCtrlC:
 			// do nothing
-		case tcell.KeyCtrlS:
-			e.Save()
 		case tcell.KeyBackspace, tcell.KeyBackspace2:
 			e.Backspace()
 		case tcell.KeyDelete:
@@ -88,7 +86,7 @@ func handleKey(e editor.Editor) func(ev *tcell.EventKey) {
 	}
 }
 
-func RunEditor(inputFilename string, journalFilename string, outputFilename string) error {
+func RunEditor(inputFilename string, journalFilename string) error {
 	s, err := tcell.NewScreen()
 	if err != nil {
 		return err
@@ -105,7 +103,7 @@ func RunEditor(inputFilename string, journalFilename string, outputFilename stri
 	e, err := editor.NewEditor(
 		ctx,
 		height-1, width,
-		inputFilename, journalFilename, outputFilename,
+		inputFilename, journalFilename,
 		nil,
 	)
 	if err != nil {

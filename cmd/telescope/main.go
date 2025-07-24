@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 	"telescope/app"
-	"telescope/feature"
 	"telescope/journal"
 )
 
@@ -16,7 +15,7 @@ const VERSION = "0.1.3"
 func printHelp() {
 	printVersion()
 	help := `
-Usage: telescope [option] <input_file> <output_file>
+Usage: telescope [option] <file>
 Option:
   -h --help	: show help
   -v --version	: get version
@@ -53,15 +52,13 @@ func main() {
 		return
 	}
 
-	var inputFilename, outputFilename, journalFilename string
+	var inputFilename, journalFilename string
 
 	isRecover := head == "-r" || head == "--replay"
 	if isRecover {
 		args, inputFilename = consume(args)
-		args, outputFilename = consume(args)
 	} else {
 		inputFilename = head
-		args, outputFilename = consume(args)
 	}
 
 	// recover
@@ -75,11 +72,7 @@ func main() {
 	}
 
 	// text editor
-	if feature.DisableJournal() {
-		journalFilename = ""
-	} else {
-		journalFilename = journal.GetJournalFilename(inputFilename)
-	}
+	journalFilename = journal.GetJournalFilename(inputFilename)
 
 	if len(journalFilename) > 0 {
 		if fileExists(journalFilename) && fileSize(journalFilename) > 0 {
@@ -94,7 +87,7 @@ func main() {
 		}
 	}
 
-	err := app.RunEditor(inputFilename, journalFilename, outputFilename)
+	err := app.RunEditor(inputFilename, journalFilename)
 	if err != nil {
 		log.Fatal(err)
 	}

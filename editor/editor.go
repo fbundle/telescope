@@ -32,11 +32,10 @@ type window struct {
 // add a command buffer, press ESC reset command buffer
 
 type editor struct {
-	inputFilename  string
-	outputFilename string
-	journalWriter  journal.Writer
-	renderCh       chan View
-	reader         *mmap.ReaderAt
+	inputFilename string
+	journalWriter journal.Writer
+	renderCh      chan View
+	reader        *mmap.ReaderAt
 
 	mu         sync.Mutex // the fields below are protected by mu
 	loaded     bool
@@ -52,18 +51,16 @@ func NewEditor(
 	width int,
 	inputFilename string,
 	journalFilename string,
-	outputFilename string,
 	loadDone func(),
 ) (Editor, error) {
 
 	e := &editor{
-		inputFilename:  inputFilename,
-		outputFilename: outputFilename,
-		journalWriter:  nil,
-		renderCh:       make(chan View),
-		reader:         nil,
-		loaded:         false,
-		text:           nil,
+		inputFilename: inputFilename,
+		journalWriter: nil,
+		renderCh:      make(chan View),
+		reader:        nil,
+		loaded:        false,
+		text:          nil,
 		textCursor: Cursor{
 			Row: 0, Col: 0,
 		},
@@ -80,8 +77,8 @@ func NewEditor(
 		},
 	}
 
-	if len(e.outputFilename) > 0 {
-		e.view.winName += " " + filepath.Base(e.outputFilename)
+	if len(e.inputFilename) > 0 {
+		e.view.winName += " " + filepath.Base(e.inputFilename)
 	}
 	// closer
 	go func() {
