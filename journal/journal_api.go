@@ -11,7 +11,7 @@ const (
 
 type Entry struct {
 	Command   Command `json:"command"`
-	Rune      rune    `json:"rune"`
+	Rune      rune    `json:"rune,omitempty"`
 	CursorRow int     `json:"cursor_row"`
 	CursorCol int     `json:"cursor_col"`
 }

@@ -8,6 +8,7 @@ import (
 	"slices"
 	"sync"
 	"telescope/flag"
+	"telescope/journal"
 	"telescope/text"
 	"time"
 
@@ -33,11 +34,12 @@ type window struct {
 // add a command buffer, press ESC reset command buffer
 
 type editor struct {
-	ctx          context.Context
-	filenameText string
-	filenameOut  string
-	renderCh     chan View
-	reader       *mmap.ReaderAt
+	ctx             context.Context
+	filenameTextIn  string
+	filenameTextOut string
+	journalWriter   journal.Writer
+	renderCh        chan View
+	reader          *mmap.ReaderAt
 
 	mu         sync.Mutex // the fields below are protected by mu
 	loaded     bool
@@ -51,17 +53,27 @@ func NewEditor(
 	ctx context.Context,
 	height int,
 	width int,
-	filenameText string,
-	filenameJournal string,
+	filenameTextIn string,
+	filenameTextOut string,
 ) (Editor, error) {
+	// make journal
+	dir := filepath.Dir(filenameTextIn)
+	name := "." + filepath.Base(filenameTextIn) + ".journal"
+	journalPath := filepath.Join(dir, name)
+	journerWriter, err := journal.NewWriter(ctx, journalPath)
+	if err != nil {
+		return nil, err
+	}
+
 	e := &editor{
-		ctx:          ctx,
-		filenameText: filenameText,
-		filenameOut:  filenameJournal,
-		renderCh:     make(chan View),
-		reader:       nil,
-		loaded:       false,
-		text:         nil,
+		ctx:             ctx,
+		filenameTextIn:  filenameTextIn,
+		filenameTextOut: filenameTextOut,
+		journalWriter:   journerWriter,
+		renderCh:        make(chan View),
+		reader:          nil,
+		loaded:          false,
+		text:            nil,
 		textCursor: Cursor{
 			Row: 0, Col: 0,
 		},
@@ -78,38 +90,42 @@ func NewEditor(
 		},
 	}
 
-	if len(e.filenameOut) > 0 {
-		e.view.winName += " " + filepath.Base(e.filenameOut)
+	if len(e.filenameTextOut) > 0 {
+		e.view.winName += " " + filepath.Base(e.filenameTextOut)
 	}
+	// closer
+	go func() {
+		<-ctx.Done()
+		e.lockUpdate(func() {
+			close(e.renderCh)
+			if e.reader != nil {
+				_ = e.reader.Close()
+			}
+		})
+	}()
 
 	// text
-	if !fileExists(e.filenameText) {
+	if !fileExists(e.filenameTextIn) {
 		e.reader = nil
 		e.text = text.New(nil)
-		e.view.message = fmt.Sprintf("file does not exists %s", filepath.Base(e.filenameText))
+		e.view.message = fmt.Sprintf("file does not exists %s", filepath.Base(e.filenameTextIn))
 		e.loaded = true
+		// we skip journal file as well
 	} else {
-		r, err := mmap.Open(filenameText)
+		r, err := mmap.Open(filenameTextIn)
 		if err != nil {
 			return nil, err
 		}
 		e.reader = r
-		go func() {
-			<-ctx.Done()
-			e.lockUpdate(func() {
-				close(e.renderCh)
-				_ = r.Close()
-			})
-		}()
 		e.text = text.New(e.reader)
 		// load file asynchronously
 		go func() {
-			totalSize := fileSize(e.filenameText)
+			totalSize := fileSize(e.filenameTextIn)
 			loadedSize := 0
 			lastPercentage := 0
 			t0 := time.Now()
 			t1 := t0
-			text.LoadFile(e.ctx, e.filenameText, func(l text.Line) {
+			text.LoadFile(e.ctx, e.filenameTextIn, func(l text.Line) {
 				loadedSize += l.Size()
 				e.lockUpdate(func() {
 					t2 := time.Now()
@@ -117,7 +133,7 @@ func NewEditor(
 					percentage := int(100 * float64(loadedSize) / float64(totalSize))
 					if percentage > lastPercentage || t2.Sub(t1) >= time.Second {
 						lastPercentage = percentage
-						e.view.background = fmt.Sprintf("loading %s %d/%d (%d%%)", filepath.Base(e.filenameText), loadedSize, totalSize, lastPercentage)
+						e.view.background = fmt.Sprintf("loading %s %d/%d (%d%%)", filepath.Base(e.filenameTextIn), loadedSize, totalSize, lastPercentage)
 						t1 = t2
 						e.renderWithoutLock()
 					}
@@ -126,7 +142,7 @@ func NewEditor(
 			e.lockUpdateRender(func() {
 				totalTime := time.Now().Sub(t0)
 				e.view.background = ""
-				e.view.message = fmt.Sprintf("loaded %s in %d seconds", filepath.Base(e.filenameText), int(totalTime.Seconds()))
+				e.view.message = fmt.Sprintf("loaded %s in %d seconds", filepath.Base(e.filenameTextIn), int(totalTime.Seconds()))
 				e.loaded = true
 			})
 		}()
@@ -236,7 +252,7 @@ func (e *editor) Resize(height int, width int) {
 }
 
 func (e *editor) Save() {
-	if len(e.filenameOut) == 0 {
+	if len(e.filenameTextOut) == 0 {
 		e.setStatusWithoutLock("read only mode, cannot save")
 		return
 	}
@@ -248,7 +264,7 @@ func (e *editor) Save() {
 			return
 		}
 		m = e.text
-		file, err := os.Create(e.filenameOut)
+		file, err := os.Create(e.filenameTextOut)
 		if err != nil {
 			panic(err)
 		}
@@ -319,6 +335,13 @@ func (e *editor) MovePageDown() {
 
 func (e *editor) Type(ch rune) {
 	e.lockUpdateRender(func() {
+		e.journalWriter.Write(journal.Entry{
+			Command:   journal.CommandType,
+			Rune:      ch,
+			CursorRow: e.textCursor.Row,
+			CursorCol: e.textCursor.Col,
+		})
+
 		e.text = func(m text.Text) text.Text {
 			row, col := e.textCursor.Row, e.textCursor.Col
 			// NOTE - handle empty file
@@ -345,6 +368,12 @@ func (e *editor) Type(ch rune) {
 
 func (e *editor) Backspace() {
 	e.lockUpdateRender(func() {
+		e.journalWriter.Write(journal.Entry{
+			Command:   journal.CommandBackspace,
+			CursorRow: e.textCursor.Row,
+			CursorCol: e.textCursor.Col,
+		})
+
 		e.text = func(m text.Text) text.Text {
 			row, col := e.textCursor.Row, e.textCursor.Col
 			// NOTE - handle empty file
@@ -377,6 +406,12 @@ func (e *editor) Backspace() {
 
 func (e *editor) Delete() {
 	e.lockUpdateRender(func() {
+		e.journalWriter.Write(journal.Entry{
+			Command:   journal.CommandDelete,
+			CursorRow: e.textCursor.Row,
+			CursorCol: e.textCursor.Col,
+		})
+
 		e.text = func(m text.Text) text.Text {
 			row, col := e.textCursor.Row, e.textCursor.Col
 			// NOTE - handle empty file
@@ -406,6 +441,12 @@ func (e *editor) Delete() {
 
 func (e *editor) Enter() {
 	e.lockUpdateRender(func() {
+		e.journalWriter.Write(journal.Entry{
+			Command:   journal.CommandEnter,
+			CursorRow: e.textCursor.Row,
+			CursorCol: e.textCursor.Col,
+		})
+
 		e.text = func(m text.Text) text.Text {
 			// NOTE - handle empty file
 			if m.Len() == 0 {

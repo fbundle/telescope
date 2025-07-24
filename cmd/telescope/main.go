@@ -11,7 +11,7 @@ import (
 
 const VERSION = "0.1.2"
 
-var filenameText, filenameOut string
+var filenameTextIn, filenameTextOut string
 var backendEditor editor.Editor
 
 var statusStyle = tcell.StyleDefault.
@@ -99,13 +99,13 @@ func main() {
 		os.Exit(1)
 	}
 	if len(os.Args) < 3 {
-		filenameText, filenameOut = os.Args[1], ""
-		if filenameText == "--version" {
+		filenameTextIn, filenameTextOut = os.Args[1], ""
+		if filenameTextIn == "--version" {
 			fmt.Printf("telescope version %s\n", VERSION)
 			os.Exit(0)
 		}
 	} else {
-		filenameText, filenameOut = os.Args[1], os.Args[2]
+		filenameTextIn, filenameTextOut = os.Args[1], os.Args[2]
 	}
 
 	s, err := tcell.NewScreen()
@@ -121,7 +121,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	width, height := s.Size()
-	backendEditor, err = editor.NewEditor(ctx, height-1, width, filenameText, filenameOut)
+	backendEditor, err = editor.NewEditor(ctx, height-1, width, filenameTextIn, filenameTextOut)
 	if err != nil {
 		panic(err)
 	}
