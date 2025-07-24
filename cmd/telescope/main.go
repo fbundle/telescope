@@ -15,17 +15,17 @@ const VERSION = "0.1.3"
 func printHelp() {
 	printVersion()
 	help := `
-Usage: telescope [option] <file>
+Usage: "telescope [option] <file>"
 Option:
   -h --help	: show help
   -v --version	: get version
-  -r --replay	: replay journal file
+  -r --replay	: replay the edited file 
 	`
 	fmt.Println(help)
 }
 
 func printVersion() {
-	fmt.Printf("telescope_extra version %s\n", VERSION)
+	fmt.Printf("telescope version %s\n", VERSION)
 }
 
 func consume(args []string) ([]string, string) {
