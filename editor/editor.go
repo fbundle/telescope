@@ -329,7 +329,7 @@ func (e *editor) Type(ch rune) {
 			return m
 		}(e.text)
 		e.moveAndFixWithoutLock(0, 1) // move right
-		e.setStatusWithoutLock("type %c", ch)
+		e.setStatusWithoutLock("type '%c'", ch)
 	})
 }
 
