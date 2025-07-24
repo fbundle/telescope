@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"slices"
 	"sync"
 	"telescope/editor/model"
@@ -14,6 +15,7 @@ import (
 type Model = model.Model
 
 type status struct {
+	name    string
 	message string
 	loading string
 }
@@ -39,6 +41,13 @@ type editor struct {
 }
 
 func NewEditor(height int, width int, filenameIn string, filenameOut string) Editor {
+	var name string
+	if len(filenameOut) == 0 {
+		name = "telescope"
+	} else {
+		name = fmt.Sprintf("telescope %s", filepath.Base(filenameOut))
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	e := &editor{
 		filenameIn:  filenameIn,
@@ -57,6 +66,7 @@ func NewEditor(height int, width int, filenameIn string, filenameOut string) Edi
 			width:  width,
 		},
 		status: status{
+			name:    name,
 			loading: "loading 0 lines",
 		},
 		updateCh: make(chan struct{}, 1),
@@ -150,7 +160,7 @@ func (e *editor) Render() View {
 		Col: cur.Col - win.tlCol,
 	}
 	// status
-	view.Status = fmt.Sprintf("(%d, %d)", cur.Row, cur.Col)
+	view.Status = fmt.Sprintf("%s - (%d, %d)", stat.name, cur.Row, cur.Col)
 	if len(stat.message) > 0 {
 		view.Status += " - " + stat.message
 	}
