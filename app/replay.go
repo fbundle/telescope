@@ -16,7 +16,7 @@ func RunReplay(inputFilename string, journalFilename string) error {
 	e, err := editor.NewEditor(
 		ctx,
 		20, 20,
-		inputFilename, journalFilename, "",
+		inputFilename, "", "",
 		loadCancel,
 	)
 	if err != nil {
@@ -30,7 +30,7 @@ func RunReplay(inputFilename string, journalFilename string) error {
 	<-loadCtx.Done()
 	_, _ = fmt.Fprintf(os.Stderr, "loading journal file %s\n", journalFilename)
 
-	err = journal.Read(ctx, journalFilename, func(entry journal.Entry) {
+	err = journal.Read(journalFilename, func(entry journal.Entry) bool {
 		switch entry.Command {
 		case journal.CommandEnter:
 			e.Jump(entry.CursorRow, entry.CursorCol)
@@ -47,6 +47,7 @@ func RunReplay(inputFilename string, journalFilename string) error {
 		default:
 			panic("unknown command")
 		}
+		return true
 	})
 	if err != nil {
 		return err

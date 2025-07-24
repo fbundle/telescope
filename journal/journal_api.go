@@ -15,7 +15,3 @@ type Entry struct {
 	CursorRow int     `json:"cursor_row"`
 	CursorCol int     `json:"cursor_col"`
 }
-
-type Writer interface {
-	Write(e Entry) Writer
-}
