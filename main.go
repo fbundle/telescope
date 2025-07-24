@@ -78,6 +78,8 @@ func handleKey(ev *tcell.EventKey) {
 		backendEditor.MovePageDown()
 	case tcell.KeyEnter:
 		backendEditor.Enter()
+	case tcell.KeyEsc:
+		backendEditor.Escape()
 	case tcell.KeyRune:
 		backendEditor.Type(ev.Rune())
 	}

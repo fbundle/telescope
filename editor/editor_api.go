@@ -23,6 +23,8 @@ type Controller interface {
 	Backspace()
 	Delete()
 
+	Escape()
+
 	MoveLeft()
 	MoveRight()
 	MoveUp()

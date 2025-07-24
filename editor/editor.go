@@ -422,3 +422,7 @@ func (e *editor) Enter() {
 		e.setStatusWithoutLock("enter")
 	})
 }
+
+func (e *editor) Escape() {
+	// do nothing
+}
