@@ -11,11 +11,10 @@
 - change frontend to tcell - much better
 - improved structure, improve frontend
 - added journal file (file is saved every 10 seconds or when buffer is full), use `DISABLE_JOURNAL=1` to disable
+- add journal file replay, remove save function completely. if user wants to save a file, they has to use `telescope -r <input_file>`, the content will be written to stdout
 
 # TODO
 
-- add journal file recover
-- add saving progress
 - add vim-like command at status bar
 - fix bug with reading and writing to the same file
 - add undo,redo
