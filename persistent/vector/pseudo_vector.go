@@ -1,9 +1,5 @@
 package vector
 
-func NewPseudoVector[T any]() Vector[T] {
-	return &pseudoVector[T]{}
-}
-
 type pseudoVector[T any] struct {
 	vec []T
 }
