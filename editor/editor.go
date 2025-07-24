@@ -57,17 +57,12 @@ func NewEditor(
 	filenameTextOut string,
 	loadDone func(),
 ) (Editor, error) {
-	// make journal
-	journalWriter, err := journal.NewWriter(ctx, journal.GetJournalFilename(filenameTextIn))
-	if err != nil {
-		return nil, err
-	}
 
 	e := &editor{
 		ctx:             ctx,
 		filenameTextIn:  filenameTextIn,
 		filenameTextOut: filenameTextOut,
-		journalWriter:   journalWriter,
+		journalWriter:   nil,
 		renderCh:        make(chan View),
 		reader:          nil,
 		loaded:          false,
@@ -101,6 +96,17 @@ func NewEditor(
 			}
 		})
 	}()
+
+	// journal
+	var err error
+	if feature.DisableJournal() {
+		e.journalWriter, err = journal.NewDummyWriter()
+	} else {
+		e.journalWriter, err = journal.NewWriter(ctx, journal.GetJournalFilename(filenameTextIn))
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	// text
 	if !fileExists(e.filenameTextIn) {

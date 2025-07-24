@@ -10,8 +10,8 @@ func ParallelIndexing() bool {
 	return len(os.Getenv("PARALLEL_INDEXING")) > 0
 }
 
-func Journaling() bool {
-	return len(os.Getenv("JOURNALING")) > 0
+func DisableJournal() bool {
+	return len(os.Getenv("DISABLE_JOURNAL")) > 0
 }
 
 const (

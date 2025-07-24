@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 	"telescope/editor"
+	"telescope/feature"
 	"telescope/journal"
 )
 
@@ -132,15 +133,17 @@ func main() {
 		filenameTextIn, filenameTextOut = os.Args[1], os.Args[2]
 	}
 
-	journalFilename := journal.GetJournalFilename(filenameTextIn)
-	if fileExists(journalFilename) && fileSize(journalFilename) > 0 {
-		ok := promptYesNo(fmt.Sprintf("journal file exists (%s), delete it?", journalFilename), false)
-		if !ok {
-			return
-		}
-		err := os.Remove(journalFilename)
-		if err != nil {
-			panic(err)
+	if !feature.DisableJournal() {
+		journalFilename := journal.GetJournalFilename(filenameTextIn)
+		if fileExists(journalFilename) && fileSize(journalFilename) > 0 {
+			ok := promptYesNo(fmt.Sprintf("journal file exists (%s), delete it?", journalFilename), false)
+			if !ok {
+				return
+			}
+			err := os.Remove(journalFilename)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 
