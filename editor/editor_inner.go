@@ -29,6 +29,11 @@ type window struct {
 	width  int
 }
 
+// TODO - add INSERT mode and VISUAL mode
+// press i VISUAL -> INSERT
+// press ESC INSERT -> VISUAL
+// add a command buffer, press ESC reset command buffer
+
 type editor struct {
 	filenameIn  string
 	filenameOut string
