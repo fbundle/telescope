@@ -131,6 +131,14 @@ func getCharFromModel(m Model, row int, col int) rune {
 	return m.Get(row)[col]
 }
 
+func getRowFromModel(m Model, row int) []rune {
+	if row < m.Len() {
+		return m.Get(row)
+	} else {
+		return []rune{'~'}
+	}
+}
+
 func (e *editor) Update() <-chan struct{} {
 	return e.updateCh
 }
@@ -151,12 +159,7 @@ func (e *editor) Render() View {
 	// data
 	view.Data = make([][]rune, win.height)
 	for row := 0; row < win.height; row++ {
-		view.Data[row] = make([]rune, win.width)
-	}
-	for row := 0; row < win.height; row++ {
-		for col := 0; col < win.width; col++ {
-			view.Data[row][col] = getCharFromModel(m, row+win.tlRow, col+win.tlCol)
-		}
+		view.Data[row] = getRowFromModel(m, row+win.tlRow)
 	}
 	// cursor
 	view.Cursor = Cursor{
