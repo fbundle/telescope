@@ -125,9 +125,9 @@ func (m *model) Del(i int) Model {
 	}
 }
 
-func (m *model) Iter(f func(val []rune) bool) {
-	m.vec.Iter(func(l lineInFile) bool {
-		return f(l.repr(m.r))
+func (m *model) Iter(f func(i int, val []rune) bool) {
+	m.vec.Iter(func(i int, l lineInFile) bool {
+		return f(i, l.repr(m.r))
 	})
 }
 

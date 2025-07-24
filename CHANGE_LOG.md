@@ -4,5 +4,6 @@
 - improved performance with mmap
 - added option for read only
 - added loading status - basically execute draw every second
-- [experimental] added parallel indexing - use environment variable to enable PARALLEL_INDEXING=1
+- [experimental] added parallel indexing - use environment variable to enable `PARALLEL_INDEXING=1`
 - fixed for too short characters - render give the whole row not according to window width anymore
+- change frontend to tcell - much better

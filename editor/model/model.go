@@ -5,6 +5,6 @@ type Model interface {
 	Set(i int, val []rune) Model
 	Ins(i int, val []rune) Model
 	Del(i int) Model
-	Iter(f func(val []rune) bool)
+	Iter(f func(i int, val []rune) bool)
 	Len() int
 }

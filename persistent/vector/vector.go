@@ -5,7 +5,7 @@ type Vector[T any] interface {
 	Set(i int, val T) Vector[T]
 	Ins(i int, val T) Vector[T]
 	Del(i int) Vector[T]
-	Iter(func(val T) bool)
+	Iter(func(i int, val T) bool)
 	Len() int
 	Height() int
 	Split(i int) (Vector[T], Vector[T])
@@ -37,8 +37,13 @@ func (v *vector[T]) Del(i int) Vector[T] {
 	return &vector[T]{node: del(v.node, uint(i))}
 }
 
-func (v *vector[T]) Iter(f func(val T) bool) {
-	iter(v.node, f)
+func (v *vector[T]) Iter(f func(i int, val T) bool) {
+	i := 0
+	iter(v.node, func(val T) bool {
+		ok := f(i, val)
+		i++
+		return ok
+	})
 }
 
 func (v *vector[T]) Len() int {
@@ -60,7 +65,7 @@ func (v *vector[T]) Concat(other Vector[T]) Vector[T] {
 
 func (v *vector[T]) Repr() []T {
 	buffer := make([]T, 0, v.Len())
-	for val := range v.Iter {
+	for _, val := range v.Iter {
 		buffer = append(buffer, val)
 	}
 	return buffer
