@@ -132,7 +132,7 @@ func NewEditor(
 					t2 := time.Now()
 					e.text = e.text.Append(l)
 					percentage := int(100 * float64(loadedSize) / float64(totalSize))
-					if percentage > lastPercentage || t2.Sub(t1) >= time.Second {
+					if percentage > lastPercentage || t2.Sub(t1) >= feature.LOADING_PROGRESS_INTERVAL_MS*time.Millisecond {
 						lastPercentage = percentage
 						e.view.background = fmt.Sprintf(
 							"loading %s %d/%d (%d%%)",

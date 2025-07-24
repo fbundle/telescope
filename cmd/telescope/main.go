@@ -134,7 +134,7 @@ func main() {
 
 	journalFilename := journal.GetJournalFilename(filenameTextIn)
 	if fileExists(journalFilename) && fileSize(journalFilename) > 0 {
-		ok := promptYesNo(fmt.Sprintf("journal file exists %s, delete it?", journalFilename), false)
+		ok := promptYesNo(fmt.Sprintf("journal file exists (%s), delete it?", journalFilename), false)
 		if !ok {
 			return
 		}
