@@ -1,3 +1,5 @@
+# FEATURE
+
 - very basic text editor
 - added basic keyboard support: `Ctrl+C,Ctrl+S`, `Enter`, `Backspace`, `Delete`, `Left,Right,Up,Down,Home,End,PgUp,PgDn`
 - first working code - file are loaded lazily
@@ -9,11 +11,13 @@
 - change frontend to tcell - much better
 - improved structure, improve frontend
 
-TODO - add saving progress - possibly requires a bit of abstraction for unconditionally update
-TODO - add vim-like command at status bar
-TODO - fix bug with reading and writing to the same file
-TODO - add journaling, crash recovery
-TODO - add undo,redo
-TODO - add search
-TODO - add goto line number
-TODO - change to journalling mode, there is no save, just the original file and change history and a separate command to combine into a new file
+# TODO
+
+- add saving progress
+- add vim-like command at status bar
+- fix bug with reading and writing to the same file
+- add journaling, crash recovery
+- add undo,redo
+- add search
+- add goto line number
+- change to journalling mode, there is no save, just the original file and change history and a separate command to combine into a new file
