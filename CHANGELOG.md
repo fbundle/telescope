@@ -16,3 +16,4 @@ TODO - add journaling, crash recovery
 TODO - add undo,redo
 TODO - add search
 TODO - add goto line number
+TODO - change to journalling mode, there is no save, just the original file and change history and a separate command to combine into a new file
