@@ -90,7 +90,10 @@ func NewEditor(ctx context.Context, height int, width int, filenameIn string, fi
 		e.reader = r
 		go func() {
 			<-ctx.Done()
-			r.Close()
+			e.lockUpdate(func() {
+				close(e.renderCh)
+				_ = r.Close()
+			})
 		}()
 		e.text = text2.New(e.reader)
 		// load file asynchronously
