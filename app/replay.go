@@ -3,19 +3,20 @@ package app
 import (
 	"context"
 	"fmt"
+	"os"
 	"telescope/editor"
 	"telescope/journal"
 )
 
-func RunRecoverFromJournal(inputFilename string, journalFilename string, outputFilename string) error {
+func RunReplay(inputFilename string, journalFilename string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	fmt.Printf("loading input file %s\n", inputFilename)
+	_, _ = fmt.Fprintf(os.Stderr, "loading input file %s\n", inputFilename)
 	loadCtx, loadCancel := context.WithCancel(ctx)
 	e, err := editor.NewEditor(
 		ctx,
 		20, 20,
-		inputFilename, journalFilename, outputFilename,
+		inputFilename, journalFilename, "",
 		loadCancel,
 	)
 	if err != nil {
@@ -27,7 +28,7 @@ func RunRecoverFromJournal(inputFilename string, journalFilename string, outputF
 		}
 	}()
 	<-loadCtx.Done()
-	fmt.Printf("loading journal file %s\n", journalFilename)
+	_, _ = fmt.Fprintf(os.Stderr, "loading journal file %s\n", journalFilename)
 
 	err = journal.Read(ctx, journalFilename, func(entry journal.Entry) {
 		switch entry.Command {
@@ -50,8 +51,9 @@ func RunRecoverFromJournal(inputFilename string, journalFilename string, outputF
 	if err != nil {
 		return err
 	}
-	fmt.Printf("saving file %s\n", outputFilename)
-	e.Save()
-	fmt.Println("done")
+	_, _ = fmt.Fprintf(os.Stderr, "replaying file")
+	for _, line := range e.Iter {
+		_, _ = fmt.Fprintf(os.Stdout, string(line)+"\n")
+	}
 	return nil
 }

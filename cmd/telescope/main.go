@@ -20,7 +20,7 @@ Usage: telescope [option] <input_file> <output_file>
 Option:
   -h --help	: show help
   -v --version	: get version
-  -r --recover	: replay journal file
+  -r --replay	: replay journal file
 	`
 	fmt.Println(help)
 }
@@ -55,7 +55,7 @@ func main() {
 
 	var inputFilename, outputFilename, journalFilename string
 
-	isRecover := head == "-r" || head == "--recover"
+	isRecover := head == "-r" || head == "--replay"
 	if isRecover {
 		args, inputFilename = consume(args)
 		args, outputFilename = consume(args)
@@ -67,7 +67,7 @@ func main() {
 	// recover
 	if isRecover {
 		journalFilename = journal.GetJournalFilename(inputFilename)
-		err := app.RunRecoverFromJournal(inputFilename, journalFilename, outputFilename)
+		err := app.RunReplay(inputFilename, journalFilename)
 		if err != nil {
 			panic(err)
 		}

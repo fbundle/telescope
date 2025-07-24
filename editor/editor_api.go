@@ -41,7 +41,12 @@ type Renderer interface {
 	Update() <-chan View
 }
 
+type Text interface {
+	Iter(func(i int, line []rune) bool)
+}
+
 type Editor interface {
 	Renderer
 	Controller
+	Text
 }
