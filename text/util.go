@@ -51,6 +51,9 @@ func indexFile(ctx context.Context, filename string, update func(offset int, lin
 		default:
 		}
 		line, err := reader.ReadBytes('\n')
+		if err != nil && err != io.EOF {
+			panic(err)
+		}
 		if len(line) > 0 {
 			if flag.Debug() {
 				time.Sleep(100 * time.Millisecond)
@@ -59,9 +62,6 @@ func indexFile(ctx context.Context, filename string, update func(offset int, lin
 		}
 		if err == io.EOF {
 			break
-		}
-		if err != nil && err != io.EOF {
-			panic(err)
 		}
 		offset += len(line)
 	}
