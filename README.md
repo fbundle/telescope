@@ -1,6 +1,6 @@
 # TELESCOPE
 
-extremely fast text editor
+an extremely fast text editor
 
 ![screenshot](./screenshots/0_1_0.png)
 
