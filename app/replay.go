@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 	"telescope/editor"
-	"telescope/journal"
+	"telescope/log"
 )
 
-func RunReplay(inputFilename string, journalFilename string) error {
+func RunReplay(inputFilename string, logFilename string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	_, _ = fmt.Fprintf(os.Stderr, "loading input file %s\n", inputFilename)
@@ -28,20 +28,20 @@ func RunReplay(inputFilename string, journalFilename string) error {
 		}
 	}()
 	<-loadCtx.Done()
-	_, _ = fmt.Fprintf(os.Stderr, "loading journal file %s\n", journalFilename)
+	_, _ = fmt.Fprintf(os.Stderr, "loading log file %s\n", logFilename)
 
-	err = journal.Read(journalFilename, func(entry journal.Entry) bool {
+	err = log.Read(logFilename, func(entry log.Entry) bool {
 		switch entry.Command {
-		case journal.CommandEnter:
+		case log.CommandEnter:
 			e.Jump(entry.CursorRow, entry.CursorCol)
 			e.Enter()
-		case journal.CommandBackspace:
+		case log.CommandBackspace:
 			e.Jump(entry.CursorRow, entry.CursorCol)
 			e.Backspace()
-		case journal.CommandDelete:
+		case log.CommandDelete:
 			e.Jump(entry.CursorRow, entry.CursorCol)
 			e.Delete()
-		case journal.CommandType:
+		case log.CommandType:
 			e.Jump(entry.CursorRow, entry.CursorCol)
 			e.Type(entry.Rune)
 		default:

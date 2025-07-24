@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"sync"
 	"telescope/feature"
-	"telescope/journal"
+	"telescope/log"
 	"telescope/text"
 	"time"
 
@@ -33,7 +33,7 @@ type window struct {
 
 type editor struct {
 	inputFilename string
-	journalWriter journal.Writer
+	logWriter     log.Writer
 	renderCh      chan View
 	reader        *mmap.ReaderAt
 
@@ -50,13 +50,13 @@ func NewEditor(
 	height int,
 	width int,
 	inputFilename string,
-	journalFilename string,
+	logFilename string,
 	loadDone func(),
 ) (Editor, error) {
 
 	e := &editor{
 		inputFilename: inputFilename,
-		journalWriter: nil,
+		logWriter:     nil,
 		renderCh:      make(chan View),
 		reader:        nil,
 		loaded:        false,
@@ -91,15 +91,15 @@ func NewEditor(
 		})
 	}()
 
-	// journal
+	// log
 	var err error
-	if len(journalFilename) > 0 {
-		e.journalWriter, err = journal.NewWriter(ctx, journalFilename)
+	if len(logFilename) > 0 {
+		e.logWriter, err = log.NewWriter(ctx, logFilename)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		e.journalWriter, err = journal.NewDummyWriter()
+		e.logWriter, err = log.NewDummyWriter()
 	}
 
 	// text

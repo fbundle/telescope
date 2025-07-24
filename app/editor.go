@@ -86,7 +86,7 @@ func handleKey(e editor.Editor) func(ev *tcell.EventKey) {
 	}
 }
 
-func RunEditor(inputFilename string, journalFilename string) error {
+func RunEditor(inputFilename string, logFilename string) error {
 	s, err := tcell.NewScreen()
 	if err != nil {
 		return err
@@ -103,7 +103,7 @@ func RunEditor(inputFilename string, journalFilename string) error {
 	e, err := editor.NewEditor(
 		ctx,
 		height-1, width,
-		inputFilename, journalFilename,
+		inputFilename, logFilename,
 		nil,
 	)
 	if err != nil {

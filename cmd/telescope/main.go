@@ -37,7 +37,7 @@ func consume(args []string) ([]string, string) {
 
 func main() {
 	var replay bool
-	var inputFilename, journalFilename string
+	var inputFilename, logFilename string
 
 	args := os.Args[1:]
 	if len(args) == 0 {
@@ -58,32 +58,32 @@ func main() {
 	if head == "-r" || head == "--replay" {
 		replay = true
 		args, inputFilename = consume(args)
-		args, journalFilename = consume(args)
+		args, logFilename = consume(args)
 	} else {
 		inputFilename = head
-		args, journalFilename = consume(args)
+		args, logFilename = consume(args)
 	}
-	if len(journalFilename) == 0 {
-		journalFilename = getDefaultJournalFilename(inputFilename)
+	if len(logFilename) == 0 {
+		logFilename = getDefaultLogFilename(inputFilename)
 	}
 
 	if replay {
-		err := app.RunReplay(inputFilename, journalFilename)
+		err := app.RunReplay(inputFilename, logFilename)
 		if err != nil {
 			panic(err)
 		}
 	} else {
-		if fileExists(journalFilename) && fileSize(journalFilename) > 0 {
-			ok := promptYesNo(fmt.Sprintf("journal file exists (%s), delete it?", journalFilename), false)
+		if fileExists(logFilename) && fileSize(logFilename) > 0 {
+			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", logFilename), false)
 			if !ok {
 				return
 			}
-			err := os.Remove(journalFilename)
+			err := os.Remove(logFilename)
 			if err != nil {
 				panic(err)
 			}
 		}
-		err := app.RunEditor(inputFilename, journalFilename)
+		err := app.RunEditor(inputFilename, logFilename)
 		if err != nil {
 			panic(err)
 		}
@@ -130,9 +130,9 @@ func promptYesNo(prompt string, defaultOption bool) bool {
 		}
 	}
 }
-func getDefaultJournalFilename(filenameTextIn string) string {
+func getDefaultLogFilename(filenameTextIn string) string {
 	dir := filepath.Dir(filenameTextIn)
-	name := "." + filepath.Base(filenameTextIn) + ".journal"
-	journalPath := filepath.Join(dir, name)
-	return journalPath
+	name := "." + filepath.Base(filenameTextIn) + ".log"
+	logPath := filepath.Join(dir, name)
+	return logPath
 }
