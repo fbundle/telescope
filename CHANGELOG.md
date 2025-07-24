@@ -11,7 +11,7 @@
 - change frontend to tcell - much better
 - improved structure, improve frontend
 - added journal file (file is saved every 10 seconds or when buffer is full), use `DISABLE_JOURNAL=1` to disable
-- add journal file replay, remove save function completely. if user wants to save a file, they has to use `telescope -r <input_file>`, the content will be written to stdout
+- add journal file replay, remove save function completely. if user wants to save a file, they has to use `telescope -r <input_file>`, the content will be written to stdout. `DISABLE_JOURNAL=1` no longer works
 
 # TODO
 
