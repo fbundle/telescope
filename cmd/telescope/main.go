@@ -93,17 +93,45 @@ func handleKey(ev *tcell.EventKey) {
 	}
 }
 
+func printHelp() {
+	help := `
+Usage: telescope [option] <input_file> <output_file>
+Option:
+  -h --help	: show help
+  -v --version	: get version
+  -r --recover	: recover from journal files
+	`
+	fmt.Println(help)
+}
+
+func printVersion() {
+	fmt.Printf("telescope version %s\n", VERSION)
+}
+
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: telescope <input file> <output file>")
-		os.Exit(1)
+		printHelp()
+		return
 	}
+
+	if os.Args[1] == "-h" || os.Args[1] == "--help" {
+		printHelp()
+		return
+	}
+	if os.Args[1] == "-v" || os.Args[1] == "--version" {
+		printVersion()
+		return
+	}
+	if os.Args[1] == "-r" || os.Args[1] == "--recover" {
+		filenameTextIn, filenameTextOut = os.Args[2], os.Args[3]
+		// recover from journal
+
+		return
+	}
+
+	// text editor
 	if len(os.Args) < 3 {
 		filenameTextIn, filenameTextOut = os.Args[1], ""
-		if filenameTextIn == "--version" {
-			fmt.Printf("telescope version %s\n", VERSION)
-			os.Exit(0)
-		}
 	} else {
 		filenameTextIn, filenameTextOut = os.Args[1], os.Args[2]
 	}
