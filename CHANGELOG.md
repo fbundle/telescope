@@ -16,6 +16,7 @@
 
 # TODO
 
+- check carefully on the exit condition so that journal/log is written eventually
 - add vim-like command at status bar
 - fix bug with reading and writing to the same file
 - add undo,redo
