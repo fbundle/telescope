@@ -1,5 +1,7 @@
 package journal
 
+import "context"
+
 type Command string
 
 const (
@@ -14,4 +16,12 @@ type Entry struct {
 	Rune      rune    `json:"rune"`
 	CursorRow int     `json:"cursor_row"`
 	CursorCol int     `json:"cursor_col"`
+}
+
+type Writer interface {
+	Write(e Entry) Writer
+}
+
+var NewJournalWriter = func(ctx context.Context, filename string) (Writer, error) {
+	return NewWriter[Entry](ctx, filename)
 }

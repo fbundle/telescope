@@ -8,7 +8,7 @@ import (
 	"slices"
 	"sync"
 	"telescope/flag"
-	text2 "telescope/text"
+	"telescope/text"
 	"time"
 
 	"golang.org/x/exp/mmap"
@@ -41,13 +41,19 @@ type editor struct {
 
 	mu         sync.Mutex // the fields below are protected by mu
 	loaded     bool
-	text       text2.Text
+	text       text.Text
 	textCursor Cursor
 	window     window
 	view       internalView
 }
 
-func NewEditor(ctx context.Context, height int, width int, filenameIn string, filenameOut string) (Editor, error) {
+func NewEditor(
+	ctx context.Context,
+	height int,
+	width int,
+	filenameIn string,
+	filenameOut string,
+) (Editor, error) {
 	e := &editor{
 		ctx:         ctx,
 		filenameIn:  filenameIn,
@@ -79,7 +85,7 @@ func NewEditor(ctx context.Context, height int, width int, filenameIn string, fi
 	// text
 	if !fileExists(e.filenameIn) {
 		e.reader = nil
-		e.text = text2.New(nil)
+		e.text = text.New(nil)
 		e.view.message = fmt.Sprintf("file does not exists %s", filepath.Base(e.filenameIn))
 		e.loaded = true
 	} else {
@@ -95,14 +101,14 @@ func NewEditor(ctx context.Context, height int, width int, filenameIn string, fi
 				_ = r.Close()
 			})
 		}()
-		e.text = text2.New(e.reader)
+		e.text = text.New(e.reader)
 		// load file asynchronously
 		totalSize := fileSize(e.filenameIn)
 		loadedSize := 0
 		lastPercentage := 0
 		t0 := time.Now()
 		t1 := t0
-		go text2.LoadFile(e.ctx, e.filenameIn, func(l text2.Line) {
+		go text.LoadFile(e.ctx, e.filenameIn, func(l text.Line) {
 			loadedSize += l.Size()
 			e.lockUpdate(func() {
 				t2 := time.Now()
@@ -144,7 +150,7 @@ func (e *editor) lockUpdateRender(f func()) {
 }
 
 func (e *editor) renderWithoutLock() {
-	getRowForView := func(t text2.Text, row int) []rune {
+	getRowForView := func(t text.Text, row int) []rune {
 		if row < t.Len() {
 			return t.Get(row)
 		} else {
@@ -234,7 +240,7 @@ func (e *editor) Save() {
 		return
 	}
 	// saving is a synchronous task - can be made async but not needed
-	var m text2.Text
+	var m text.Text
 	e.lockUpdateRender(func() {
 		if !e.loaded {
 			e.setStatusWithoutLock("cannot save, still loading")
@@ -312,7 +318,7 @@ func (e *editor) MovePageDown() {
 
 func (e *editor) Type(ch rune) {
 	e.lockUpdateRender(func() {
-		e.text = func(m text2.Text) text2.Text {
+		e.text = func(m text.Text) text.Text {
 			row, col := e.textCursor.Row, e.textCursor.Col
 			// NOTE - handle empty file
 			if m.Len() == 0 {
@@ -338,7 +344,7 @@ func (e *editor) Type(ch rune) {
 
 func (e *editor) Backspace() {
 	e.lockUpdateRender(func() {
-		e.text = func(m text2.Text) text2.Text {
+		e.text = func(m text.Text) text.Text {
 			row, col := e.textCursor.Row, e.textCursor.Col
 			// NOTE - handle empty file
 			if m.Len() == 0 {
@@ -370,7 +376,7 @@ func (e *editor) Backspace() {
 
 func (e *editor) Delete() {
 	e.lockUpdateRender(func() {
-		e.text = func(m text2.Text) text2.Text {
+		e.text = func(m text.Text) text.Text {
 			row, col := e.textCursor.Row, e.textCursor.Col
 			// NOTE - handle empty file
 			if m.Len() == 0 {
@@ -399,7 +405,7 @@ func (e *editor) Delete() {
 
 func (e *editor) Enter() {
 	e.lockUpdateRender(func() {
-		e.text = func(m text2.Text) text2.Text {
+		e.text = func(m text.Text) text.Text {
 			// NOTE - handle empty file
 			if m.Len() == 0 {
 				m = m.Ins(0, nil)

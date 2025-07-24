@@ -48,11 +48,7 @@ func Read[T any](ctx context.Context, filename string, apply func(e T), done fun
 	}
 }
 
-type Writer[T any] interface {
-	Write(e T) Writer[T]
-}
-
-func NewWriter[T any](ctx context.Context, filename string) (Writer[T], error) {
+func NewWriter[T any](ctx context.Context, filename string) (*writer[T], error) {
 	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		return nil, err
@@ -104,7 +100,7 @@ func (w *writer[T]) flush() {
 	}
 }
 
-func (w *writer[T]) Write(e T) Writer[T] {
+func (w *writer[T]) Write(e T) Writer {
 	for {
 		select {
 		case w.entryCh <- e:
