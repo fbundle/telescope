@@ -16,13 +16,18 @@ const VERSION = "0.1.2"
 var filenameIn, filenameOut string
 var backendEditor editor.Editor
 
+var statusStyle = tcell.StyleDefault.
+	Background(tcell.ColorLightGray).
+	Foreground(tcell.ColorBlack)
+var windowStyle = tcell.StyleDefault
+
 func draw(s tcell.Screen, view editor.View) {
 	s.Clear()
 	screenWidth, screenHeight := s.Size()
 	// Draw editor content from (0, 0)
 	for row, line := range view.WinData {
 		for col, ch := range line {
-			s.SetContent(col, row, ch, nil, tcell.StyleDefault)
+			s.SetContent(col, row, ch, nil, windowStyle)
 		}
 	}
 	// Draw cursor from (0, 0)
@@ -44,9 +49,6 @@ func draw(s tcell.Screen, view editor.View) {
 		copy(status[len(status)-len(background):], background)
 	}
 
-	statusStyle := tcell.StyleDefault.
-		Background(tcell.ColorLightGray).
-		Foreground(tcell.ColorBlack)
 	for col, ch := range status {
 		s.SetContent(col, screenHeight-1, ch, nil, statusStyle)
 	}
