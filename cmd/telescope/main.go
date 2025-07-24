@@ -1,18 +1,15 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"github.com/gdamore/tcell/v2"
 	"log"
 	"os"
-	"strings"
 	"telescope/editor"
-	"telescope/journal"
 )
 
-const VERSION = "0.1.2"
+const VERSION = "0.1.3"
 
 var filenameTextIn, filenameTextOut string
 var backendEditor editor.Editor
@@ -98,17 +95,16 @@ func handleKey(ev *tcell.EventKey) {
 
 func printHelp() {
 	help := `
-Usage: telescope [option] <input_file> <output_file>
+Usage: telescope_extra [option] <input_file> <output_file>
 Option:
   -h --help	: show help
   -v --version	: get version
-  -r --recover	: recover from journal files
 	`
 	fmt.Println(help)
 }
 
 func printVersion() {
-	fmt.Printf("telescope version %s\n", VERSION)
+	fmt.Printf("telescope_extra version %s\n", VERSION)
 }
 
 func main() {
@@ -125,26 +121,12 @@ func main() {
 		printVersion()
 		return
 	}
-	if os.Args[1] == "-r" || os.Args[1] == "--recover" {
-		filenameTextIn, filenameTextOut = os.Args[2], os.Args[3]
-		// recover from journal
-
-		return
-	}
 
 	// text editor
 	if len(os.Args) < 3 {
 		filenameTextIn, filenameTextOut = os.Args[1], ""
 	} else {
 		filenameTextIn, filenameTextOut = os.Args[1], os.Args[2]
-	}
-
-	journalFile := journal.GetJournalFilename(filenameTextIn)
-	if fileExists(journalFile) {
-		ok := promptYesNo(fmt.Sprintf("journal file (%s) already exists. Do you want to delete?", journalFile), false)
-		if !ok {
-			return
-		}
 	}
 
 	s, err := tcell.NewScreen()
@@ -160,7 +142,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	width, height := s.Size()
-	backendEditor, err = editor.NewEditor(ctx, height-1, width, filenameTextIn, filenameTextOut)
+	backendEditor, err = editor.NewEditor(ctx, height-1, width, filenameTextIn, filenameTextOut, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -191,37 +173,6 @@ func main() {
 			backendEditor.Resize(height-1, width)
 		default:
 			// nothing
-		}
-	}
-}
-func fileExists(filename string) bool {
-	_, err := os.Stat(filename)
-	return err == nil || !os.IsNotExist(err)
-}
-
-func promptYesNo(prompt string, defaultOption bool) bool {
-	reader := bufio.NewReader(os.Stdin)
-	for {
-		if defaultOption {
-			fmt.Print(prompt + " [Y/n]: ")
-		} else {
-			fmt.Print(prompt + " [y/N]: ")
-		}
-		input, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Println("Error reading input:", err)
-			continue
-		}
-		input = strings.ToLower(strings.TrimSpace(input))
-		if len(input) == 0 {
-			return defaultOption
-		}
-		if input == "y" || input == "yes" {
-			return true
-		} else if input == "n" || input == "no" {
-			return false
-		} else {
-			fmt.Println("Please enter y or n.")
 		}
 	}
 }

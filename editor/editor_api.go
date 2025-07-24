@@ -34,6 +34,7 @@ type Controller interface {
 	MoveEnd()
 	MovePageUp()
 	MovePageDown()
+	Move(col int, row int)
 }
 
 type Renderer interface {

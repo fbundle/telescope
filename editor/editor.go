@@ -55,6 +55,7 @@ func NewEditor(
 	width int,
 	filenameTextIn string,
 	filenameTextOut string,
+	loadDone func(),
 ) (Editor, error) {
 	// make journal
 	journerWriter, err := journal.NewWriter(ctx, journal.GetJournalFilename(filenameTextIn))
@@ -81,7 +82,7 @@ func NewEditor(
 			width:  width,
 		},
 		view: internalView{
-			winName:    "telescope",
+			winName:    "telescope_extra",
 			message:    "",
 			background: "",
 		},
@@ -107,6 +108,9 @@ func NewEditor(
 		e.text = text.New(nil)
 		e.view.message = fmt.Sprintf("file does not exists %s", filepath.Base(e.filenameTextIn))
 		e.loaded = true
+		if loadDone != nil {
+			loadDone()
+		}
 		// we skip journal file as well
 	} else {
 		r, err := mmap.Open(filenameTextIn)
@@ -130,7 +134,10 @@ func NewEditor(
 					percentage := int(100 * float64(loadedSize) / float64(totalSize))
 					if percentage > lastPercentage || t2.Sub(t1) >= time.Second {
 						lastPercentage = percentage
-						e.view.background = fmt.Sprintf("loading %s %d/%d (%d%%)", filepath.Base(e.filenameTextIn), loadedSize, totalSize, lastPercentage)
+						e.view.background = fmt.Sprintf(
+							"loading %s %d/%d (%d%%)",
+							filepath.Base(e.filenameTextIn), loadedSize, totalSize, lastPercentage,
+						)
 						t1 = t2
 						e.renderWithoutLock()
 					}
@@ -139,9 +146,15 @@ func NewEditor(
 			e.lockUpdateRender(func() {
 				totalTime := time.Now().Sub(t0)
 				e.view.background = ""
-				e.view.message = fmt.Sprintf("loaded %s in %d seconds", filepath.Base(e.filenameTextIn), int(totalTime.Seconds()))
+				e.view.message = fmt.Sprintf(
+					"loaded %s in %d seconds",
+					filepath.Base(e.filenameTextIn), int(totalTime.Seconds()),
+				)
 				e.loaded = true
 			})
+			if loadDone != nil {
+				loadDone()
+			}
 		}()
 	}
 
@@ -200,8 +213,8 @@ func (e *editor) Update() <-chan View {
 	return e.renderCh
 }
 
-// moveAndFixWithoutLock - textCursor is either in the text or at the end of a line
-func (e *editor) moveAndFixWithoutLock(moveRow int, moveCol int) {
+// moveRelativeAndFixWithoutLock - textCursor is either in the text or at the end of a line
+func (e *editor) moveRelativeAndFixWithoutLock(moveRow int, moveCol int) {
 	m := e.text
 
 	e.textCursor.Row += moveRow
@@ -243,7 +256,7 @@ func (e *editor) Resize(height int, width int) {
 			return
 		}
 		e.window.height, e.window.width = height, width
-		e.moveAndFixWithoutLock(0, 0)
+		e.moveRelativeAndFixWithoutLock(0, 0)
 		e.setStatusWithoutLock("resize to %dx%d", height, width)
 	})
 }
@@ -282,51 +295,60 @@ func (e *editor) Save() {
 
 func (e *editor) MoveLeft() {
 	e.lockUpdateRender(func() {
-		e.moveAndFixWithoutLock(0, -1)
+		e.moveRelativeAndFixWithoutLock(0, -1)
 		e.setStatusWithoutLock("move left")
 	})
 }
 func (e *editor) MoveRight() {
 	e.lockUpdateRender(func() {
-		e.moveAndFixWithoutLock(0, 1)
+		e.moveRelativeAndFixWithoutLock(0, 1)
 		e.setStatusWithoutLock("move right")
 	})
 }
 func (e *editor) MoveUp() {
 	e.lockUpdateRender(func() {
-		e.moveAndFixWithoutLock(-1, 0)
+		e.moveRelativeAndFixWithoutLock(-1, 0)
 		e.setStatusWithoutLock("move up")
 	})
 }
 func (e *editor) MoveDown() {
 	e.lockUpdateRender(func() {
-		e.moveAndFixWithoutLock(1, 0)
+		e.moveRelativeAndFixWithoutLock(1, 0)
 		e.setStatusWithoutLock("move down")
 	})
 }
 func (e *editor) MoveHome() {
 	e.lockUpdateRender(func() {
-		e.moveAndFixWithoutLock(0, -e.textCursor.Col)
+		e.moveRelativeAndFixWithoutLock(0, -e.textCursor.Col)
 		e.setStatusWithoutLock("move home")
 	})
 }
 func (e *editor) MoveEnd() {
 	e.lockUpdateRender(func() {
 		m := e.text
-		e.moveAndFixWithoutLock(0, len(m.Get(e.textCursor.Row))-e.textCursor.Col)
+		e.moveRelativeAndFixWithoutLock(0, len(m.Get(e.textCursor.Row))-e.textCursor.Col)
 		e.setStatusWithoutLock("move end")
 	})
 }
 func (e *editor) MovePageUp() {
 	e.lockUpdateRender(func() {
-		e.moveAndFixWithoutLock(-e.window.height, 0)
+		e.moveRelativeAndFixWithoutLock(-e.window.height, 0)
 		e.setStatusWithoutLock("move page up")
 	})
 }
 func (e *editor) MovePageDown() {
 	e.lockUpdateRender(func() {
-		e.moveAndFixWithoutLock(e.window.height, 0)
+		e.moveRelativeAndFixWithoutLock(e.window.height, 0)
 		e.setStatusWithoutLock("move page down")
+	})
+}
+
+func (e *editor) Move(col int, row int) {
+	e.lockUpdateRender(func() {
+		// move to absolute position
+		moveCol := col - e.textCursor.Col
+		moveRow := row - e.textCursor.Row
+		e.moveRelativeAndFixWithoutLock(moveCol, moveRow)
 	})
 }
 
@@ -358,7 +380,7 @@ func (e *editor) Type(ch rune) {
 			m = m.Set(row, newRow)
 			return m
 		}(e.text)
-		e.moveAndFixWithoutLock(0, 1) // move right
+		e.moveRelativeAndFixWithoutLock(0, 1) // move right
 		e.setStatusWithoutLock("type '%c'", ch)
 	})
 }
@@ -386,12 +408,12 @@ func (e *editor) Backspace() {
 				r2 := m.Get(row)
 
 				m = m.Set(row-1, concatSlices(r1, r2)).Del(row)
-				e.moveAndFixWithoutLock(-1, len(r1))
+				e.moveRelativeAndFixWithoutLock(-1, len(r1))
 			case col != 0:
 				newRow := slices.Clone(m.Get(row))
 				newRow = deleteFromSlice(newRow, col-1)
 				m = m.Set(row, newRow)
-				e.moveAndFixWithoutLock(0, -1)
+				e.moveRelativeAndFixWithoutLock(0, -1)
 			default:
 				panic("unreachable")
 			}
@@ -465,8 +487,8 @@ func (e *editor) Enter() {
 				panic("unreachable")
 			}
 		}(e.text)
-		e.moveAndFixWithoutLock(1, 0)                 // move down
-		e.moveAndFixWithoutLock(0, -e.textCursor.Col) // move home
+		e.moveRelativeAndFixWithoutLock(1, 0)                 // move down
+		e.moveRelativeAndFixWithoutLock(0, -e.textCursor.Col) // move home
 		e.setStatusWithoutLock("enter")
 	})
 }

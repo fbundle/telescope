@@ -12,8 +12,7 @@ import (
 	"time"
 )
 
-func Read(ctx context.Context, filename string, apply func(e Entry), done func()) error {
-	defer done()
+func Read(ctx context.Context, filename string, apply func(e Entry)) error {
 	f, err := os.Open(filename)
 	if err != nil {
 		return err
