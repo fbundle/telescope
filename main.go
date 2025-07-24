@@ -3,12 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/gdamore/tcell/v2"
 	"log"
 	"os"
-
 	"telescope/editor"
-
-	"github.com/gdamore/tcell/v2"
 )
 
 const VERSION = "0.1.2"
