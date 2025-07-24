@@ -71,7 +71,7 @@ func NewEditor(
 			width:  width,
 		},
 		view: internalView{
-			winName:    "telescope_extra",
+			winName:    "telescope",
 			message:    "",
 			background: "",
 		},
@@ -111,7 +111,6 @@ func NewEditor(
 		if loadDone != nil {
 			loadDone()
 		}
-		// we skip journal file as well
 	} else {
 		r, err := mmap.Open(inputFilename)
 		if err != nil {

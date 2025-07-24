@@ -52,7 +52,7 @@ func RunReplay(inputFilename string, journalFilename string) error {
 	if err != nil {
 		return err
 	}
-	_, _ = fmt.Fprintf(os.Stderr, "replaying file")
+	_, _ = fmt.Fprintf(os.Stderr, "replaying file\n")
 	for _, line := range e.Iter {
 		_, _ = fmt.Fprintf(os.Stdout, string(line)+"\n")
 	}

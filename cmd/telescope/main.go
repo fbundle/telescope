@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"telescope/app"
-	"telescope/journal"
 )
 
 const VERSION = "0.1.4"
@@ -36,6 +36,9 @@ func consume(args []string) ([]string, string) {
 }
 
 func main() {
+	var replay bool
+	var inputFilename, journalFilename string
+
 	args := os.Args[1:]
 	if len(args) == 0 {
 		printHelp()
@@ -52,29 +55,24 @@ func main() {
 		return
 	}
 
-	var inputFilename, journalFilename string
-
-	isRecover := head == "-r" || head == "--replay"
-	if isRecover {
+	if head == "-r" || head == "--replay" {
+		replay = true
 		args, inputFilename = consume(args)
+		args, journalFilename = consume(args)
 	} else {
 		inputFilename = head
+		args, journalFilename = consume(args)
+	}
+	if len(journalFilename) == 0 {
+		journalFilename = getDefaultJournalFilename(inputFilename)
 	}
 
-	// recover
-	if isRecover {
-		journalFilename = journal.GetJournalFilename(inputFilename)
+	if replay {
 		err := app.RunReplay(inputFilename, journalFilename)
 		if err != nil {
 			panic(err)
 		}
-		return
-	}
-
-	// text editor
-	journalFilename = journal.GetJournalFilename(inputFilename)
-
-	if len(journalFilename) > 0 {
+	} else {
 		if fileExists(journalFilename) && fileSize(journalFilename) > 0 {
 			ok := promptYesNo(fmt.Sprintf("journal file exists (%s), delete it?", journalFilename), false)
 			if !ok {
@@ -85,16 +83,11 @@ func main() {
 				panic(err)
 			}
 		}
+		err := app.RunEditor(inputFilename, journalFilename)
+		if err != nil {
+			panic(err)
+		}
 	}
-
-	err := app.RunEditor(inputFilename, journalFilename)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func recoverFromJournal() {
-
 }
 
 func fileExists(filename string) bool {
@@ -136,4 +129,10 @@ func promptYesNo(prompt string, defaultOption bool) bool {
 			fmt.Println("Please enter y or n.")
 		}
 	}
+}
+func getDefaultJournalFilename(filenameTextIn string) string {
+	dir := filepath.Dir(filenameTextIn)
+	name := "." + filepath.Base(filenameTextIn) + ".journal"
+	journalPath := filepath.Join(dir, name)
+	return journalPath
 }
