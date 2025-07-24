@@ -19,7 +19,8 @@ var backendEditor editor.Editor
 var statusStyle = tcell.StyleDefault.
 	Background(tcell.ColorLightGray).
 	Foreground(tcell.ColorBlack)
-var windowStyle = tcell.StyleDefault
+
+var textStyle = tcell.StyleDefault
 
 func draw(s tcell.Screen, view editor.View) {
 	s.Clear()
@@ -27,7 +28,7 @@ func draw(s tcell.Screen, view editor.View) {
 	// Draw editor content from (0, 0)
 	for row, line := range view.WinData {
 		for col, ch := range line {
-			s.SetContent(col, row, ch, nil, windowStyle)
+			s.SetContent(col, row, ch, nil, textStyle)
 		}
 	}
 	// Draw cursor from (0, 0)
