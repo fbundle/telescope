@@ -58,7 +58,7 @@ func NewEditor(
 	loadDone func(),
 ) (Editor, error) {
 	// make journal
-	journerWriter, err := journal.NewWriter(ctx, journal.GetJournalFilename(filenameTextIn))
+	journalWriter, err := journal.NewWriter(ctx, journal.GetJournalFilename(filenameTextIn))
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func NewEditor(
 		ctx:             ctx,
 		filenameTextIn:  filenameTextIn,
 		filenameTextOut: filenameTextOut,
-		journalWriter:   journerWriter,
+		journalWriter:   journalWriter,
 		renderCh:        make(chan View),
 		reader:          nil,
 		loaded:          false,
