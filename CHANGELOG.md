@@ -6,11 +6,11 @@
 - improved performance with mmap
 - added option for read only
 - added loading status - basically execute draw every second
-- [experimental] added parallel indexing - use environment variable to enable `PARALLEL_INDEXING=1`
+- [experimental] added parallel indexing, use `PARALLEL_INDEXING=1` to enable
 - fixed for too short characters - render give the whole row not according to window width anymore
 - change frontend to tcell - much better
 - improved structure, improve frontend
-- added journal file (file is saved every 10 seconds or when buffer is full)
+- added journal file (file is saved every 10 seconds or when buffer is full), use `DISABLE_JOURNAL=1` to disable
 
 # TODO
 
