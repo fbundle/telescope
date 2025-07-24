@@ -114,24 +114,7 @@ func (e *editor) lock(f func()) {
 	f()
 }
 
-func getCharFromModel(m Model, row int, col int) rune {
-	if row < 0 || col < 0 {
-		panic("out of bound")
-	}
-	if row >= m.Len() {
-		if col == 0 {
-			return '~'
-		} else {
-			return ' '
-		}
-	}
-	if col >= len(m.Get(row)) {
-		return ' '
-	}
-	return m.Get(row)[col]
-}
-
-func getRowFromModel(m Model, row int) []rune {
+func getRowForView(m Model, row int) []rune {
 	if row < m.Len() {
 		return m.Get(row)
 	} else {
@@ -159,7 +142,7 @@ func (e *editor) Render() View {
 	// data
 	view.Data = make([][]rune, win.height)
 	for row := 0; row < win.height; row++ {
-		view.Data[row] = getRowFromModel(m, row+win.tlRow)
+		view.Data[row] = getRowForView(m, row+win.tlRow)
 	}
 	// cursor
 	view.Cursor = Cursor{
