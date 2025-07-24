@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"slices"
 	"sync"
-	"telescope/editor/text"
 	"telescope/flag"
+	text2 "telescope/text"
 	"time"
 
 	"golang.org/x/exp/mmap"
@@ -41,7 +41,7 @@ type editor struct {
 
 	mu         sync.Mutex // the fields below are protected by mu
 	loaded     bool
-	text       text.Text
+	text       text2.Text
 	textCursor Cursor
 	window     window
 	view       internalView
@@ -79,7 +79,7 @@ func NewEditor(ctx context.Context, height int, width int, filenameIn string, fi
 	// text
 	if !fileExists(e.filenameIn) {
 		e.reader = nil
-		e.text = text.New(nil)
+		e.text = text2.New(nil)
 		e.view.message = fmt.Sprintf("file does not exists %s", filepath.Base(e.filenameIn))
 		e.loaded = true
 	} else {
@@ -92,14 +92,14 @@ func NewEditor(ctx context.Context, height int, width int, filenameIn string, fi
 			<-ctx.Done()
 			r.Close()
 		}()
-		e.text = text.New(e.reader)
+		e.text = text2.New(e.reader)
 		// load file asynchronously
 		totalSize := fileSize(e.filenameIn)
 		loadedSize := 0
 		lastPercentage := 0
 		t0 := time.Now()
 		t1 := t0
-		go text.LoadFile(e.ctx, e.filenameIn, func(l text.Line) {
+		go text2.LoadFile(e.ctx, e.filenameIn, func(l text2.Line) {
 			loadedSize += l.Size()
 			e.lockUpdate(func() {
 				t2 := time.Now()
@@ -141,7 +141,7 @@ func (e *editor) lockUpdateRender(f func()) {
 }
 
 func (e *editor) renderWithoutLock() {
-	getRowForView := func(t text.Text, row int) []rune {
+	getRowForView := func(t text2.Text, row int) []rune {
 		if row < t.Len() {
 			return t.Get(row)
 		} else {
@@ -231,7 +231,7 @@ func (e *editor) Save() {
 		return
 	}
 	// saving is a synchronous task - can be made async but not needed
-	var m text.Text
+	var m text2.Text
 	e.lockUpdateRender(func() {
 		if !e.loaded {
 			e.setStatusWithoutLock("cannot save, still loading")
@@ -309,7 +309,7 @@ func (e *editor) MovePageDown() {
 
 func (e *editor) Type(ch rune) {
 	e.lockUpdateRender(func() {
-		e.text = func(m text.Text) text.Text {
+		e.text = func(m text2.Text) text2.Text {
 			row, col := e.textCursor.Row, e.textCursor.Col
 			// NOTE - handle empty file
 			if m.Len() == 0 {
@@ -335,7 +335,7 @@ func (e *editor) Type(ch rune) {
 
 func (e *editor) Backspace() {
 	e.lockUpdateRender(func() {
-		e.text = func(m text.Text) text.Text {
+		e.text = func(m text2.Text) text2.Text {
 			row, col := e.textCursor.Row, e.textCursor.Col
 			// NOTE - handle empty file
 			if m.Len() == 0 {
@@ -367,7 +367,7 @@ func (e *editor) Backspace() {
 
 func (e *editor) Delete() {
 	e.lockUpdateRender(func() {
-		e.text = func(m text.Text) text.Text {
+		e.text = func(m text2.Text) text2.Text {
 			row, col := e.textCursor.Row, e.textCursor.Col
 			// NOTE - handle empty file
 			if m.Len() == 0 {
@@ -396,7 +396,7 @@ func (e *editor) Delete() {
 
 func (e *editor) Enter() {
 	e.lockUpdateRender(func() {
-		e.text = func(m text.Text) text.Text {
+		e.text = func(m text2.Text) text2.Text {
 			// NOTE - handle empty file
 			if m.Len() == 0 {
 				m = m.Ins(0, nil)
