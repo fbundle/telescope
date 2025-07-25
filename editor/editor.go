@@ -22,11 +22,6 @@ type internalView struct {
 	background string
 }
 
-// TODO - add INSERT mode and VISUAL mode
-// press i VISUAL -> INSERT
-// press ESC INSERT -> VISUAL
-// add a command buffer, press ESC reset command buffer
-
 type editor struct {
 	renderCh  chan View // buffered channel is important here for preventing deadlock
 	logWriter log.Writer

@@ -144,9 +144,9 @@ func handleEditorKey(e editor.Editor, ev *tcell.EventKey) {
 		e.Delete()
 
 	case tcell.KeyEsc:
-		e.Escape()
+		// e.Escape() // TODO - uncomment for CommandEditor
 	case tcell.KeyTab:
-		e.Tabular()
+		// e.Tabular() // TODO - uncomment for CommandEditor
 
 	case tcell.KeyRight:
 		e.MoveRight()

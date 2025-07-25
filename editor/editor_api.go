@@ -29,9 +29,6 @@ type Controller interface {
 	Backspace()
 	Delete()
 
-	Escape()
-	Tabular()
-
 	Jump(row int, col int)
 	MoveLeft()
 	MoveRight()
