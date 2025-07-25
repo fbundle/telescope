@@ -38,16 +38,17 @@ func NewWriter(ctx context.Context, filename string) (Writer, error) {
 		}
 	}()
 
-	// write set version and change to default serializer
+	// write set_version using INITIAL_SERIALIZER_VERSION
+	// tell reader to use SERIALIZER_VERSION
 	_, err = w.Write(Entry{
 		Command: CommandSetVersion,
-		Version: feature.DEFAULT_SERIALIZER_VERSION,
+		Version: feature.SERIALIZER_VERSION,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	s1, err := getSerializer(feature.DEFAULT_SERIALIZER_VERSION)
+	s1, err := getSerializer(feature.SERIALIZER_VERSION)
 	if err != nil {
 		return nil, err
 	}
