@@ -29,3 +29,14 @@ func (serializerV0) Unmarshal(b []byte) (e Entry, err error) {
 	err = json.Unmarshal(b, &e)
 	return e, err
 }
+
+type serializerV1 struct{}
+
+func (serializerV1) Marshal(e Entry) ([]byte, error) {
+	return json.Marshal(e)
+}
+
+func (serializerV1) Unmarshal(b []byte) (e Entry, err error) {
+	err = json.Unmarshal(b, &e)
+	return e, err
+}

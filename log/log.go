@@ -3,11 +3,11 @@ package log
 type Command string
 
 const (
+	CommandSetVersion Command = "set_version" // set version of serializer
 	CommandType       Command = "type"
 	CommandEnter      Command = "enter"
 	CommandBackspace  Command = "backspace"
 	CommandDelete     Command = "delete"
-	CommandSetVersion Command = "set_version" // set version of serializer
 )
 
 type Entry struct {
