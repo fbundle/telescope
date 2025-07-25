@@ -19,7 +19,7 @@ func NewWriter(ctx context.Context, filename string) (Writer, error) {
 	}
 	// use initial serializer
 	version := uint64(feature.INITIAL_SERIALIZER_VERSION)
-	s, err := getSerializer(version)
+	s, err := GetSerializer(version)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +48,7 @@ func NewWriter(ctx context.Context, filename string) (Writer, error) {
 		return nil, err
 	}
 
-	s1, err := getSerializer(feature.SERIALIZER_VERSION)
+	s1, err := GetSerializer(feature.SERIALIZER_VERSION)
 	if err != nil {
 		return nil, err
 	}

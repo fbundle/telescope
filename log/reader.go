@@ -14,7 +14,7 @@ func Read(filename string, apply func(e Entry) bool) error {
 	}
 	defer f.Close()
 
-	s, err := getSerializer(feature.INITIAL_SERIALIZER_VERSION)
+	s, err := GetSerializer(feature.INITIAL_SERIALIZER_VERSION)
 	if err != nil {
 		return err
 	}
@@ -40,7 +40,7 @@ func Read(filename string, apply func(e Entry) bool) error {
 			}
 			if e.Command == CommandSetVersion {
 				// when log entry is a set_version, change the version of serializer
-				s, err = getSerializer(e.Version)
+				s, err = GetSerializer(e.Version)
 				return s, true, err
 			}
 			if feature.Debug() {

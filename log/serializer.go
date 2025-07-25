@@ -11,7 +11,7 @@ type Serializer interface {
 	Version() uint64
 }
 
-func getSerializer(version uint64) (Serializer, error) {
+func GetSerializer(version uint64) (Serializer, error) {
 	switch version {
 	case 0:
 		return serializerV0{}, nil

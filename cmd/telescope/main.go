@@ -35,19 +35,6 @@ type programArgs struct {
 	logFilename   string
 }
 
-func getProgramArgs() programArgs {
-	args := os.Args[1:]
-	pargs := programArgs{}
-
-	if head := peek(args); len(head) > 0 && head[0] == '-' {
-		pargs.option = head
-		args, _ = consume(args)
-	}
-	args, pargs.inputFilename = consume(args)
-	args, pargs.logFilename = consume(args)
-	return pargs
-}
-
 func main() {
 	args := getProgramArgs()
 	switch args.option {
@@ -58,16 +45,15 @@ func main() {
 		printVersion()
 		return
 	case "-r", "--replay":
-		if len(args.logFilename) == 0 {
-			args.logFilename = getDefaultLogFilename(args.inputFilename)
-		}
 		if err := app.RunReplay(args.inputFilename, args.logFilename); err != nil {
 			log.Fatalln(err)
 		}
-	default:
-		if len(args.logFilename) == 0 {
-			args.logFilename = getDefaultLogFilename(args.inputFilename)
+	case "-l", "--log":
+		err := app.RunLog(args.logFilename)
+		if err != nil {
+			panic(err)
 		}
+	default:
 		if fileExists(args.logFilename) && fileSize(args.logFilename) > 0 {
 			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.logFilename), false)
 			if !ok {
@@ -144,4 +130,19 @@ func peek(args []string) string {
 		return ""
 	}
 	return args[0]
+}
+func getProgramArgs() programArgs {
+	args := os.Args[1:]
+	pargs := programArgs{}
+
+	if head := peek(args); len(head) > 0 && head[0] == '-' {
+		pargs.option = head
+		args, _ = consume(args)
+	}
+	args, pargs.inputFilename = consume(args)
+	args, pargs.logFilename = consume(args)
+	if len(pargs.logFilename) == 0 {
+		pargs.logFilename = getDefaultLogFilename(pargs.inputFilename)
+	}
+	return pargs
 }
