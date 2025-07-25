@@ -127,7 +127,9 @@ func RunEditor(inputFilename string, logFilename string) error {
 			// nothing
 		}
 	}
+	e.Message("exiting in 1 second")
 	cancel()
+	time.Sleep(time.Second)
 	return nil
 }
 
