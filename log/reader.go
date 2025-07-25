@@ -17,6 +17,11 @@ func Read(filename string, apply func(e Entry) bool) error {
 	}
 	defer f.Close()
 
+	s, err := getSerializer(0) // default serializer
+	if err != nil {
+		return err
+	}
+
 	reader := bufio.NewReader(f)
 	for {
 		line, err := reader.ReadBytes('\n')
@@ -29,13 +34,23 @@ func Read(filename string, apply func(e Entry) bool) error {
 			if err := json.Unmarshal(line, &e); err != nil {
 				return err
 			}
-			if feature.Debug() {
-				time.Sleep(feature.DEBUG_IO_INTERVAL_MS * time.Millisecond)
+
+			if e.Command == CommandSetVersion {
+				// when log entry is a set_version, change the version of serializer
+				s, err = getSerializer(e.Version)
+				if err != nil {
+					return err
+				}
+			} else {
+				if feature.Debug() {
+					time.Sleep(feature.DEBUG_IO_INTERVAL_MS * time.Millisecond)
+				}
+				ok := apply(e)
+				if !ok {
+					return nil
+				}
 			}
-			ok := apply(e)
-			if !ok {
-				return nil
-			}
+
 		}
 		if err == io.EOF {
 			return nil
