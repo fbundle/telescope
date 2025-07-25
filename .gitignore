@@ -33,6 +33,6 @@ go.work.sum
 .DS_Store
 *.txt
 *.json
-*.journal
+*.log
 bin
 
