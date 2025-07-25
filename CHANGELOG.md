@@ -20,7 +20,8 @@
 - fixed a bug that the UI keeps reading `mmap.ReaderAt` while is it already closed - just return `[]rune{}` if the file is closed
 - decompose loading and editor logic
 - improve robustness
-- added undo redo with `Ctrl+U` and `Ctrl+R`, added keyboard shortcuts in help message 
+- added undo redo with `Ctrl+U` and `Ctrl+R`, added keyboard shortcuts in help message
+- added max history size
 
 # TODO
 
