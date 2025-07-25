@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"telescope/feature"
+	"telescope/config"
 	"telescope/log"
 )
 
 func RunLog(logFilename string) error {
-	s, err := log.GetSerializer(feature.INITIAL_SERIALIZER_VERSION)
+	s, err := log.GetSerializer(config.Load().INITIAL_SERIALIZER_VERSION)
 	if err != nil {
 		return err
 	}

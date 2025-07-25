@@ -3,7 +3,7 @@ package log
 import (
 	"io"
 	"os"
-	"telescope/feature"
+	"telescope/config"
 	"time"
 )
 
@@ -14,7 +14,7 @@ func Read(filename string, apply func(e Entry) bool) error {
 	}
 	defer f.Close()
 
-	s, err := GetSerializer(feature.INITIAL_SERIALIZER_VERSION)
+	s, err := GetSerializer(config.Load().INITIAL_SERIALIZER_VERSION)
 	if err != nil {
 		return err
 	}
@@ -43,8 +43,8 @@ func Read(filename string, apply func(e Entry) bool) error {
 				s, err = GetSerializer(e.Version)
 				return s, true, err
 			}
-			if feature.Debug() {
-				time.Sleep(feature.DEBUG_IO_INTERVAL_MS * time.Millisecond)
+			if config.Debug() {
+				time.Sleep(config.Load().DEBUG_IO_INTERVAL_MS * time.Millisecond)
 			}
 			return s, apply(e), nil
 		}(s, line)

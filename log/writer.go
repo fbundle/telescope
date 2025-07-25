@@ -3,7 +3,7 @@ package log
 import (
 	"io"
 	"sync"
-	"telescope/feature"
+	"telescope/config"
 )
 
 type Writer interface {
@@ -12,7 +12,7 @@ type Writer interface {
 
 func NewWriter(iowriter io.Writer) (Writer, error) {
 	// use initial serializer
-	version := uint64(feature.INITIAL_SERIALIZER_VERSION)
+	version := uint64(config.Load().INITIAL_SERIALIZER_VERSION)
 	s, err := GetSerializer(version)
 	if err != nil {
 		return nil, err
@@ -27,13 +27,13 @@ func NewWriter(iowriter io.Writer) (Writer, error) {
 	// tell reader to use SERIALIZER_VERSION
 	_, err = w.Write(Entry{
 		Command: CommandSetVersion,
-		Version: feature.SERIALIZER_VERSION,
+		Version: config.Load().SERIALIZER_VERSION,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	s1, err := GetSerializer(feature.SERIALIZER_VERSION)
+	s1, err := GetSerializer(config.Load().SERIALIZER_VERSION)
 	if err != nil {
 		return nil, err
 	}

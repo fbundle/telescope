@@ -3,8 +3,8 @@ package text
 import (
 	"context"
 	"slices"
+	"telescope/config"
 	"telescope/exit"
-	"telescope/feature"
 	"time"
 
 	"golang.org/x/exp/mmap"
@@ -44,8 +44,8 @@ func indexFile(ctx context.Context, reader *mmap.ReaderAt, delim byte, update fu
 		if reader.At(i) == delim {
 			line := make([]byte, i+1-offset)
 			_, _ = reader.ReadAt(line, int64(offset))
-			if feature.Debug() {
-				time.Sleep(feature.DEBUG_IO_INTERVAL_MS * time.Millisecond)
+			if config.Debug() {
+				time.Sleep(config.Load().DEBUG_IO_INTERVAL_MS * time.Millisecond)
 			}
 			update(offset, line)
 			offset += len(line)
@@ -57,8 +57,8 @@ func indexFile(ctx context.Context, reader *mmap.ReaderAt, delim byte, update fu
 		if err != nil {
 			return err
 		}
-		if feature.Debug() {
-			time.Sleep(feature.DEBUG_IO_INTERVAL_MS * time.Millisecond)
+		if config.Debug() {
+			time.Sleep(config.Load().DEBUG_IO_INTERVAL_MS * time.Millisecond)
 		}
 		update(offset, line)
 	}
