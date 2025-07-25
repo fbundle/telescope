@@ -2,10 +2,10 @@ package editor
 
 func (e *editor) Resize(height int, width int) {
 	e.lockUpdateRender(func() {
-		if e.window.height == height && e.window.width == width {
+		if e.view.height == height && e.view.width == width {
 			return
 		}
-		e.window.height, e.window.width = height, width
+		e.view.height, e.view.width = height, width
 		e.moveRelativeAndFixWithoutLock(0, 0)
 		e.setStatusWithoutLock("resize to %dx%d", height, width)
 	})

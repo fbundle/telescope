@@ -12,12 +12,12 @@ func (e *editor) Type(ch rune) {
 		e.writeLog(log.Entry{
 			Command:   log.CommandType,
 			Rune:      ch,
-			CursorRow: uint64(e.textCursor.Row),
-			CursorCol: uint64(e.textCursor.Col),
+			CursorRow: uint64(e.cursor.Row),
+			CursorCol: uint64(e.cursor.Col),
 		})
 
 		updateText := func(m text.Text) text.Text {
-			row, col := e.textCursor.Row, e.textCursor.Col
+			row, col := e.cursor.Row, e.cursor.Col
 			// NOTE - handle empty file
 			if m.Len() == 0 {
 				m = m.Ins(0, []rune{ch})
@@ -46,13 +46,13 @@ func (e *editor) Backspace() {
 	e.lockUpdateRender(func() {
 		e.writeLog(log.Entry{
 			Command:   log.CommandBackspace,
-			CursorRow: uint64(e.textCursor.Row),
-			CursorCol: uint64(e.textCursor.Col),
+			CursorRow: uint64(e.cursor.Row),
+			CursorCol: uint64(e.cursor.Col),
 		})
 
 		var moveRow, moveCol int
 		updateText := func(m text.Text) text.Text {
-			row, col := e.textCursor.Row, e.textCursor.Col
+			row, col := e.cursor.Row, e.cursor.Col
 			// NOTE - handle empty file
 			if m.Len() == 0 {
 				return m
@@ -88,12 +88,12 @@ func (e *editor) Delete() {
 	e.lockUpdateRender(func() {
 		e.writeLog(log.Entry{
 			Command:   log.CommandDelete,
-			CursorRow: uint64(e.textCursor.Row),
-			CursorCol: uint64(e.textCursor.Col),
+			CursorRow: uint64(e.cursor.Row),
+			CursorCol: uint64(e.cursor.Col),
 		})
 
 		updateText := func(m text.Text) text.Text {
-			row, col := e.textCursor.Row, e.textCursor.Col
+			row, col := e.cursor.Row, e.cursor.Col
 			// NOTE - handle empty file
 			if m.Len() == 0 {
 				return m
@@ -125,8 +125,8 @@ func (e *editor) Enter() {
 	e.lockUpdateRender(func() {
 		e.writeLog(log.Entry{
 			Command:   log.CommandEnter,
-			CursorRow: uint64(e.textCursor.Row),
-			CursorCol: uint64(e.textCursor.Col),
+			CursorRow: uint64(e.cursor.Row),
+			CursorCol: uint64(e.cursor.Col),
 		})
 
 		updateText := func(m text.Text) text.Text {
@@ -136,15 +136,15 @@ func (e *editor) Enter() {
 				return m
 			}
 			switch {
-			case e.textCursor.Col == len(m.Get(e.textCursor.Row)):
+			case e.cursor.Col == len(m.Get(e.cursor.Row)):
 				// add new line
-				m = m.Ins(e.textCursor.Row+1, nil)
+				m = m.Ins(e.cursor.Row+1, nil)
 				return m
-			case e.textCursor.Col < len(m.Get(e.textCursor.Row)):
+			case e.cursor.Col < len(m.Get(e.cursor.Row)):
 				// split a line
-				r1 := slices.Clone(m.Get(e.textCursor.Row)[:e.textCursor.Col])
-				r2 := slices.Clone(m.Get(e.textCursor.Row)[e.textCursor.Col:])
-				m = m.Set(e.textCursor.Row, r1).Ins(e.textCursor.Row+1, r2)
+				r1 := slices.Clone(m.Get(e.cursor.Row)[:e.cursor.Col])
+				r2 := slices.Clone(m.Get(e.cursor.Row)[e.cursor.Col:])
+				m = m.Set(e.cursor.Row, r1).Ins(e.cursor.Row+1, r2)
 				return m
 			default:
 				exit.Write("unreachable")
@@ -153,8 +153,8 @@ func (e *editor) Enter() {
 		}
 
 		e.text = updateText(e.text)
-		e.moveRelativeAndFixWithoutLock(1, 0)                 // move down
-		e.moveRelativeAndFixWithoutLock(0, -e.textCursor.Col) // move home
+		e.moveRelativeAndFixWithoutLock(1, 0)             // move down
+		e.moveRelativeAndFixWithoutLock(0, -e.cursor.Col) // move home
 		e.setStatusWithoutLock("enter")
 	})
 }

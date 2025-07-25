@@ -4,32 +4,32 @@ package editor
 func (e *editor) moveRelativeAndFixWithoutLock(moveRow int, moveCol int) {
 	m := e.text
 
-	e.textCursor.Row += moveRow
-	e.textCursor.Col += moveCol
+	e.cursor.Row += moveRow
+	e.cursor.Col += moveCol
 
 	// fix textCursor
 	if m.Len() == 0 { // NOTE - handle empty file
-		e.textCursor.Row = 0
-		e.textCursor.Col = 0
+		e.cursor.Row = 0
+		e.cursor.Col = 0
 	} else {
-		e.textCursor.Row = max(0, e.textCursor.Row)
-		e.textCursor.Col = max(0, e.textCursor.Col)
-		e.textCursor.Row = min(e.textCursor.Row, m.Len()-1)
-		e.textCursor.Col = min(e.textCursor.Col, len(m.Get(e.textCursor.Row))) // textCursor col can be outside of text
+		e.cursor.Row = max(0, e.cursor.Row)
+		e.cursor.Col = max(0, e.cursor.Col)
+		e.cursor.Row = min(e.cursor.Row, m.Len()-1)
+		e.cursor.Col = min(e.cursor.Col, len(m.Get(e.cursor.Row))) // textCursor col can be outside of text
 	}
 
 	// fix window
-	if e.textCursor.Row < e.window.tlRow {
-		e.window.tlRow = e.textCursor.Row
+	if e.cursor.Row < e.view.tlRow {
+		e.view.tlRow = e.cursor.Row
 	}
-	if e.textCursor.Row >= e.window.tlRow+e.window.height {
-		e.window.tlRow = e.textCursor.Row - e.window.height + 1
+	if e.cursor.Row >= e.view.tlRow+e.view.height {
+		e.view.tlRow = e.cursor.Row - e.view.height + 1
 	}
-	if e.textCursor.Col < e.window.tlCol {
-		e.window.tlCol = e.textCursor.Col
+	if e.cursor.Col < e.view.tlCol {
+		e.view.tlCol = e.cursor.Col
 	}
-	if e.textCursor.Col >= e.window.tlCol+e.window.width {
-		e.window.tlCol = e.textCursor.Col - e.window.width + 1
+	if e.cursor.Col >= e.view.tlCol+e.view.width {
+		e.view.tlCol = e.cursor.Col - e.view.width + 1
 	}
 }
 
@@ -59,26 +59,26 @@ func (e *editor) MoveDown() {
 }
 func (e *editor) MoveHome() {
 	e.lockUpdateRender(func() {
-		e.moveRelativeAndFixWithoutLock(0, -e.textCursor.Col)
+		e.moveRelativeAndFixWithoutLock(0, -e.cursor.Col)
 		e.setStatusWithoutLock("move home")
 	})
 }
 func (e *editor) MoveEnd() {
 	e.lockUpdateRender(func() {
 		m := e.text
-		e.moveRelativeAndFixWithoutLock(0, len(m.Get(e.textCursor.Row))-e.textCursor.Col)
+		e.moveRelativeAndFixWithoutLock(0, len(m.Get(e.cursor.Row))-e.cursor.Col)
 		e.setStatusWithoutLock("move end")
 	})
 }
 func (e *editor) MovePageUp() {
 	e.lockUpdateRender(func() {
-		e.moveRelativeAndFixWithoutLock(-e.window.height, 0)
+		e.moveRelativeAndFixWithoutLock(-e.view.height, 0)
 		e.setStatusWithoutLock("move page up")
 	})
 }
 func (e *editor) MovePageDown() {
 	e.lockUpdateRender(func() {
-		e.moveRelativeAndFixWithoutLock(e.window.height, 0)
+		e.moveRelativeAndFixWithoutLock(e.view.height, 0)
 		e.setStatusWithoutLock("move page down")
 	})
 }
@@ -86,8 +86,8 @@ func (e *editor) MovePageDown() {
 func (e *editor) Jump(row int, col int) {
 	e.lockUpdateRender(func() {
 		// move to absolute position
-		moveRow := row - e.textCursor.Row
-		moveCol := col - e.textCursor.Col
+		moveRow := row - e.cursor.Row
+		moveCol := col - e.cursor.Col
 		e.moveRelativeAndFixWithoutLock(moveRow, moveCol)
 	})
 }

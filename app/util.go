@@ -65,7 +65,6 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 
 	// editor
 	e, err := editor.NewEditor(
-		winName,
 		height-1, width,
 		logWriter,
 	)

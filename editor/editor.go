@@ -13,16 +13,12 @@ import (
 )
 
 type internalView struct {
-	winName    string
+	tlRow      int
+	tlCol      int
+	height     int
+	width      int
 	message    string
 	background string
-}
-
-type window struct {
-	tlRow  int
-	tlCol  int
-	height int
-	width  int
 }
 
 // TODO - add INSERT mode and VISUAL mode
@@ -34,15 +30,13 @@ type editor struct {
 	renderCh  chan View // buffered channel is important here for preventing deadlock
 	logWriter log.Writer
 
-	mu         sync.Mutex // the fields below are protected by mu
-	text       text.Text
-	textCursor Cursor
-	window     window
-	view       internalView
+	mu     sync.Mutex // the fields below are protected by mu
+	text   text.Text
+	cursor Cursor
+	view   internalView
 }
 
 func NewEditor(
-	winName string,
 	height int, width int,
 	logWriter log.Writer,
 ) (Editor, error) {
@@ -52,15 +46,12 @@ func NewEditor(
 
 		mu:   sync.Mutex{},
 		text: nil,
-		textCursor: Cursor{
+		cursor: Cursor{
 			Row: 0, Col: 0,
 		},
-		window: window{
+		view: internalView{
 			tlRow: 0, tlCol: 0,
 			width: width, height: height,
-		},
-		view: internalView{
-			winName:    winName,
 			message:    "",
 			background: "",
 		},

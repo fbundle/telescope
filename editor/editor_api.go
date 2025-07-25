@@ -12,7 +12,6 @@ type Cursor struct {
 }
 
 type View struct {
-	WinName    string
 	WinData    [][]rune
 	WinCursor  Cursor
 	TextCursor Cursor

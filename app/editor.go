@@ -11,6 +11,8 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+var winName string = "telescope"
+
 func draw(s tcell.Screen, view editor.View) {
 	statusStyle := tcell.StyleDefault.
 		Background(tcell.ColorLightGray).
@@ -29,7 +31,7 @@ func draw(s tcell.Screen, view editor.View) {
 	s.ShowCursor(view.WinCursor.Col, view.WinCursor.Row)
 
 	// Draw status bar at the bottom
-	head := []rune(fmt.Sprintf("%s (%d, %d)", view.WinName, view.TextCursor.Col, view.TextCursor.Row))
+	head := []rune(fmt.Sprintf("%s (%d, %d)", winName, view.TextCursor.Col, view.TextCursor.Row))
 	foreground := []rune(view.Message)
 	background := []rune(view.Background)
 
@@ -53,6 +55,10 @@ func draw(s tcell.Screen, view editor.View) {
 }
 
 func RunEditor(inputFilename string, logFilename string) error {
+	if len(inputFilename) > 0 {
+		winName += " " + inputFilename
+	}
+
 	s, err := tcell.NewScreen()
 	if err != nil {
 		return err

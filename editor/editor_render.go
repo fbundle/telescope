@@ -13,21 +13,20 @@ func (e *editor) renderWithoutLock() {
 	render := func() View {
 
 		view := View{
-			WinName: e.view.winName,
 			WinData: nil,
 			WinCursor: Cursor{
-				Row: e.textCursor.Row - e.window.tlRow,
-				Col: e.textCursor.Col - e.window.tlCol,
+				Row: e.cursor.Row - e.view.tlRow,
+				Col: e.cursor.Col - e.view.tlCol,
 			},
-			TextCursor: e.textCursor,
+			TextCursor: e.cursor,
 			Background: e.view.background,
 			Message:    e.view.message,
 		}
 
 		// data
-		view.WinData = make([][]rune, e.window.height)
-		for row := 0; row < e.window.height; row++ {
-			view.WinData[row] = getRowForView(e.text, row+e.window.tlRow)
+		view.WinData = make([][]rune, e.view.height)
+		for row := 0; row < e.view.height; row++ {
+			view.WinData[row] = getRowForView(e.text, row+e.view.tlRow)
 		}
 		return view
 	}
