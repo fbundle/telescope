@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"os"
 	"telescope/editor"
 	"telescope/feature"
 
@@ -124,13 +123,6 @@ func RunEditor(inputFilename string, logFilename string) error {
 		}
 	}
 	return nil
-}
-func fileNonEmpty(filename string) bool {
-	info, err := os.Stat(filename)
-	if err != nil {
-		return false
-	}
-	return info.Size() > 0
 }
 
 func handleEditorKey(e editor.Editor, event *tcell.EventKey) {

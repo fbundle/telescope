@@ -11,6 +11,13 @@ import (
 	"golang.org/x/exp/mmap"
 )
 
+func fileNonEmpty(filename string) bool {
+	info, err := os.Stat(filename)
+	if err != nil {
+		return false
+	}
+	return info.Size() > 0
+}
 func makeEditor(ctx context.Context, inputFilename string, logFilename string, width int, height int) (editor.Editor, context.Context, func() error, func(), error) {
 	closerList := make([]func() error, 0)
 	close := func() {
