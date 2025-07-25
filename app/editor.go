@@ -74,17 +74,23 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 	}
 
 	// log
-	logFile, err := os.OpenFile(logFilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
-	if err != nil {
-		close()
-		return nil, nil, nil, err
-	}
-	closerList = append(closerList, logFile.Close)
+	var logFile *os.File = nil
+	var logWriter log.Writer = nil
+	var flush func() error = func() error { return nil }
+	if len(logFilename) > 0 {
+		logFile, err = os.OpenFile(logFilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+		if err != nil {
+			close()
+			return nil, nil, nil, err
+		}
+		closerList = append(closerList, logFile.Close)
 
-	logWriter, err := log.NewWriter(logFile)
-	if err != nil {
-		close()
-		return nil, nil, nil, err
+		logWriter, err = log.NewWriter(logFile)
+		if err != nil {
+			close()
+			return nil, nil, nil, err
+		}
+		flush = logFile.Sync
 	}
 
 	// editor
@@ -98,7 +104,7 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 		close()
 		return nil, nil, nil, err
 	}
-	return e, logFile.Sync, close, err
+	return e, flush, close, err
 }
 
 func RunEditor(inputFilename string, logFilename string) error {

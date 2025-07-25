@@ -13,7 +13,8 @@ func RunReplay(inputFilename string, logFilename string) error {
 	_, _ = fmt.Fprintf(os.Stderr, "loading input file %s\n", inputFilename)
 	loadCtx, loadCancel := context.WithCancel(ctx)
 
-	e, close, err := makeEditor(ctx, inputFilename, logFilename, 20, 20, loadCancel)
+	// make editor without log
+	e, _, close, err := makeEditor(ctx, inputFilename, "", 20, 20, loadCancel)
 	if err != nil {
 		return err
 	}
