@@ -41,6 +41,8 @@ func indexFile(ctx context.Context, reader *mmap.ReaderAt, delim byte, update fu
 		default:
 		}
 
+		// TODO - reader can be closed while executing the code below
+		// how to fix?
 		if reader.At(i) == delim {
 			line := make([]byte, i+1-offset)
 			_, _ = reader.ReadAt(line, int64(offset))
