@@ -16,7 +16,7 @@ func (e *editor) Type(ch rune) {
 			CursorCol: uint64(e.textCursor.Col),
 		})
 
-		e.text = func(m text.Text) text.Text {
+		updateText := func(m text.Text) text.Text {
 			row, col := e.textCursor.Row, e.textCursor.Col
 			// NOTE - handle empty file
 			if m.Len() == 0 {
@@ -34,7 +34,9 @@ func (e *editor) Type(ch rune) {
 			newRow = insertToSlice(newRow, col, ch)
 			m = m.Set(row, newRow)
 			return m
-		}(e.text)
+		}
+
+		e.text = updateText(e.text)
 		e.moveRelativeAndFixWithoutLock(0, 1) // move right
 		e.setStatusWithoutLock("type '%c'", ch)
 	})
@@ -48,7 +50,7 @@ func (e *editor) Backspace() {
 			CursorCol: uint64(e.textCursor.Col),
 		})
 
-		e.text = func(m text.Text) text.Text {
+		updateText := func(m text.Text) text.Text {
 			row, col := e.textCursor.Row, e.textCursor.Col
 			// NOTE - handle empty file
 			if m.Len() == 0 {
@@ -73,7 +75,9 @@ func (e *editor) Backspace() {
 				exit.Write("unreachable")
 			}
 			return m
-		}(e.text)
+		}
+
+		e.text = updateText(e.text)
 		e.setStatusWithoutLock("backspace")
 	})
 }
@@ -86,7 +90,7 @@ func (e *editor) Delete() {
 			CursorCol: uint64(e.textCursor.Col),
 		})
 
-		e.text = func(m text.Text) text.Text {
+		updateText := func(m text.Text) text.Text {
 			row, col := e.textCursor.Row, e.textCursor.Col
 			// NOTE - handle empty file
 			if m.Len() == 0 {
@@ -108,7 +112,9 @@ func (e *editor) Delete() {
 				exit.Write("unreachable")
 			}
 			return m
-		}(e.text)
+		}
+
+		e.text = updateText(e.text)
 		e.setStatusWithoutLock("delete")
 	})
 }
@@ -121,7 +127,7 @@ func (e *editor) Enter() {
 			CursorCol: uint64(e.textCursor.Col),
 		})
 
-		e.text = func(m text.Text) text.Text {
+		updateText := func(m text.Text) text.Text {
 			// NOTE - handle empty file
 			if m.Len() == 0 {
 				m = m.Ins(0, nil)
@@ -142,7 +148,8 @@ func (e *editor) Enter() {
 				exit.Write("unreachable")
 				return m
 			}
-		}(e.text)
+		}
+		e.text = updateText(e.text)
 		e.moveRelativeAndFixWithoutLock(1, 0)                 // move down
 		e.moveRelativeAndFixWithoutLock(0, -e.textCursor.Col) // move home
 		e.setStatusWithoutLock("enter")
