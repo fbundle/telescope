@@ -13,7 +13,7 @@ import (
 const VERSION = "0.1.5"
 
 func printHelp() {
-	printVersion()
+	fmt.Printf("telescope version %s\n", VERSION)
 	help := `
 Usage: "telescope [option] file [logfile]"
 Option:
@@ -26,7 +26,7 @@ Option:
 }
 
 func printVersion() {
-	fmt.Printf("telescope version %s\n", VERSION)
+	fmt.Println(VERSION)
 }
 
 func consume(args []string) ([]string, string) {
@@ -35,56 +35,63 @@ func consume(args []string) ([]string, string) {
 	}
 	return args[1:], args[0]
 }
+func peek(args []string) string {
+	if len(args) == 0 {
+		return ""
+	}
+	return args[0]
+}
+
+type programArgs struct {
+	option        string
+	inputFilename string
+	logFilename   string
+}
+
+func getProgramArgs() programArgs {
+	args := os.Args[1:]
+	pargs := programArgs{}
+
+	if head := peek(args); len(head) > 0 && head[0] == '-' {
+		pargs.option = head
+		args, _ = consume(args)
+	}
+	args, pargs.inputFilename = consume(args)
+	args, pargs.logFilename = consume(args)
+	return pargs
+}
 
 func main() {
-	var replay bool
-	var inputFilename, logFilename string
-
-	args := os.Args[1:]
-	if len(args) == 0 {
+	args := getProgramArgs()
+	switch args.option {
+	case "-h", "--help":
 		printHelp()
 		return
-	}
-
-	args, head := consume(args)
-	if head == "-h" || head == "--help" {
-		printHelp()
-		return
-	}
-	if head == "-v" || head == "--version" {
+	case "-v", "--version":
 		printVersion()
 		return
-	}
-
-	if head == "-r" || head == "--replay" {
-		replay = true
-		args, inputFilename = consume(args)
-		args, logFilename = consume(args)
-	} else {
-		inputFilename = head
-		args, logFilename = consume(args)
-	}
-	if len(logFilename) == 0 {
-		logFilename = getDefaultLogFilename(inputFilename)
-	}
-
-	if replay {
-		err := app.RunReplay(inputFilename, logFilename)
-		if err != nil {
-			panic(err)
+	case "-r", "--replay":
+		if len(args.logFilename) == 0 {
+			args.logFilename = getDefaultLogFilename(args.inputFilename)
 		}
-	} else {
-		if fileExists(logFilename) && fileSize(logFilename) > 0 {
-			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", logFilename), false)
+		if err := app.RunReplay(args.inputFilename, args.logFilename); err != nil {
+			log.Fatalln(err)
+		}
+	default:
+		if len(args.logFilename) == 0 {
+			args.logFilename = getDefaultLogFilename(args.inputFilename)
+		}
+		if fileExists(args.logFilename) && fileSize(args.logFilename) > 0 {
+			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.logFilename), false)
 			if !ok {
 				return
 			}
-			err := os.Remove(logFilename)
+			err := os.Remove(args.logFilename)
 			if err != nil {
 				panic(err)
 			}
 		}
-		err := app.RunEditor(inputFilename, logFilename)
+		err := app.RunEditor(args.inputFilename, args.logFilename)
 		if err != nil {
 			panic(err)
 		}
@@ -105,6 +112,7 @@ func fileSize(filename string) int {
 	size := info.Size() // in bytes
 	return int(size)
 }
+
 func promptYesNo(prompt string, defaultOption bool) bool {
 	reader := bufio.NewReader(os.Stdin)
 	for {
