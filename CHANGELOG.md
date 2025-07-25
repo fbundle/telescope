@@ -15,6 +15,7 @@
 - rename journal to log
 - fix a critical bug, printing using fmt.Fprintf doesn't escape `%` in code
 - log is now use length-prefixed format so that the same file can be decoded using multiple format
+- add function to print out human readable log format
 
 # TODO
 
