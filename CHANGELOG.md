@@ -23,6 +23,7 @@
 - added undo redo with `Ctrl+U` and `Ctrl+R`, added keyboard shortcuts in help message
 - added max history size
 - fixed some bug when refactoring code, fix some rendering bug and improve usability
+- fixed bug with replaying log
 
 # TODO
 
