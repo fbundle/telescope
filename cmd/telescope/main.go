@@ -17,12 +17,19 @@ func printHelp() {
 	fmt.Printf("telescope version %s\n", VERSION)
 	help := `
 Usage: "telescope [option] file [logfile]"
-Option:
+Options:
   -h --help	: show help
   -v --version		: get version
   -r --replay		: replay the edited file 
   -l --log			: print the human readable log format
   -w --overwrite	: force delete log
+
+Keyboard Shortcuts:
+  Ctrl+C		: exit
+  Ctrl+S		: flush log
+  Ctrl+U		: undo
+  Ctrl+R		: redo
+
 	`
 	fmt.Println(help)
 }
