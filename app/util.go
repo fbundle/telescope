@@ -55,17 +55,28 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 		flush = writer.Flush
 	}
 
+	loadCtx, loadCancel := context.WithCancel(ctx)
 	// editor
 	e, err := editor.NewEditor(
 		ctx,
 		winName,
 		height-1, width,
 		inputMmapReader, logWriter,
-		loadDone,
+		func() {
+			loadCancel()
+			loadDone()
+		},
 	)
 	if err != nil {
+		loadCancel() // unable to create editor, just cancel the loadCtx anyway
 		close()
 		return nil, nil, nil, err
 	}
+	// waiting for loading to be done before closing
+	closerList = append(closerList, func() error {
+		<-loadCtx.Done()
+		return nil
+	})
+
 	return e, flush, close, err
 }

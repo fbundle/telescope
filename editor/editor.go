@@ -81,6 +81,9 @@ func NewEditor(
 
 	// load file asynchronously
 	go func() {
+		if loadDone != nil {
+			defer loadDone()
+		}
 		totalSize := inputMmapReader.Len()
 		loadedSize := 0
 		lastPercentage := 0
@@ -112,9 +115,6 @@ func NewEditor(
 			)
 			e.loaded = true
 		})
-		if loadDone != nil {
-			loadDone()
-		}
 	}()
 
 	return e, nil
