@@ -27,6 +27,7 @@ func (h *hist[T]) Update(modifier func(T) T) {
 	h.i++
 	if len(h.ts) > config.Load().MAXSIZE_HISTORY {
 		h.ts = h.ts[1:]
+		h.i--
 	}
 }
 
