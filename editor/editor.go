@@ -2,9 +2,9 @@ package editor
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
-	"telescope/feature"
 	"telescope/log"
 	"telescope/text"
 	"time"
@@ -31,7 +31,6 @@ type window struct {
 // add a command buffer, press ESC reset command buffer
 
 type editor struct {
-	loadCtx   context.Context
 	renderCh  chan View
 	logWriter log.Writer
 
@@ -44,20 +43,15 @@ type editor struct {
 }
 
 func NewEditor(
-	ctx context.Context,
 	winName string,
 	height int, width int,
-	inputMmapReader *mmap.ReaderAt,
 	logWriter log.Writer,
 ) (Editor, error) {
-
-	loadCtx, loadCancel := context.WithCancel(ctx) // if ctx is done then this editor will also stop loading
-
 	e := &editor{
-		loadCtx:   loadCtx,
-		renderCh:  make(chan View),
+		renderCh:  make(chan View, 1),
 		logWriter: logWriter,
 
+		mu:     sync.Mutex{},
 		loaded: false,
 		text:   nil,
 		textCursor: Cursor{
@@ -75,56 +69,53 @@ func NewEditor(
 			background: "",
 		},
 	}
-
-	// text
-	e.text = text.New(inputMmapReader)
-	if inputMmapReader == nil || inputMmapReader.Len() == 0 {
-		loadCancel()
-		return e, nil // nothing to load
-	}
-
-	// load file asynchronously
-	go func() {
-		defer loadCancel()
-
-		totalSize := inputMmapReader.Len()
-		loadedSize := 0
-		lastPercentage := 0
-		t0 := time.Now()
-		t1 := t0
-		text.LoadFile(e.loadCtx, inputMmapReader, func(l text.Line) {
-			loadedSize += l.Size()
-			e.lockUpdate(func() {
-				t2 := time.Now()
-				e.text = e.text.Append(l)
-				percentage := int(100 * float64(loadedSize) / float64(totalSize))
-				if percentage > lastPercentage || t2.Sub(t1) >= feature.LOADING_PROGRESS_INTERVAL_MS*time.Millisecond {
-					lastPercentage = percentage
-					e.view.background = fmt.Sprintf(
-						"loading %d/%d (%d%%)",
-						loadedSize, totalSize, lastPercentage,
-					)
-					t1 = t2
-					e.renderWithoutLock()
-				}
-			})
-		})
-		e.lockUpdateRender(func() {
-			totalTime := time.Now().Sub(t0)
-			e.view.background = ""
-			e.view.message = fmt.Sprintf(
-				"loaded %d seconds",
-				int(totalTime.Seconds()),
-			)
-			e.loaded = true
-		})
-	}()
-
 	return e, nil
 }
 
-func (e *editor) Done() <-chan struct{} {
-	return e.loadCtx.Done()
+func (e *editor) Load(ctx context.Context, inputMmapReader *mmap.ReaderAt) (context.Context, error) {
+	loadCtx, loadDone := context.WithCancel(ctx) // if ctx is done then this editor will also stop loading
+	var err error = nil
+	e.lockUpdateRender(func() {
+		if e.loaded {
+			err = errors.New("load twice")
+			return
+		}
+		e.text = text.New(inputMmapReader)
+		e.view.background = "loading started"
+		go func() { // load file asynchronously
+			defer loadDone()
+			if inputMmapReader == nil || inputMmapReader.Len() == 0 {
+				return // nothing to load
+			}
+
+			t0 := time.Now()
+			loader := newLoader(inputMmapReader.Len())
+			text.LoadFile(ctx, inputMmapReader, func(l text.Line) {
+				e.lockUpdate(func() {
+					e.text = e.text.Append(l)
+					if loader.add(l.Size()) { // to render
+						e.view.background = fmt.Sprintf(
+							"loading %d/%d (%d%%)",
+							loader.loadedSize, loader.totalSize, loader.lastRenderPercentage,
+						)
+						e.renderWithoutLock()
+					}
+				})
+			})
+			e.lockUpdateRender(func() {
+				totalTime := time.Since(t0)
+				e.view.background = ""
+				e.view.message = fmt.Sprintf(
+					"loaded %d seconds",
+					int(totalTime.Seconds()),
+				)
+				e.loaded = true
+				e.renderWithoutLock()
+			})
+		}()
+	})
+
+	return loadCtx, err
 }
 
 func (e *editor) lockUpdate(f func()) {

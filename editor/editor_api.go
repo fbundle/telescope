@@ -1,5 +1,11 @@
 package editor
 
+import (
+	"context"
+
+	"golang.org/x/exp/mmap"
+)
+
 type Cursor struct {
 	Row int
 	Col int
@@ -15,6 +21,7 @@ type View struct {
 }
 
 type Controller interface {
+	Load(ctx context.Context, inputMmapReader *mmap.ReaderAt) (context.Context, error)
 	Resize(height int, width int)
 
 	Type(ch rune)
@@ -48,5 +55,4 @@ type Editor interface {
 	Renderer
 	Controller
 	Text
-	Done() <-chan struct{}
 }

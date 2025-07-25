@@ -13,11 +13,12 @@ func RunReplay(inputFilename string, logFilename string) error {
 	_, _ = fmt.Fprintf(os.Stderr, "loading input file %s\n", inputFilename)
 
 	// make editor without log
-	e, _, close, err := makeEditor(ctx, inputFilename, "", 20, 20)
+	e, loadCtx, flush, close, err := makeEditor(ctx, inputFilename, "", 20, 20)
 	if err != nil {
 		return err
 	}
 	defer close()
+	_ = flush // do nothing with flush
 
 	go func() {
 		for {
@@ -33,7 +34,7 @@ func RunReplay(inputFilename string, logFilename string) error {
 	}()
 
 	// wait for loading
-	<-e.Done()
+	<-loadCtx.Done()
 
 	_, _ = fmt.Fprintf(os.Stderr, "loading log file %s\n", logFilename)
 
