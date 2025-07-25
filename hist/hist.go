@@ -7,22 +7,27 @@ type Hist[T any] interface {
 	Redo()
 }
 
-func New[T any](t T) Hist[T] {
+func New[T any](t T, maxsize int) Hist[T] {
 	return &hist[T]{
-		i:  0,
-		ts: []T{t},
+		maxsize: maxsize,
+		i:       0,
+		ts:      []T{t},
 	}
 }
 
 type hist[T any] struct {
-	i  int // current version
-	ts []T // all versions
+	maxsize int
+	i       int // current version
+	ts      []T // all versions
 }
 
 func (h *hist[T]) Update(modifier func(T) T) {
 	next := modifier(h.ts[h.i])
 	h.ts = append(h.ts[:h.i+1], next)
 	h.i++
+	if len(h.ts) > h.maxsize {
+		h.ts = h.ts[1:]
+	}
 }
 
 func (h *hist[T]) Get() T {
