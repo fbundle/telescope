@@ -35,7 +35,6 @@ type editor struct {
 	logWriter log.Writer
 
 	mu         sync.Mutex // the fields below are protected by mu
-	loaded     bool
 	text       text.Text
 	textCursor Cursor
 	window     window
@@ -51,9 +50,8 @@ func NewEditor(
 		renderCh:  make(chan View, 1),
 		logWriter: logWriter,
 
-		mu:     sync.Mutex{},
-		loaded: false,
-		text:   nil,
+		mu:   sync.Mutex{},
+		text: nil,
 		textCursor: Cursor{
 			Row: 0, Col: 0,
 		},
@@ -74,7 +72,7 @@ func (e *editor) Load(ctx context.Context, inputMmapReader *mmap.ReaderAt) (cont
 	loadCtx, loadDone := context.WithCancel(ctx) // if ctx is done then this editor will also stop loading
 	var err error = nil
 	e.lockUpdateRender(func() {
-		if e.loaded {
+		if e.text != nil {
 			err = errors.New("load twice")
 			return
 		}
@@ -107,7 +105,6 @@ func (e *editor) Load(ctx context.Context, inputMmapReader *mmap.ReaderAt) (cont
 					"loaded %d seconds",
 					int(totalTime.Seconds()),
 				)
-				e.loaded = true
 				e.renderWithoutLock()
 			})
 		}()
