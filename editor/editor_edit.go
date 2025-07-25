@@ -36,7 +36,7 @@ func (e *editor) Type(ch rune) {
 			return m
 		}
 
-		e.text = updateText(e.text)
+		e.text.Update(updateText)
 		e.moveRelativeAndFixWithoutLock(0, 1) // move right
 		e.setStatusWithoutLock("type '%c'", ch)
 	})
@@ -77,8 +77,7 @@ func (e *editor) Backspace() {
 			}
 			return m
 		}
-
-		e.text = updateText(e.text)
+		e.text.Update(updateText)
 		e.moveRelativeAndFixWithoutLock(moveRow, moveCol)
 		e.setStatusWithoutLock("backspace")
 	})
@@ -115,8 +114,7 @@ func (e *editor) Delete() {
 			}
 			return m
 		}
-
-		e.text = updateText(e.text)
+		e.text.Update(updateText)
 		e.setStatusWithoutLock("delete")
 	})
 }
@@ -129,32 +127,34 @@ func (e *editor) Enter() {
 			CursorCol: uint64(e.cursor.Col),
 		})
 
-		updateText := func(m text.Text) text.Text {
+		updateText := func(t text.Text) text.Text {
 			// NOTE - handle empty file
-			if m.Len() == 0 {
-				m = m.Ins(0, nil)
-				return m
+			if t.Len() == 0 {
+				t = t.Ins(0, nil)
+				return t
 			}
 			switch {
-			case e.cursor.Col == len(m.Get(e.cursor.Row)):
+			case e.cursor.Col == len(t.Get(e.cursor.Row)):
 				// add new line
-				m = m.Ins(e.cursor.Row+1, nil)
-				return m
-			case e.cursor.Col < len(m.Get(e.cursor.Row)):
+				t = t.Ins(e.cursor.Row+1, nil)
+				return t
+			case e.cursor.Col < len(t.Get(e.cursor.Row)):
 				// split a line
-				r1 := slices.Clone(m.Get(e.cursor.Row)[:e.cursor.Col])
-				r2 := slices.Clone(m.Get(e.cursor.Row)[e.cursor.Col:])
-				m = m.Set(e.cursor.Row, r1).Ins(e.cursor.Row+1, r2)
-				return m
+				r1 := slices.Clone(t.Get(e.cursor.Row)[:e.cursor.Col])
+				r2 := slices.Clone(t.Get(e.cursor.Row)[e.cursor.Col:])
+				t = t.Set(e.cursor.Row, r1).Ins(e.cursor.Row+1, r2)
+				return t
 			default:
 				exit.Write("unreachable")
-				return m
+				return t
 			}
 		}
-
-		e.text = updateText(e.text)
+		e.text.Update(updateText)
 		e.moveRelativeAndFixWithoutLock(1, 0)             // move down
 		e.moveRelativeAndFixWithoutLock(0, -e.cursor.Col) // move home
 		e.setStatusWithoutLock("enter")
 	})
 }
+
+func (e *editor) Undo() {}
+func (e *editor) Redo() {}

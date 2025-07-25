@@ -26,7 +26,7 @@ func (e *editor) renderWithoutLock() {
 		// data
 		view.WinData = make([][]rune, e.view.height)
 		for row := 0; row < e.view.height; row++ {
-			view.WinData[row] = getRowForView(e.text, row+e.view.tlRow)
+			view.WinData[row] = getRowForView(e.text.Get(), row+e.view.tlRow)
 		}
 		return view
 	}
@@ -36,6 +36,6 @@ func (e *editor) renderWithoutLock() {
 
 func (e *editor) Iter(f func(i int, line []rune) bool) {
 	e.lockUpdate(func() {
-		e.text.Iter(f)
+		e.text.Get().Iter(f)
 	})
 }

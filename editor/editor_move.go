@@ -2,20 +2,20 @@ package editor
 
 // moveRelativeAndFixWithoutLock - textCursor is either in the text or at the end of a line
 func (e *editor) moveRelativeAndFixWithoutLock(moveRow int, moveCol int) {
-	m := e.text
+	t := e.text.Get()
 
 	e.cursor.Row += moveRow
 	e.cursor.Col += moveCol
 
 	// fix textCursor
-	if m.Len() == 0 { // NOTE - handle empty file
+	if t.Len() == 0 { // NOTE - handle empty file
 		e.cursor.Row = 0
 		e.cursor.Col = 0
 	} else {
 		e.cursor.Row = max(0, e.cursor.Row)
 		e.cursor.Col = max(0, e.cursor.Col)
-		e.cursor.Row = min(e.cursor.Row, m.Len()-1)
-		e.cursor.Col = min(e.cursor.Col, len(m.Get(e.cursor.Row))) // textCursor col can be outside of text
+		e.cursor.Row = min(e.cursor.Row, t.Len()-1)
+		e.cursor.Col = min(e.cursor.Col, len(t.Get(e.cursor.Row))) // textCursor col can be outside of text
 	}
 
 	// fix window
@@ -65,8 +65,8 @@ func (e *editor) MoveHome() {
 }
 func (e *editor) MoveEnd() {
 	e.lockUpdateRender(func() {
-		m := e.text
-		e.moveRelativeAndFixWithoutLock(0, len(m.Get(e.cursor.Row))-e.cursor.Col)
+		t := e.text.Get()
+		e.moveRelativeAndFixWithoutLock(0, len(t.Get(e.cursor.Row))-e.cursor.Col)
 		e.setStatusWithoutLock("move end")
 	})
 }

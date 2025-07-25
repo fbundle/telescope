@@ -40,6 +40,9 @@ type Controller interface {
 	MoveEnd()
 	MovePageUp()
 	MovePageDown()
+
+	Undo()
+	Redo()
 }
 
 type Renderer interface {

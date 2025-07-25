@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"telescope/hist"
 	"telescope/log"
 	"telescope/text"
 	"time"
@@ -31,7 +32,7 @@ type editor struct {
 	logWriter log.Writer
 
 	mu     sync.Mutex // the fields below are protected by mu
-	text   text.Text
+	text   hist.Hist[text.Text]
 	cursor Cursor
 	view   internalView
 }
@@ -67,7 +68,7 @@ func (e *editor) Load(ctx context.Context, inputMmapReader *mmap.ReaderAt) (cont
 			err = errors.New("load twice")
 			return
 		}
-		e.text = text.New(inputMmapReader)
+		e.text = hist.New(text.New(inputMmapReader))
 		e.view.background = "loading started"
 		go func() { // load file asynchronously
 			defer loadDone()
@@ -79,7 +80,9 @@ func (e *editor) Load(ctx context.Context, inputMmapReader *mmap.ReaderAt) (cont
 			loader := newLoader(inputMmapReader.Len())
 			text.LoadFile(ctx, inputMmapReader, func(l text.Line) {
 				e.lockUpdate(func() {
-					e.text = e.text.Append(l)
+					e.text.Update(func(t text.Text) text.Text {
+						return t.Append(l)
+					})
 					if loader.add(l.Size()) { // to render
 						e.view.background = fmt.Sprintf(
 							"loading %d/%d (%d%%)",
