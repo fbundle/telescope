@@ -50,6 +50,7 @@ func (e *editor) Backspace() {
 			CursorCol: uint64(e.textCursor.Col),
 		})
 
+		var moveRow, moveCol int
 		updateText := func(m text.Text) text.Text {
 			row, col := e.textCursor.Row, e.textCursor.Col
 			// NOTE - handle empty file
@@ -60,17 +61,17 @@ func (e *editor) Backspace() {
 			case col == 0 && row == 0:
 			// first line do nothing
 			case col == 0 && row != 0:
-				// merge 2 Text
+				// merge 2 texts
 				r1 := m.Get(row - 1)
 				r2 := m.Get(row)
 
 				m = m.Set(row-1, concatSlices(r1, r2)).Del(row)
-				e.moveRelativeAndFixWithoutLock(-1, len(r1))
+				moveRow, moveCol = -1, len(r1) // move up and to the end of last line
 			case col != 0:
 				newRow := slices.Clone(m.Get(row))
 				newRow = deleteFromSlice(newRow, col-1)
 				m = m.Set(row, newRow)
-				e.moveRelativeAndFixWithoutLock(0, -1)
+				moveRow, moveCol = 0, -1 // move left
 			default:
 				exit.Write("unreachable")
 			}
@@ -78,6 +79,7 @@ func (e *editor) Backspace() {
 		}
 
 		e.text = updateText(e.text)
+		e.moveRelativeAndFixWithoutLock(moveRow, moveCol)
 		e.setStatusWithoutLock("backspace")
 	})
 }
@@ -149,7 +151,7 @@ func (e *editor) Enter() {
 				return m
 			}
 		}
-		
+
 		e.text = updateText(e.text)
 		e.moveRelativeAndFixWithoutLock(1, 0)                 // move down
 		e.moveRelativeAndFixWithoutLock(0, -e.textCursor.Col) // move home
