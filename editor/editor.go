@@ -90,10 +90,18 @@ func (e *editor) Load(ctx context.Context, inputMmapReader *mmap.ReaderAt) (cont
 			e.lockUpdateRender(func() {
 				totalTime := time.Since(t0)
 				e.view.background = ""
-				e.view.message = fmt.Sprintf(
-					"loaded for %d seconds",
-					int(totalTime.Seconds()),
-				)
+				select {
+				case <-ctx.Done():
+					e.view.message = fmt.Sprintf(
+						"loading was cancelled after %d seconds",
+						int(totalTime.Seconds()),
+					)
+				default:
+					e.view.message = fmt.Sprintf(
+						"loaded for %d seconds",
+						int(totalTime.Seconds()),
+					)
+				}
 				e.renderWithoutLock()
 			})
 		}()
