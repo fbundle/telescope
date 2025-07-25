@@ -23,6 +23,7 @@ package editor
 
 import (
 	"context"
+	"telescope/log"
 
 	"golang.org/x/exp/mmap"
 )
@@ -33,12 +34,11 @@ type Cursor struct {
 }
 
 type View struct {
-	WinName    string
 	WinData    [][]rune
 	WinCursor  Cursor
 	TextCursor Cursor
-	Background string
 	Message    string
+	Background string // consider change it to {totalSize, loadedSize, ...}
 }
 
 type Controller interface {
@@ -49,11 +49,9 @@ type Controller interface {
 	Enter()
 	Backspace()
 	Delete()
-
-	Escape()
 	Tabular()
 
-	Jump(row int, col int)
+	Goto(row int, col int)
 	MoveLeft()
 	MoveRight()
 	MoveUp()
@@ -62,6 +60,12 @@ type Controller interface {
 	MoveEnd()
 	MovePageUp()
 	MovePageDown()
+
+	Undo()
+	Redo()
+
+	Apply(entry log.Entry)
+	Message(string)
 }
 
 type Renderer interface {
@@ -77,6 +81,7 @@ type Editor interface {
 	Controller
 	Text
 }
+
 
 ```
 
