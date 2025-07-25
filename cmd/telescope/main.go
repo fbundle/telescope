@@ -29,19 +29,6 @@ func printVersion() {
 	fmt.Println(VERSION)
 }
 
-func consume(args []string) ([]string, string) {
-	if len(args) == 0 {
-		return []string{}, ""
-	}
-	return args[1:], args[0]
-}
-func peek(args []string) string {
-	if len(args) == 0 {
-		return ""
-	}
-	return args[0]
-}
-
 type programArgs struct {
 	option        string
 	inputFilename string
@@ -144,4 +131,17 @@ func getDefaultLogFilename(filenameTextIn string) string {
 	name := "." + filepath.Base(filenameTextIn) + ".log"
 	logPath := filepath.Join(dir, name)
 	return logPath
+}
+
+func consume(args []string) ([]string, string) {
+	if len(args) == 0 {
+		return []string{}, ""
+	}
+	return args[1:], args[0]
+}
+func peek(args []string) string {
+	if len(args) == 0 {
+		return ""
+	}
+	return args[0]
 }
