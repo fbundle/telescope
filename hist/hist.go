@@ -9,34 +9,33 @@ type Hist[T any] interface {
 
 func New[T any](t T) Hist[T] {
 	return &hist[T]{
-		currentVersion: 0,
-		versionList:    []T{t},
+		i:  0,
+		ts: []T{t},
 	}
 }
 
 type hist[T any] struct {
-	currentVersion int
-	versionList    []T
+	i  int // current version
+	ts []T // all versions
 }
 
 func (h *hist[T]) Update(modifier func(T) T) {
-	h.versionList = h.versionList[:h.currentVersion+1]
-	next := modifier(h.versionList[h.currentVersion])
-	h.versionList = append(h.versionList, next)
-	h.currentVersion++
+	next := modifier(h.ts[h.i])
+	h.ts = append(h.ts[:h.i+1], next)
+	h.i++
 }
 
 func (h *hist[T]) Get() T {
-	return h.versionList[h.currentVersion]
+	return h.ts[h.i]
 }
 func (h *hist[T]) Undo() {
-	if h.currentVersion > 0 {
-		h.currentVersion--
+	if h.i > 0 {
+		h.i--
 	}
 }
 
 func (h *hist[T]) Redo() {
-	if h.currentVersion < len(h.versionList)-1 {
-		h.currentVersion++
+	if h.i < len(h.ts)-1 {
+		h.i++
 	}
 }
