@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+const (
+	HUMAN_READABLE_SERIALIZER = 0
+	BINARY_SERIALIZER         = 1
+)
+
 type Config struct {
 	DEBUG_IO_INTERVAL_MS         time.Duration
 	LOG_FLUSH_INTERVAL_S         time.Duration
@@ -18,8 +23,8 @@ func Load() Config {
 		DEBUG_IO_INTERVAL_MS:         100 * time.Millisecond,
 		LOG_FLUSH_INTERVAL_S:         60 * time.Second,
 		LOADING_PROGRESS_INTERVAL_MS: 100 * time.Millisecond,
-		SERIALIZER_VERSION:           1,
-		INITIAL_SERIALIZER_VERSION:   0,
+		SERIALIZER_VERSION:           BINARY_SERIALIZER,
+		INITIAL_SERIALIZER_VERSION:   HUMAN_READABLE_SERIALIZER,
 	}
 }
 
