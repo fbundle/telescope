@@ -19,16 +19,16 @@ func printHelp() {
 Usage: "telescope [option] file [logfile]"
 Options:
   -h --help	: show help
-  -v --version		: get version
-  -r --replay		: replay the edited file 
-  -l --log			: print the human readable log format
-  -w --overwrite	: force delete log
+  -v --version      : get version
+  -r --replay       : replay the edited file 
+  -l --log          : print the human readable log format
+  -w --overwrite    : force delete log
 
 Keyboard Shortcuts:
-  Ctrl+C		: exit
-  Ctrl+S		: flush log (autosave is always on, so this is not necessary)
-  Ctrl+U		: undo
-  Ctrl+R		: redo
+  Ctrl+C            : exit
+  Ctrl+S            : flush log (autosave is always on, so this is not necessary)
+  Ctrl+U            : undo
+  Ctrl+R            : redo
 
 	`
 	fmt.Println(help)
