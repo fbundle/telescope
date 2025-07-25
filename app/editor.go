@@ -67,15 +67,16 @@ func RunEditor(inputFilename string, logFilename string) error {
 	defer s.Fini()
 
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	width, height := s.Size()
 
 	e, loadCtx, flush, closer, err := makeEditor(ctx, inputFilename, logFilename, width, height)
 	if err != nil {
+		cancel()
 		return err
 	}
 	defer closer()
 	_ = loadCtx // do nothing with load ctx
+	defer cancel()
 
 	// draw loop
 	go func() {
