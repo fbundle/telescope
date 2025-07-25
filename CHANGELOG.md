@@ -22,7 +22,7 @@
 - improve robustness
 - added undo redo with `Ctrl+U` and `Ctrl+R`, added keyboard shortcuts in help message
 - added max history size
-- fixed some bug when refactoring code, fix some rendering bug when window is too small
+- fixed some bug when refactoring code, fix some rendering bug and improve usability
 
 # TODO
 
