@@ -1,42 +1,31 @@
 package main
 
 import (
-	"bufio"
+	"encoding/json"
 	"fmt"
-	"os"
+	"io"
 	"strings"
 )
 
-func promptYesNo(prompt string, defaultOption bool) bool {
-	reader := bufio.NewReader(os.Stdin)
-	for {
-		if defaultOption {
-			fmt.Print(prompt + " [Y/n]: ")
-		} else {
-			fmt.Print(prompt + " [y/N]: ")
-		}
-		input, err := reader.ReadString('\n')
-		if err != nil {
-			fmt.Println("Error reading input:", err)
-			continue
-		}
-		input = strings.ToLower(strings.TrimSpace(input))
-		if len(input) == 0 {
-			return defaultOption
-		}
-		if input == "y" || input == "yes" {
-			return true
-		} else if input == "n" || input == "no" {
-			return false
-		} else {
-			fmt.Println("Please enter y or n.")
-		}
-	}
+type Person struct {
+	Name string `json:"name"`
+	Age  int    `json:"age"`
 }
+
 func main() {
-	var ok bool
-	ok = promptYesNo("ues or no", false)
-	fmt.Println(ok)
-	ok = promptYesNo("ues or no", true)
-	fmt.Println(ok)
+	jsonData := "{\"name\": \"Alice\", \"age\": 30}\n{\"name\": \"khanh\", \"age\": 31}aaaa"
+	reader := strings.NewReader(jsonData)
+	decoder := json.NewDecoder(reader)
+	decoder.DisallowUnknownFields()
+
+	var person Person
+	for {
+		if err := decoder.Decode(&person); err != nil {
+			buffer, _ := io.ReadAll(decoder.Buffered())
+			rest, _ := io.ReadAll(reader)
+			fmt.Println("the rest", string(buffer), string(rest), err)
+			panic(err)
+		}
+		fmt.Println(person.Name, person.Age)
+	}
 }

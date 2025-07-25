@@ -69,7 +69,8 @@ func (w *writer) Write(e Entry) (Writer, error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = w.file.Write(append(b, '\n'))
+
+	err = lengthPrefixWrite(w.file, b)
 	if err != nil {
 		return nil, err
 	}

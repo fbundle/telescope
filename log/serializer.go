@@ -1,7 +1,6 @@
 package log
 
 import (
-	"encoding/binary"
 	"encoding/json"
 	"errors"
 )
@@ -26,7 +25,13 @@ func getSerializer(version uint64) (Serializer, error) {
 type serializerV0 struct{}
 
 func (serializerV0) Marshal(e Entry) ([]byte, error) {
-	return json.Marshal(e)
+	b, err := json.Marshal(e)
+	// padding for human readability
+	b1 := []byte{' '}
+	b1 = append(b1, b...)
+	b1 = append(b1, '\n')
+
+	return b1, err
 }
 
 func (serializerV0) Unmarshal(b []byte) (e Entry, err error) {
@@ -36,25 +41,6 @@ func (serializerV0) Unmarshal(b []byte) (e Entry, err error) {
 
 func (serializerV0) Version() uint64 {
 	return 0
-}
-
-func uint64ToBytes(x uint64) []byte {
-	b := make([]byte, 8) // 8 bytes
-	binary.LittleEndian.PutUint64(b, x)
-	return b
-}
-
-func runeToBytes(x rune) []byte {
-	b := make([]byte, 4)                        // 4 bytes
-	binary.LittleEndian.PutUint32(b, uint32(x)) // reinterpret rune int32 as uint32
-	return b
-}
-
-func bytesToUint64(b []byte) uint64 {
-	return binary.LittleEndian.Uint64(b)
-}
-func bytesToRune(b []byte) rune {
-	return rune(binary.LittleEndian.Uint32(b))
 }
 
 type serializerV1 struct{}

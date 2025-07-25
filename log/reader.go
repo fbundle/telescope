@@ -1,7 +1,6 @@
 package log
 
 import (
-	"bufio"
 	"io"
 	"os"
 	"telescope/feature"
@@ -20,9 +19,8 @@ func Read(filename string, apply func(e Entry) bool) error {
 		return err
 	}
 
-	reader := bufio.NewReader(f)
 	for {
-		line, readErr := reader.ReadBytes('\n')
+		line, readErr := lengthPrefixRead(f)
 
 		if readErr != nil && readErr != io.EOF {
 			return readErr
