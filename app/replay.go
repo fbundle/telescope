@@ -11,10 +11,9 @@ func RunReplay(inputFilename string, logFilename string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	_, _ = fmt.Fprintf(os.Stderr, "loading input file %s\n", inputFilename)
-	loadCtx, loadCancel := context.WithCancel(ctx)
 
 	// make editor without log
-	e, _, close, err := makeEditor(ctx, inputFilename, "", 20, 20, loadCancel)
+	e, _, close, err := makeEditor(ctx, inputFilename, "", 20, 20)
 	if err != nil {
 		return err
 	}
@@ -29,7 +28,7 @@ func RunReplay(inputFilename string, logFilename string) error {
 		}
 	}()
 
-	<-loadCtx.Done() // wait for loading
+	<-e.Done() // wait for loading
 
 	_, _ = fmt.Fprintf(os.Stderr, "loading log file %s\n", logFilename)
 

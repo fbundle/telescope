@@ -11,7 +11,7 @@ import (
 	"golang.org/x/exp/mmap"
 )
 
-func makeEditor(ctx context.Context, inputFilename string, logFilename string, width int, height int, loadDone func()) (editor.Editor, func() error, func(), error) {
+func makeEditor(ctx context.Context, inputFilename string, logFilename string, width int, height int) (editor.Editor, func() error, func(), error) {
 	closerList := make([]func() error, 0)
 	close := func() {
 		for i := len(closerList) - 1; i >= 0; i-- {
@@ -55,26 +55,20 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 		flush = writer.Flush
 	}
 
-	loadCtx, loadCancel := context.WithCancel(ctx)
 	// editor
 	e, err := editor.NewEditor(
 		ctx,
 		winName,
 		height-1, width,
 		inputMmapReader, logWriter,
-		func() {
-			loadCancel()
-			loadDone()
-		},
 	)
 	if err != nil {
-		loadCancel() // unable to create editor, just cancel the loadCtx anyway
 		close()
 		return nil, nil, nil, err
 	}
-	// waiting for loading to be done before closing
+	// waiting for editor loading to be done before closing
 	closerList = append(closerList, func() error {
-		<-loadCtx.Done()
+		<-e.Done()
 		return nil
 	})
 

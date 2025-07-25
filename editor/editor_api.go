@@ -48,4 +48,5 @@ type Editor interface {
 	Renderer
 	Controller
 	Text
+	Done() <-chan struct{}
 }

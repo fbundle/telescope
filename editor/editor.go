@@ -31,6 +31,7 @@ type window struct {
 // add a command buffer, press ESC reset command buffer
 
 type editor struct {
+	loadCtx   context.Context
 	renderCh  chan View
 	logWriter log.Writer
 
@@ -48,10 +49,12 @@ func NewEditor(
 	height int, width int,
 	inputMmapReader *mmap.ReaderAt,
 	logWriter log.Writer,
-	loadDone func(),
 ) (Editor, error) {
 
+	loadCtx, loadCancel := context.WithCancel(ctx) // if ctx is done then this editor will also stop loading
+
 	e := &editor{
+		loadCtx:   loadCtx,
 		renderCh:  make(chan View),
 		logWriter: logWriter,
 
@@ -76,20 +79,20 @@ func NewEditor(
 	// text
 	e.text = text.New(inputMmapReader)
 	if inputMmapReader == nil || inputMmapReader.Len() == 0 {
+		loadCancel()
 		return e, nil // nothing to load
 	}
 
 	// load file asynchronously
 	go func() {
-		if loadDone != nil {
-			defer loadDone()
-		}
+		defer loadCancel()
+
 		totalSize := inputMmapReader.Len()
 		loadedSize := 0
 		lastPercentage := 0
 		t0 := time.Now()
 		t1 := t0
-		text.LoadFile(ctx, inputMmapReader, func(l text.Line) {
+		text.LoadFile(e.loadCtx, inputMmapReader, func(l text.Line) {
 			loadedSize += l.Size()
 			e.lockUpdate(func() {
 				t2 := time.Now()
@@ -118,6 +121,10 @@ func NewEditor(
 	}()
 
 	return e, nil
+}
+
+func (e *editor) Done() <-chan struct{} {
+	return e.loadCtx.Done()
 }
 
 func (e *editor) lockUpdate(f func()) {
