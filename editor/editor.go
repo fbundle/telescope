@@ -31,7 +31,7 @@ type window struct {
 // add a command buffer, press ESC reset command buffer
 
 type editor struct {
-	renderCh  chan View
+	renderCh  chan View // buffered channel is important here for preventing deadlock
 	logWriter log.Writer
 
 	mu         sync.Mutex // the fields below are protected by mu
