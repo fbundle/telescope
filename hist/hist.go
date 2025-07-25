@@ -23,6 +23,7 @@ func (h *hist[T]) Update(modifier func(T) T) {
 	h.versionList = h.versionList[:h.currentVersion+1]
 	next := modifier(h.versionList[h.currentVersion])
 	h.versionList = append(h.versionList, next)
+	h.currentVersion++
 }
 
 func (h *hist[T]) Get() T {
