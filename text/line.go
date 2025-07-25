@@ -46,7 +46,7 @@ func (l Line) repr(r *mmap.ReaderAt) []rune {
 		buf := make([]byte, l.size)
 		_, err := r.ReadAt(buf, int64(l.offset))
 		if err != nil && err != io.EOF {
-			panic(err)
+			return nil
 		}
 		return []rune(string(buf))
 	}

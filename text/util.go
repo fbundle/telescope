@@ -3,6 +3,7 @@ package text
 import (
 	"context"
 	"slices"
+	"telescope/exit"
 	"telescope/feature"
 	"time"
 
@@ -18,10 +19,10 @@ func padNewLine(line []byte) []byte {
 
 func endOfLineSize(line []byte) int {
 	if len(line) == 0 {
-		panic("empty line")
+		exit.Write("empty line")
 	}
 	if line[len(line)-1] != '\n' {
-		panic("not end of line")
+		exit.Write("not end of line")
 	}
 	if len(line) >= 2 && line[len(line)-2] == '\r' {
 		// for windows
@@ -39,12 +40,10 @@ func indexFile(ctx context.Context, reader *mmap.ReaderAt, delim byte, update fu
 			return nil
 		default:
 		}
+
 		if reader.At(i) == delim {
 			line := make([]byte, i+1-offset)
-			_, err := reader.ReadAt(line, int64(offset))
-			if err != nil {
-				return err
-			}
+			_, _ = reader.ReadAt(line, int64(offset))
 			if feature.Debug() {
 				time.Sleep(feature.DEBUG_IO_INTERVAL_MS * time.Millisecond)
 			}

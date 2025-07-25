@@ -2,6 +2,7 @@ package editor
 
 import (
 	"slices"
+	"telescope/exit"
 	"telescope/log"
 	"telescope/text"
 )
@@ -69,7 +70,7 @@ func (e *editor) Backspace() {
 				m = m.Set(row, newRow)
 				e.moveRelativeAndFixWithoutLock(0, -1)
 			default:
-				panic("unreachable")
+				exit.Write("unreachable")
 			}
 			return m
 		}(e.text)
@@ -104,7 +105,7 @@ func (e *editor) Delete() {
 				newRow = deleteFromSlice(newRow, col)
 				m = m.Set(row, newRow)
 			default:
-				panic("unreachable")
+				exit.Write("unreachable")
 			}
 			return m
 		}(e.text)
@@ -138,7 +139,8 @@ func (e *editor) Enter() {
 				m = m.Set(e.textCursor.Row, r1).Ins(e.textCursor.Row+1, r2)
 				return m
 			default:
-				panic("unreachable")
+				exit.Write("unreachable")
+				return m
 			}
 		}(e.text)
 		e.moveRelativeAndFixWithoutLock(1, 0)                 // move down

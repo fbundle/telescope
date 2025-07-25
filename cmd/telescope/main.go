@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"telescope/app"
+	"telescope/exit"
 )
 
 const VERSION = "0.1.5"
@@ -51,7 +52,7 @@ func main() {
 	case "-l", "--log":
 		err := app.RunLog(args.logFilename)
 		if err != nil {
-			panic(err)
+			exit.Write(err)
 		}
 	default:
 		if fileNonEmpty(args.logFilename) {
@@ -61,12 +62,12 @@ func main() {
 			}
 			err := os.Remove(args.logFilename)
 			if err != nil {
-				panic(err)
+				exit.Write(err)
 			}
 		}
 		err := app.RunEditor(args.inputFilename, args.logFilename)
 		if err != nil {
-			panic(err)
+			exit.Write(err)
 		}
 	}
 }

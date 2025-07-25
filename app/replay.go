@@ -47,7 +47,7 @@ func RunReplay(inputFilename string, logFilename string) error {
 			e.Jump(int(entry.CursorRow), int(entry.CursorCol))
 			e.Type(entry.Rune)
 		default:
-			panic("unknown command")
+			// ignore
 		}
 		return true
 	})
