@@ -46,19 +46,29 @@ func (humanReadableSerializer) Version() uint64 {
 
 type binarySerializer struct{}
 
-var commandToByte = map[Command]byte{
-	CommandSetVersion: 0,
-	CommandType:       1,
-	CommandEnter:      2,
-	CommandBackspace:  3,
-	CommandDelete:     4,
+var commandList = []Command{
+	CommandSetVersion,
+	CommandType,
+	CommandEnter,
+	CommandBackspace,
+	CommandDelete,
+	CommandUndo,
+	CommandRedo,
 }
-var byteToCommand = map[byte]Command{
-	0: CommandSetVersion,
-	1: CommandType,
-	2: CommandEnter,
-	3: CommandBackspace,
-	4: CommandDelete,
+var commandToByteMap map[Command]byte = nil
+
+func commandToByte(c Command) byte {
+	if commandToByteMap == nil {
+		commandToByteMap = make(map[Command]byte)
+		for i, cmd := range commandList {
+			commandToByteMap[cmd] = byte(i)
+		}
+	}
+	return commandToByteMap[c]
+}
+
+func byteToCommand(b byte) Command {
+	return commandList[b]
 }
 
 func consume(buffer []byte, n int) ([]byte, []byte) {
@@ -70,7 +80,7 @@ func consume(buffer []byte, n int) ([]byte, []byte) {
 
 func (binarySerializer) Marshal(e Entry) ([]byte, error) {
 	var buffer []byte
-	buffer = append(buffer, commandToByte[e.Command])
+	buffer = append(buffer, commandToByte(e.Command))
 	switch e.Command {
 	case CommandSetVersion:
 		buffer = append(buffer, uint64ToBytes(e.Version)...)
@@ -84,13 +94,16 @@ func (binarySerializer) Marshal(e Entry) ([]byte, error) {
 		buffer = append(buffer, uint64ToBytes(e.CursorRow)...)
 		buffer = append(buffer, uint64ToBytes(e.CursorCol)...)
 		return buffer, nil
+	case CommandUndo, CommandRedo:
+		return buffer, nil
+	default:
+		return nil, errors.New("command not found")
 	}
-	return nil, errors.New("command not found")
 }
 
 func (binarySerializer) Unmarshal(buffer []byte) (e Entry, err error) {
 	buffer, b := consume(buffer, 1)
-	e.Command = byteToCommand[b[0]]
+	e.Command = byteToCommand(b[0])
 	switch e.Command {
 	case CommandSetVersion:
 		buffer, b = consume(buffer, 8)

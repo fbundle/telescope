@@ -2,6 +2,7 @@ package editor
 
 import (
 	"context"
+	"telescope/log"
 
 	"golang.org/x/exp/mmap"
 )
@@ -43,6 +44,8 @@ type Controller interface {
 
 	Undo()
 	Redo()
+
+	Apply(entry log.Entry)
 }
 
 type Renderer interface {

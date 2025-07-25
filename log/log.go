@@ -8,6 +8,8 @@ const (
 	CommandEnter      Command = "enter"
 	CommandBackspace  Command = "backspace"
 	CommandDelete     Command = "delete"
+	CommandUndo       Command = "undo"
+	CommandRedo       Command = "redo"
 )
 
 type Entry struct {

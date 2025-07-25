@@ -156,5 +156,46 @@ func (e *editor) Enter() {
 	})
 }
 
-func (e *editor) Undo() {}
-func (e *editor) Redo() {}
+func (e *editor) Undo() {
+	e.lockUpdateRender(func() {
+		e.writeLog(log.Entry{
+			Command: log.CommandUndo,
+		})
+		e.text.Undo()
+		e.setStatusWithoutLock("undo")
+	})
+}
+func (e *editor) Redo() {
+	e.lockUpdateRender(func() {
+		e.writeLog(log.Entry{
+			Command: log.CommandRedo,
+		})
+		e.text.Redo()
+		e.setStatusWithoutLock("redo")
+	})
+}
+
+func (e *editor) Apply(entry log.Entry) {
+	e.lockUpdateRender(func() {
+		switch entry.Command {
+		case log.CommandEnter:
+			e.Jump(int(entry.CursorRow), int(entry.CursorCol))
+			e.Enter()
+		case log.CommandBackspace:
+			e.Jump(int(entry.CursorRow), int(entry.CursorCol))
+			e.Backspace()
+		case log.CommandDelete:
+			e.Jump(int(entry.CursorRow), int(entry.CursorCol))
+			e.Delete()
+		case log.CommandType:
+			e.Jump(int(entry.CursorRow), int(entry.CursorCol))
+			e.Type(entry.Rune)
+		case log.CommandUndo:
+			e.Undo()
+		case log.CommandRedo:
+			e.Redo()
+		default:
+			exit.Write("command not found")
+		}
+	})
+}
