@@ -22,6 +22,7 @@
 
 # TODO
 
+- allow open multiple files by concatenating them
 - add vim-like command at status bar
 - add undo,redo
 - add search

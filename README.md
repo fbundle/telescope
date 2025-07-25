@@ -21,6 +21,12 @@ here are the projected feature sets
 ```go
 package editor
 
+import (
+	"context"
+
+	"golang.org/x/exp/mmap"
+)
+
 type Cursor struct {
 	Row int
 	Col int
@@ -36,8 +42,8 @@ type View struct {
 }
 
 type Controller interface {
+	Load(ctx context.Context, inputMmapReader *mmap.ReaderAt) (context.Context, error)
 	Resize(height int, width int)
-	Save()
 
 	Type(ch rune)
 	Enter()
@@ -47,7 +53,7 @@ type Controller interface {
 	Escape()
 	Tabular()
 
-	Jump(col int, row int)
+	Jump(row int, col int)
 	MoveLeft()
 	MoveRight()
 	MoveUp()
@@ -62,10 +68,16 @@ type Renderer interface {
 	Update() <-chan View
 }
 
+type Text interface {
+	Iter(func(i int, line []rune) bool)
+}
+
 type Editor interface {
 	Renderer
 	Controller
+	Text
 }
+
 ```
 
 ## NOTE
