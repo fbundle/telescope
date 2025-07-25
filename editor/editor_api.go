@@ -15,8 +15,8 @@ type View struct {
 	WinData    [][]rune
 	WinCursor  Cursor
 	TextCursor Cursor
-	Background string
 	Message    string
+	Background string // consider change it to {totalSize, loadedSize, ...}
 }
 
 type Controller interface {
