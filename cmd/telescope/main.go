@@ -11,7 +11,7 @@ import (
 	"telescope/exit"
 )
 
-const VERSION = "0.1.5b"
+const VERSION = "0.1.5c"
 
 func printHelp() {
 	fmt.Printf("telescope version %s\n", VERSION)

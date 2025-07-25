@@ -123,6 +123,8 @@ func (binarySerializer) Unmarshal(buffer []byte) (e Entry, err error) {
 		buffer, b = consume(buffer, 8)
 		e.CursorCol = bytesToUint64(b)
 		return e, nil
+	case CommandUndo, CommandRedo:
+		return e, nil
 	}
 	return e, errors.New("parse error")
 }
