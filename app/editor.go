@@ -106,7 +106,6 @@ func RunEditor(inputFilename string, logFilename string) error {
 		case *tcell.EventKey:
 			if event.Key() == tcell.KeyCtrlC {
 				// Ctrl+C to stop
-				cancel()
 				running = false
 			} else if event.Key() == tcell.KeyCtrlS {
 				// Ctrl+S to flush
