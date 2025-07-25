@@ -39,22 +39,7 @@ func RunReplay(inputFilename string, logFilename string) error {
 	_, _ = fmt.Fprintf(os.Stderr, "loading log file %s\n", logFilename)
 
 	err = log.Read(logFilename, func(entry log.Entry) bool {
-		switch entry.Command {
-		case log.CommandEnter:
-			e.Jump(int(entry.CursorRow), int(entry.CursorCol))
-			e.Enter()
-		case log.CommandBackspace:
-			e.Jump(int(entry.CursorRow), int(entry.CursorCol))
-			e.Backspace()
-		case log.CommandDelete:
-			e.Jump(int(entry.CursorRow), int(entry.CursorCol))
-			e.Delete()
-		case log.CommandType:
-			e.Jump(int(entry.CursorRow), int(entry.CursorCol))
-			e.Type(entry.Rune)
-		default:
-			// ignore
-		}
+		e.Apply(entry)
 		return true
 	})
 	if err != nil {
