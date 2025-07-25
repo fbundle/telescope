@@ -10,7 +10,7 @@ import (
 	"telescope/app"
 )
 
-const VERSION = "0.1.4"
+const VERSION = "0.1.5"
 
 func printHelp() {
 	printVersion()
