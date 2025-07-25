@@ -23,7 +23,7 @@ type internalView struct {
 }
 
 type editor struct {
-	renderCh  chan View // buffered channel is important here for preventing deadlock
+	renderCh  chan View // buffered channel is necessary  for preventing deadlock
 	logWriter log.Writer
 
 	mu     sync.Mutex // the fields below are protected by mu
@@ -91,7 +91,7 @@ func (e *editor) Load(ctx context.Context, inputMmapReader *mmap.ReaderAt) (cont
 				totalTime := time.Since(t0)
 				e.view.background = ""
 				e.view.message = fmt.Sprintf(
-					"loaded %d seconds",
+					"loaded for %d seconds",
 					int(totalTime.Seconds()),
 				)
 				e.renderWithoutLock()
