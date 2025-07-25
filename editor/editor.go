@@ -44,6 +44,7 @@ type editor struct {
 
 func NewEditor(
 	ctx context.Context,
+	winName string,
 	height int, width int,
 	inputMmapReader *mmap.ReaderAt,
 	logWriter log.Writer,
@@ -66,7 +67,7 @@ func NewEditor(
 			width:  width,
 		},
 		view: internalView{
-			winName:    "telescope",
+			winName:    winName,
 			message:    "",
 			background: "",
 		},
