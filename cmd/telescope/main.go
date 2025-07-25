@@ -15,7 +15,7 @@ const VERSION = "0.1.4"
 func printHelp() {
 	printVersion()
 	help := `
-Usage: "telescope [option] <file>"
+Usage: "telescope [option] file [logfile]"
 Option:
   -h --help	: show help
   -v --version	: get version
