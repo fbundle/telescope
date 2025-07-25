@@ -18,9 +18,9 @@ type Text interface {
 }
 
 func New(r *mmap.ReaderAt) Text {
-	return &model{
-		r:   r,
-		vec: vector.NewVector[Line](),
+	return &text{
+		reader: r,
+		vec:    vector.NewVector[Line](),
 	}
 }
 
@@ -33,49 +33,49 @@ func LoadFile(ctx context.Context, reader *mmap.ReaderAt, update func(Line)) err
 	})
 }
 
-type model struct {
-	r   *mmap.ReaderAt
-	vec vector.Vector[Line]
+type text struct {
+	reader *mmap.ReaderAt
+	vec    vector.Vector[Line]
 }
 
-func (m *model) Append(line Line) Text {
-	return &model{
-		r:   m.r,
-		vec: m.vec.Ins(m.vec.Len(), line),
+func (t *text) Append(line Line) Text {
+	return &text{
+		reader: t.reader,
+		vec:    t.vec.Ins(t.vec.Len(), line),
 	}
 }
 
-func (m *model) Get(i int) []rune {
-	return m.vec.Get(i).repr(m.r)
+func (t *text) Get(i int) []rune {
+	return t.vec.Get(i).repr(t.reader)
 }
 
-func (m *model) Set(i int, val []rune) Text {
-	return &model{
-		r:   m.r,
-		vec: m.vec.Set(i, makeLineFromData(val)),
+func (t *text) Set(i int, val []rune) Text {
+	return &text{
+		reader: t.reader,
+		vec:    t.vec.Set(i, makeLineFromData(val)),
 	}
 }
 
-func (m *model) Ins(i int, val []rune) Text {
-	return &model{
-		r:   m.r,
-		vec: m.vec.Ins(i, makeLineFromData(val)),
+func (t *text) Ins(i int, val []rune) Text {
+	return &text{
+		reader: t.reader,
+		vec:    t.vec.Ins(i, makeLineFromData(val)),
 	}
 }
 
-func (m *model) Del(i int) Text {
-	return &model{
-		r:   m.r,
-		vec: m.vec.Del(i),
+func (t *text) Del(i int) Text {
+	return &text{
+		reader: t.reader,
+		vec:    t.vec.Del(i),
 	}
 }
 
-func (m *model) Iter(f func(i int, val []rune) bool) {
-	m.vec.Iter(func(i int, l Line) bool {
-		return f(i, l.repr(m.r))
+func (t *text) Iter(f func(i int, val []rune) bool) {
+	t.vec.Iter(func(i int, l Line) bool {
+		return f(i, l.repr(t.reader))
 	})
 }
 
-func (m *model) Len() int {
-	return m.vec.Len()
+func (t *text) Len() int {
+	return t.vec.Len()
 }
