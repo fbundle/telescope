@@ -12,12 +12,13 @@ type Writer interface {
 }
 
 func NewWriter(ctx context.Context, filename string) (Writer, error) {
-	version := feature.SERIALIZER_VERSION
 
 	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		return nil, err
 	}
+	// use initial serializer
+	version := uint64(feature.INITIAL_SERIALIZER_VERSION)
 	s, err := getSerializer(version)
 	if err != nil {
 		return nil, err
@@ -37,11 +38,21 @@ func NewWriter(ctx context.Context, filename string) (Writer, error) {
 		}
 	}()
 
-	// write set version
-	return w.Write(Entry{
+	// write set version and change to default serializer
+	_, err = w.Write(Entry{
 		Command: CommandSetVersion,
-		Version: version,
+		Version: feature.DEFAULT_SERIALIZER_VERSION,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	s1, err := getSerializer(feature.DEFAULT_SERIALIZER_VERSION)
+	if err != nil {
+		return nil, err
+	}
+	w.marshal = s1.Marshal
+	return w, nil
 }
 
 type writer struct {

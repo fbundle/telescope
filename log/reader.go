@@ -2,8 +2,6 @@ package log
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/json"
 	"io"
 	"os"
 	"telescope/feature"
@@ -17,43 +15,47 @@ func Read(filename string, apply func(e Entry) bool) error {
 	}
 	defer f.Close()
 
-	s, err := getSerializer(0) // default serializer
+	s, err := getSerializer(feature.INITIAL_SERIALIZER_VERSION)
 	if err != nil {
 		return err
 	}
 
 	reader := bufio.NewReader(f)
 	for {
-		line, err := reader.ReadBytes('\n')
-		if err != nil && err != io.EOF {
-			return err
-		}
-		line = bytes.TrimSpace(line)
-		if len(line) > 0 {
-			var e Entry
-			if err := json.Unmarshal(line, &e); err != nil {
-				return err
-			}
+		line, readErr := reader.ReadBytes('\n')
 
+		if readErr != nil && readErr != io.EOF {
+			return readErr
+		}
+		if len(line) > 0 && line[len(line)-1] == '\n' {
+			line = line[:len(line)-1]
+		}
+
+		// process line, update serializer
+		s1, ok, processErr := func(s Serializer, line []byte) (Serializer, bool, error) {
+			if len(line) == 0 {
+				return s, true, nil
+			}
+			e, err := s.Unmarshal(line)
+			if err != nil {
+				return nil, false, err
+			}
 			if e.Command == CommandSetVersion {
 				// when log entry is a set_version, change the version of serializer
 				s, err = getSerializer(e.Version)
-				if err != nil {
-					return err
-				}
-			} else {
-				if feature.Debug() {
-					time.Sleep(feature.DEBUG_IO_INTERVAL_MS * time.Millisecond)
-				}
-				ok := apply(e)
-				if !ok {
-					return nil
-				}
+				return s, true, err
 			}
+			if feature.Debug() {
+				time.Sleep(feature.DEBUG_IO_INTERVAL_MS * time.Millisecond)
+			}
+			return s, apply(e), nil
+		}(s, line)
 
+		//
+		if processErr != nil || !ok || readErr == io.EOF {
+			return err
 		}
-		if err == io.EOF {
-			return nil
-		}
+
+		s = s1
 	}
 }

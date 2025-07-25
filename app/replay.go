@@ -33,16 +33,16 @@ func RunReplay(inputFilename string, logFilename string) error {
 	err = log.Read(logFilename, func(entry log.Entry) bool {
 		switch entry.Command {
 		case log.CommandEnter:
-			e.Jump(entry.CursorRow, entry.CursorCol)
+			e.Jump(int(entry.CursorRow), int(entry.CursorCol))
 			e.Enter()
 		case log.CommandBackspace:
-			e.Jump(entry.CursorRow, entry.CursorCol)
+			e.Jump(int(entry.CursorRow), int(entry.CursorCol))
 			e.Backspace()
 		case log.CommandDelete:
-			e.Jump(entry.CursorRow, entry.CursorCol)
+			e.Jump(int(entry.CursorRow), int(entry.CursorCol))
 			e.Delete()
 		case log.CommandType:
-			e.Jump(entry.CursorRow, entry.CursorCol)
+			e.Jump(int(entry.CursorRow), int(entry.CursorCol))
 			e.Type(entry.Rune)
 		default:
 			panic("unknown command")

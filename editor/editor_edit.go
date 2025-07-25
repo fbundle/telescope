@@ -11,8 +11,8 @@ func (e *editor) Type(ch rune) {
 		e.writeLog(log.Entry{
 			Command:   log.CommandType,
 			Rune:      ch,
-			CursorRow: e.textCursor.Row,
-			CursorCol: e.textCursor.Col,
+			CursorRow: uint64(e.textCursor.Row),
+			CursorCol: uint64(e.textCursor.Col),
 		})
 
 		e.text = func(m text.Text) text.Text {
@@ -43,8 +43,8 @@ func (e *editor) Backspace() {
 	e.lockUpdateRender(func() {
 		e.writeLog(log.Entry{
 			Command:   log.CommandBackspace,
-			CursorRow: e.textCursor.Row,
-			CursorCol: e.textCursor.Col,
+			CursorRow: uint64(e.textCursor.Row),
+			CursorCol: uint64(e.textCursor.Col),
 		})
 
 		e.text = func(m text.Text) text.Text {
@@ -81,8 +81,8 @@ func (e *editor) Delete() {
 	e.lockUpdateRender(func() {
 		e.writeLog(log.Entry{
 			Command:   log.CommandDelete,
-			CursorRow: e.textCursor.Row,
-			CursorCol: e.textCursor.Col,
+			CursorRow: uint64(e.textCursor.Row),
+			CursorCol: uint64(e.textCursor.Col),
 		})
 
 		e.text = func(m text.Text) text.Text {
@@ -116,8 +116,8 @@ func (e *editor) Enter() {
 	e.lockUpdateRender(func() {
 		e.writeLog(log.Entry{
 			Command:   log.CommandEnter,
-			CursorRow: e.textCursor.Row,
-			CursorCol: e.textCursor.Col,
+			CursorRow: uint64(e.textCursor.Row),
+			CursorCol: uint64(e.textCursor.Col),
 		})
 
 		e.text = func(m text.Text) text.Text {
