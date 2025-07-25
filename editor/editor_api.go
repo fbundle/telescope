@@ -28,6 +28,7 @@ type Controller interface {
 	Enter()
 	Backspace()
 	Delete()
+	Tabular()
 
 	Goto(row int, col int)
 	MoveLeft()

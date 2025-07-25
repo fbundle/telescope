@@ -11,9 +11,6 @@ func (e *editor) Resize(height int, width int) {
 	})
 }
 
-func (e *editor) Escape() {
-	// do nothing
-}
 func (e *editor) Tabular() {
 	// tab is two spaces
 	e.Type(' ')
