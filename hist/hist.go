@@ -1,5 +1,7 @@
 package hist
 
+import "telescope/config"
+
 type Hist[T any] interface {
 	Update(modifier func(T) T)
 	Get() T
@@ -7,25 +9,23 @@ type Hist[T any] interface {
 	Redo()
 }
 
-func New[T any](t T, maxsize int) Hist[T] {
+func New[T any](t T) Hist[T] {
 	return &hist[T]{
-		maxsize: maxsize,
-		i:       0,
-		ts:      []T{t},
+		i:  0,
+		ts: []T{t},
 	}
 }
 
 type hist[T any] struct {
-	maxsize int
-	i       int // current version
-	ts      []T // all versions
+	i  int // current version
+	ts []T // all versions
 }
 
 func (h *hist[T]) Update(modifier func(T) T) {
 	next := modifier(h.ts[h.i])
 	h.ts = append(h.ts[:h.i+1], next)
 	h.i++
-	if len(h.ts) > h.maxsize {
+	if len(h.ts) > config.Load().MAXSIZE_HISTORY {
 		h.ts = h.ts[1:]
 	}
 }

@@ -16,6 +16,7 @@ type Config struct {
 	LOADING_PROGRESS_INTERVAL_MS time.Duration
 	SERIALIZER_VERSION           uint64
 	INITIAL_SERIALIZER_VERSION   uint64
+	MAXSIZE_HISTORY              int
 }
 
 // TODO - export these into environment variables
@@ -27,6 +28,7 @@ func Load() Config {
 		LOADING_PROGRESS_INTERVAL_MS: 100 * time.Millisecond,
 		SERIALIZER_VERSION:           BINARY_SERIALIZER,
 		INITIAL_SERIALIZER_VERSION:   HUMAN_READABLE_SERIALIZER,
+		MAXSIZE_HISTORY:              1024,
 	}
 }
 
