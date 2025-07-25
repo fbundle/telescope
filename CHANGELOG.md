@@ -17,6 +17,7 @@
 - log is now use length-prefixed format so that the same file can be decoded using multiple format
 - add function to print out human readable log format
 - fixed exit condition - bufio.Writer is used, log will be written at the end of the program or every `LOG_FLUSH_INTERVAL_S=60` seconds
+- fixed a bug that the UI keeps reading `mmap.ReaderAt` while is it already closed - just return `[]rune{}` if the file is closed
 
 # TODO
 
