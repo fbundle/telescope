@@ -130,7 +130,6 @@ func RunEditor(inputFilename string, logFilename string) error {
 
 	// we have to cancel here first, then wait for a while before exiting
 	// since exiting will close all the files; waiting time is necessary for all background tasks to stop reading files
-	e.Message("waiting 1 second for background tasks to stop... ")
 	cancel()
 	time.Sleep(time.Second)
 	return nil
