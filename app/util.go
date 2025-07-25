@@ -20,7 +20,7 @@ func fileNonEmpty(filename string) bool {
 }
 func makeEditor(ctx context.Context, inputFilename string, logFilename string, width int, height int) (editor.Editor, context.Context, func() error, func(), error) {
 	closerList := make([]func() error, 0)
-	close := func() {
+	closer := func() {
 		for i := len(closerList) - 1; i >= 0; i-- {
 			closerList[i]()
 		}
@@ -33,7 +33,7 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 	if fileNonEmpty(inputFilename) {
 		inputMmapReader, err = mmap.Open(inputFilename)
 		if err != nil {
-			close()
+			closer()
 			return nil, nil, nil, nil, err
 		}
 		closerList = append(closerList, inputMmapReader.Close)
@@ -47,17 +47,17 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 	if len(logFilename) > 0 {
 		logFile, err = os.OpenFile(logFilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 		if err != nil {
-			close()
+			closer()
 			return nil, nil, nil, nil, err
 		}
 		closerList = append(closerList, logFile.Close)
 		writer := bufio.NewWriter(logFile)
 
-		closerList = append(closerList, writer.Flush) // flush before close
+		closerList = append(closerList, writer.Flush) // flush before closer
 
 		logWriter, err = log.NewWriter(writer)
 		if err != nil {
-			close()
+			closer()
 			return nil, nil, nil, nil, err
 		}
 		flush = writer.Flush
@@ -69,16 +69,16 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 		logWriter,
 	)
 	if err != nil {
-		close()
+		closer()
 		return nil, nil, nil, nil, err
 	}
 
 	// load input file
 	loadCtx, err := e.Load(ctx, inputMmapReader)
 	if err != nil {
-		close()
+		closer()
 		return nil, nil, nil, nil, err
 	}
 
-	return e, loadCtx, flush, close, err
+	return e, loadCtx, flush, closer, err
 }
