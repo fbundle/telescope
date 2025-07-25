@@ -19,9 +19,10 @@ func printHelp() {
 Usage: "telescope [option] file [logfile]"
 Option:
   -h --help	: show help
-  -v --version	: get version
-  -r --replay	: replay the edited file 
-  -l --log		: print the human readable log format
+  -v --version		: get version
+  -r --replay		: replay the edited file 
+  -l --log			: print the human readable log format
+  -w --overwrite	: force delete log
 	`
 	fmt.Println(help)
 }
@@ -51,6 +52,11 @@ func main() {
 		}
 	case "-l", "--log":
 		err := app.RunLog(args.logFilename)
+		if err != nil {
+			exit.Write(err)
+		}
+	case "-w", "--overwrite":
+		err := app.RunEditor(args.inputFilename, args.logFilename)
 		if err != nil {
 			exit.Write(err)
 		}
