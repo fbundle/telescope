@@ -19,7 +19,8 @@
 - fixed exit condition - bufio.Writer is used, log will be written at the end of the program or every `LOG_FLUSH_INTERVAL_S=60` seconds
 - fixed a bug that the UI keeps reading `mmap.ReaderAt` while is it already closed - just return `[]rune{}` if the file is closed
 - decompose loading and editor logic
-- added undo redo
+- improve robustness
+- added undo redo with `Ctrl+U` and `Ctrl+R`, added keyboard shortcuts in help message 
 
 # TODO
 

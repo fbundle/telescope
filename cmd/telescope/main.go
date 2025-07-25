@@ -26,7 +26,7 @@ Options:
 
 Keyboard Shortcuts:
   Ctrl+C		: exit
-  Ctrl+S		: flush log
+  Ctrl+S		: flush log (autosave is always on, so this is not necessary)
   Ctrl+U		: undo
   Ctrl+R		: redo
 
