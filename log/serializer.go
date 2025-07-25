@@ -3,6 +3,7 @@ package log
 import (
 	"encoding/json"
 	"errors"
+	"telescope/config"
 )
 
 type Serializer interface {
@@ -13,18 +14,18 @@ type Serializer interface {
 
 func GetSerializer(version uint64) (Serializer, error) {
 	switch version {
-	case 0:
-		return serializerV0{}, nil
-	case 1:
-		return serializerV1{}, nil
+	case config.HUMAN_READABLE_SERIALIZER:
+		return humanReadableSerializer{}, nil
+	case config.BINARY_SERIALIZER:
+		return binarySerializer{}, nil
 	default:
 		return nil, errors.New("serializer not found")
 	}
 }
 
-type serializerV0 struct{}
+type humanReadableSerializer struct{}
 
-func (serializerV0) Marshal(e Entry) ([]byte, error) {
+func (humanReadableSerializer) Marshal(e Entry) ([]byte, error) {
 	b, err := json.Marshal(e)
 	// padding for human readability
 	b1 := []byte{' '}
@@ -34,16 +35,16 @@ func (serializerV0) Marshal(e Entry) ([]byte, error) {
 	return b1, err
 }
 
-func (serializerV0) Unmarshal(b []byte) (e Entry, err error) {
+func (humanReadableSerializer) Unmarshal(b []byte) (e Entry, err error) {
 	err = json.Unmarshal(b, &e)
 	return e, err
 }
 
-func (serializerV0) Version() uint64 {
-	return 0
+func (humanReadableSerializer) Version() uint64 {
+	return config.HUMAN_READABLE_SERIALIZER
 }
 
-type serializerV1 struct{}
+type binarySerializer struct{}
 
 var commandToByte = map[Command]byte{
 	CommandSetVersion: 0,
@@ -67,7 +68,7 @@ func consume(buffer []byte, n int) ([]byte, []byte) {
 	return buffer[n:], buffer[:n]
 }
 
-func (serializerV1) Marshal(e Entry) ([]byte, error) {
+func (binarySerializer) Marshal(e Entry) ([]byte, error) {
 	var buffer []byte
 	buffer = append(buffer, commandToByte[e.Command])
 	switch e.Command {
@@ -87,7 +88,7 @@ func (serializerV1) Marshal(e Entry) ([]byte, error) {
 	return nil, errors.New("command not found")
 }
 
-func (serializerV1) Unmarshal(buffer []byte) (e Entry, err error) {
+func (binarySerializer) Unmarshal(buffer []byte) (e Entry, err error) {
 	buffer, b := consume(buffer, 1)
 	e.Command = byteToCommand[b[0]]
 	switch e.Command {
@@ -113,6 +114,6 @@ func (serializerV1) Unmarshal(buffer []byte) (e Entry, err error) {
 	return e, errors.New("parse error")
 }
 
-func (serializerV1) Version() uint64 {
-	return 1
+func (binarySerializer) Version() uint64 {
+	return config.BINARY_SERIALIZER
 }
