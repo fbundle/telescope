@@ -23,6 +23,6 @@ func Write(vs ...any) {
 	b := []byte(fmt.Sprint(vs...))
 	buffer = append(buffer, b...)
 
-	os.WriteFile("exit.txt", buffer, 0644)
+	os.WriteFile("exit.txt", buffer, 0600)
 	os.Exit(1)
 }

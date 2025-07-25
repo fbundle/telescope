@@ -38,7 +38,7 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 	var logWriter log.Writer = nil
 	var flush func() error = func() error { return nil }
 	if len(logFilename) > 0 {
-		logFile, err = os.OpenFile(logFilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
+		logFile, err = os.OpenFile(logFilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 		if err != nil {
 			close()
 			return nil, nil, nil, nil, err
