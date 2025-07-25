@@ -1,8 +1,7 @@
 package log
 
 import (
-	"context"
-	"os"
+	"io"
 	"sync"
 	"telescope/feature"
 )
@@ -11,12 +10,7 @@ type Writer interface {
 	Write(e Entry) (Writer, error)
 }
 
-func NewWriter(ctx context.Context, filename string) (Writer, error) {
-
-	f, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
-	if err != nil {
-		return nil, err
-	}
+func NewWriter(iowriter io.Writer) (Writer, error) {
 	// use initial serializer
 	version := uint64(feature.INITIAL_SERIALIZER_VERSION)
 	s, err := GetSerializer(version)
@@ -25,18 +19,9 @@ func NewWriter(ctx context.Context, filename string) (Writer, error) {
 	}
 	w := &writer{
 		mu:      sync.Mutex{},
-		file:    f,
+		writer:  iowriter,
 		marshal: s.Marshal,
 	}
-	go func() {
-		<-ctx.Done()
-		w.mu.Lock()
-		defer w.mu.Unlock()
-		err := w.file.Close()
-		if err != nil {
-			panic(err)
-		}
-	}()
 
 	// write set_version using INITIAL_SERIALIZER_VERSION
 	// tell reader to use SERIALIZER_VERSION
@@ -58,7 +43,7 @@ func NewWriter(ctx context.Context, filename string) (Writer, error) {
 
 type writer struct {
 	mu      sync.Mutex
-	file    *os.File
+	writer  io.Writer
 	marshal func(Entry) ([]byte, error)
 }
 
@@ -71,7 +56,7 @@ func (w *writer) Write(e Entry) (Writer, error) {
 		return nil, err
 	}
 
-	err = lengthPrefixWrite(w.file, b)
+	err = lengthPrefixWrite(w.writer, b)
 	if err != nil {
 		return nil, err
 	}

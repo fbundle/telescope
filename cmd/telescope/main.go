@@ -54,7 +54,7 @@ func main() {
 			panic(err)
 		}
 	default:
-		if fileExists(args.logFilename) && fileSize(args.logFilename) > 0 {
+		if fileNonEmpty(args.logFilename) {
 			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.logFilename), false)
 			if !ok {
 				return
@@ -71,19 +71,12 @@ func main() {
 	}
 }
 
-func fileExists(filename string) bool {
-	_, err := os.Stat(filename)
-	return err == nil || !os.IsNotExist(err)
-}
-
-func fileSize(filename string) int {
+func fileNonEmpty(filename string) bool {
 	info, err := os.Stat(filename)
 	if err != nil {
-		log.Fatal(err)
+		return false
 	}
-
-	size := info.Size() // in bytes
-	return int(size)
+	return info.Size() > 0
 }
 
 func promptYesNo(prompt string, defaultOption bool) bool {

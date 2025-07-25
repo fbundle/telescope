@@ -1,10 +1,5 @@
 package editor
 
-import (
-	"log"
-	"os"
-)
-
 func insertToSlice[T any](l []T, i int, v T) []T {
 	var zero T
 	l = append(l, zero)
@@ -23,19 +18,4 @@ func concatSlices[T any](ls ...[]T) []T {
 		l = append(l, s...)
 	}
 	return l
-}
-
-func fileExists(filename string) bool {
-	_, err := os.Stat(filename)
-	return err == nil || !os.IsNotExist(err)
-}
-
-func fileSize(filename string) int {
-	info, err := os.Stat(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	size := info.Size() // in bytes
-	return int(size)
 }

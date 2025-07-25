@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"telescope/editor"
 	"telescope/log"
 )
 
@@ -13,21 +12,24 @@ func RunReplay(inputFilename string, logFilename string) error {
 	defer cancel()
 	_, _ = fmt.Fprintf(os.Stderr, "loading input file %s\n", inputFilename)
 	loadCtx, loadCancel := context.WithCancel(ctx)
-	e, err := editor.NewEditor(
-		ctx,
-		20, 20,
-		inputFilename, "",
-		loadCancel,
-	)
+
+	e, close, err := makeEditor(ctx, inputFilename, logFilename, 20, 20, loadCancel)
 	if err != nil {
 		return err
 	}
+	defer close()
 	go func() {
-		for range e.Update() {
-			// consume view
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-e.Update(): // consume view
+			}
 		}
 	}()
-	<-loadCtx.Done()
+
+	<-loadCtx.Done() // wait for loading
+
 	_, _ = fmt.Fprintf(os.Stderr, "loading log file %s\n", logFilename)
 
 	err = log.Read(logFilename, func(entry log.Entry) bool {
