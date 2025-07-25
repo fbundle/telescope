@@ -18,6 +18,8 @@ type Config struct {
 	INITIAL_SERIALIZER_VERSION   uint64
 }
 
+// TODO - export these into environment variables
+
 func Load() Config {
 	return Config{
 		DEBUG_IO_INTERVAL_MS:         100 * time.Millisecond,
