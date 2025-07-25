@@ -44,8 +44,9 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 			return nil, nil, nil, err
 		}
 		closerList = append(closerList, logFile.Close)
-
 		writer := bufio.NewWriter(logFile)
+
+		closerList = append(closerList, writer.Flush) // flush before close
 
 		logWriter, err = log.NewWriter(writer)
 		if err != nil {
@@ -68,7 +69,7 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 	}
 	// waiting for editor loading to be done before closing
 	closerList = append(closerList, func() error {
-		<-e.Done()
+		// <-e.Done() - we just close anyway
 		return nil
 	})
 
