@@ -83,7 +83,7 @@ func (e *editor) MovePageDown() {
 	})
 }
 
-func (e *editor) Jump(row int, col int) {
+func (e *editor) Goto(row int, col int) {
 	e.lockUpdateRender(func() {
 		// move to absolute position
 		moveRow := row - e.cursor.Row

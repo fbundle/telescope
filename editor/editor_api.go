@@ -29,7 +29,7 @@ type Controller interface {
 	Backspace()
 	Delete()
 
-	Jump(row int, col int)
+	Goto(row int, col int)
 	MoveLeft()
 	MoveRight()
 	MoveUp()

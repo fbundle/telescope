@@ -178,16 +178,16 @@ func (e *editor) Redo() {
 func (e *editor) Apply(entry log.Entry) {
 	switch entry.Command {
 	case log.CommandEnter:
-		e.Jump(int(entry.CursorRow), int(entry.CursorCol))
+		e.Goto(int(entry.CursorRow), int(entry.CursorCol))
 		e.Enter()
 	case log.CommandBackspace:
-		e.Jump(int(entry.CursorRow), int(entry.CursorCol))
+		e.Goto(int(entry.CursorRow), int(entry.CursorCol))
 		e.Backspace()
 	case log.CommandDelete:
-		e.Jump(int(entry.CursorRow), int(entry.CursorCol))
+		e.Goto(int(entry.CursorRow), int(entry.CursorCol))
 		e.Delete()
 	case log.CommandType:
-		e.Jump(int(entry.CursorRow), int(entry.CursorCol))
+		e.Goto(int(entry.CursorRow), int(entry.CursorCol))
 		e.Type(entry.Rune)
 	case log.CommandUndo:
 		e.Undo()

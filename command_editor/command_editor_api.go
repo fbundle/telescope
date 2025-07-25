@@ -9,5 +9,4 @@ type CommandEditor interface {
 	Tabular()
 
 	Search(subtext string)
-	Goto(row int)
 }
