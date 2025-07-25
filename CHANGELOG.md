@@ -24,7 +24,5 @@
 
 # TODO
 
-- add vim-like command at status bar
-- add search
-- add goto line number
+- add vim-like command at status bar, search, goto line number, etc.
 - allow open multiple files by concatenating them
