@@ -149,6 +149,7 @@ func (e *editor) Enter() {
 				return m
 			}
 		}
+		
 		e.text = updateText(e.text)
 		e.moveRelativeAndFixWithoutLock(1, 0)                 // move down
 		e.moveRelativeAndFixWithoutLock(0, -e.textCursor.Col) // move home
