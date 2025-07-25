@@ -76,7 +76,6 @@ func RunEditor(inputFilename string, logFilename string) error {
 		return err
 	}
 	defer closer()
-	_ = loadCtx // do nothing with load ctx
 
 	// draw loop
 	go func() {
@@ -133,7 +132,7 @@ func RunEditor(inputFilename string, logFilename string) error {
 	// since exiting will close all the files; waiting time is necessary for all background tasks to stop reading files
 	e.Message("exiting... ")
 	cancel()
-	time.Sleep(time.Second / 2)
+	<-loadCtx.Done() // wait for load context then exit, exec deferred closer function
 	return nil
 }
 
