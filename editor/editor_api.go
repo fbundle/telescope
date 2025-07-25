@@ -46,6 +46,7 @@ type Controller interface {
 	Redo()
 
 	Apply(entry log.Entry)
+	Message(string)
 }
 
 type Renderer interface {

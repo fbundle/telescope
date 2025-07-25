@@ -38,7 +38,7 @@ func (e *editor) Type(ch rune) {
 
 		e.text.Update(updateText)
 		e.moveRelativeAndFixWithoutLock(0, 1) // move right
-		e.setStatusWithoutLock("type '%c'", ch)
+		e.setMessageWithoutLock("type '%c'", ch)
 	})
 }
 
@@ -79,7 +79,7 @@ func (e *editor) Backspace() {
 		}
 		e.text.Update(updateText)
 		e.moveRelativeAndFixWithoutLock(moveRow, moveCol)
-		e.setStatusWithoutLock("backspace")
+		e.setMessageWithoutLock("backspace")
 	})
 }
 
@@ -115,7 +115,7 @@ func (e *editor) Delete() {
 			return m
 		}
 		e.text.Update(updateText)
-		e.setStatusWithoutLock("delete")
+		e.setMessageWithoutLock("delete")
 	})
 }
 
@@ -152,7 +152,7 @@ func (e *editor) Enter() {
 		e.text.Update(updateText)
 		e.moveRelativeAndFixWithoutLock(1, 0)             // move down
 		e.moveRelativeAndFixWithoutLock(0, -e.cursor.Col) // move home
-		e.setStatusWithoutLock("enter")
+		e.setMessageWithoutLock("enter")
 	})
 }
 
@@ -162,7 +162,7 @@ func (e *editor) Undo() {
 			Command: log.CommandUndo,
 		})
 		e.text.Undo()
-		e.setStatusWithoutLock("undo")
+		e.setMessageWithoutLock("undo")
 	})
 }
 func (e *editor) Redo() {
@@ -171,7 +171,7 @@ func (e *editor) Redo() {
 			Command: log.CommandRedo,
 		})
 		e.text.Redo()
-		e.setStatusWithoutLock("redo")
+		e.setMessageWithoutLock("redo")
 	})
 }
 

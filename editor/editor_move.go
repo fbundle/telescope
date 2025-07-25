@@ -36,50 +36,50 @@ func (e *editor) moveRelativeAndFixWithoutLock(moveRow int, moveCol int) {
 func (e *editor) MoveLeft() {
 	e.lockUpdateRender(func() {
 		e.moveRelativeAndFixWithoutLock(0, -1)
-		e.setStatusWithoutLock("move left")
+		e.setMessageWithoutLock("move left")
 	})
 }
 func (e *editor) MoveRight() {
 	e.lockUpdateRender(func() {
 		e.moveRelativeAndFixWithoutLock(0, 1)
-		e.setStatusWithoutLock("move right")
+		e.setMessageWithoutLock("move right")
 	})
 }
 func (e *editor) MoveUp() {
 	e.lockUpdateRender(func() {
 		e.moveRelativeAndFixWithoutLock(-1, 0)
-		e.setStatusWithoutLock("move up")
+		e.setMessageWithoutLock("move up")
 	})
 }
 func (e *editor) MoveDown() {
 	e.lockUpdateRender(func() {
 		e.moveRelativeAndFixWithoutLock(1, 0)
-		e.setStatusWithoutLock("move down")
+		e.setMessageWithoutLock("move down")
 	})
 }
 func (e *editor) MoveHome() {
 	e.lockUpdateRender(func() {
 		e.moveRelativeAndFixWithoutLock(0, -e.cursor.Col)
-		e.setStatusWithoutLock("move home")
+		e.setMessageWithoutLock("move home")
 	})
 }
 func (e *editor) MoveEnd() {
 	e.lockUpdateRender(func() {
 		t := e.text.Get()
 		e.moveRelativeAndFixWithoutLock(0, len(t.Get(e.cursor.Row))-e.cursor.Col)
-		e.setStatusWithoutLock("move end")
+		e.setMessageWithoutLock("move end")
 	})
 }
 func (e *editor) MovePageUp() {
 	e.lockUpdateRender(func() {
 		e.moveRelativeAndFixWithoutLock(-e.view.height, 0)
-		e.setStatusWithoutLock("move page up")
+		e.setMessageWithoutLock("move page up")
 	})
 }
 func (e *editor) MovePageDown() {
 	e.lockUpdateRender(func() {
 		e.moveRelativeAndFixWithoutLock(e.view.height, 0)
-		e.setStatusWithoutLock("move page down")
+		e.setMessageWithoutLock("move page down")
 	})
 }
 

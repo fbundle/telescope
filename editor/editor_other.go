@@ -7,7 +7,7 @@ func (e *editor) Resize(height int, width int) {
 		}
 		e.view.height, e.view.width = height, width
 		e.moveRelativeAndFixWithoutLock(0, 0)
-		e.setStatusWithoutLock("resize to %dx%d", height, width)
+		e.setMessageWithoutLock("resize to %dx%d", height, width)
 	})
 }
 

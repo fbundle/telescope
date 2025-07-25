@@ -126,7 +126,7 @@ func (e *editor) Update() <-chan View {
 	return e.renderCh
 }
 
-func (e *editor) setStatusWithoutLock(format string, a ...any) {
+func (e *editor) setMessageWithoutLock(format string, a ...any) {
 	e.view.message = fmt.Sprintf(format, a...)
 }
 
@@ -135,4 +135,10 @@ func (e *editor) writeLog(entry log.Entry) {
 		return
 	}
 	e.logWriter.Write(entry)
+}
+
+func (e *editor) Message(message string) {
+	e.lockUpdateRender(func() {
+		e.setMessageWithoutLock(message)
+	})
 }

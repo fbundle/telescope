@@ -115,7 +115,8 @@ func RunEditor(inputFilename string, logFilename string) error {
 				running = false
 			} else if event.Key() == tcell.KeyCtrlS {
 				// Ctrl+S to flush
-				flush()
+				_ = flush()
+				e.Message("log flushed")
 			} else {
 				handleEditorKey(e, event)
 			}
@@ -131,10 +132,10 @@ func RunEditor(inputFilename string, logFilename string) error {
 	return nil
 }
 
-func handleEditorKey(e editor.Editor, event *tcell.EventKey) {
-	switch event.Key() {
+func handleEditorKey(e editor.Editor, ev *tcell.EventKey) {
+	switch ev.Key() {
 	case tcell.KeyRune:
-		e.Type(event.Rune())
+		e.Type(ev.Rune())
 	case tcell.KeyEnter:
 		e.Enter()
 	case tcell.KeyBackspace, tcell.KeyBackspace2:
@@ -163,7 +164,11 @@ func handleEditorKey(e editor.Editor, event *tcell.EventKey) {
 		e.MovePageUp()
 	case tcell.KeyPgDn:
 		e.MovePageDown()
-
+	case tcell.KeyCtrlU:
+		e.Undo()
+	case tcell.KeyCtrlR:
+		e.Redo()
 	default:
+		e.Message(fmt.Sprintf("unknown key %v", ev.Name()))
 	}
 }
