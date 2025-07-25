@@ -18,17 +18,22 @@ func RunReplay(inputFilename string, logFilename string) error {
 		return err
 	}
 	defer close()
+
 	go func() {
 		for {
 			select {
 			case <-ctx.Done():
 				return
-			case <-e.Update(): // consume view
+			case view := <-e.Update(): // consume view
+				if len(view.Background) > 0 {
+					_, _ = fmt.Fprintln(os.Stderr, view.Background)
+				}
 			}
 		}
 	}()
 
-	<-e.Done() // wait for loading
+	// wait for loading
+	<-e.Done()
 
 	_, _ = fmt.Fprintf(os.Stderr, "loading log file %s\n", logFilename)
 
