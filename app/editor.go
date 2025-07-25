@@ -53,45 +53,7 @@ func draw(s tcell.Screen, view editor.View) {
 	s.Show()
 }
 
-func handleKey(e editor.Editor) func(ev *tcell.EventKey) {
-	return func(event *tcell.EventKey) {
-		switch event.Key() {
-		case tcell.KeyCtrlC:
-			// do nothing
-		case tcell.KeyBackspace, tcell.KeyBackspace2:
-			e.Backspace()
-		case tcell.KeyDelete:
-			e.Delete()
-		case tcell.KeyRight:
-			e.MoveRight()
-		case tcell.KeyLeft:
-			e.MoveLeft()
-		case tcell.KeyUp:
-			e.MoveUp()
-		case tcell.KeyDown:
-			e.MoveDown()
-		case tcell.KeyHome:
-			e.MoveHome()
-		case tcell.KeyEnd:
-			e.MoveEnd()
-		case tcell.KeyPgUp:
-			e.MovePageUp()
-		case tcell.KeyPgDn:
-			e.MovePageDown()
-		case tcell.KeyEnter:
-			e.Enter()
-		case tcell.KeyEsc:
-			e.Escape()
-		case tcell.KeyTab:
-			e.Tabular()
-		case tcell.KeyRune:
-			e.Type(event.Rune())
-		default:
-		}
-	}
-}
-
-func makeEditor(ctx context.Context, inputFilename string, logFilename string, width int, height int, loadDone func()) (editor.Editor, func(), error) {
+func makeEditor(ctx context.Context, inputFilename string, logFilename string, width int, height int, loadDone func()) (editor.Editor, func() error, func(), error) {
 	closerList := make([]func() error, 0)
 	close := func() {
 		for i := len(closerList) - 1; i >= 0; i-- {
@@ -106,7 +68,7 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 		inputMmapReader, err = mmap.Open(inputFilename)
 		if err != nil {
 			close()
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 		closerList = append(closerList, inputMmapReader.Close)
 	}
@@ -115,14 +77,14 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 	logFile, err := os.OpenFile(logFilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 	if err != nil {
 		close()
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	closerList = append(closerList, logFile.Close)
 
 	logWriter, err := log.NewWriter(logFile)
 	if err != nil {
 		close()
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	// editor
@@ -134,9 +96,9 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 	)
 	if err != nil {
 		close()
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
-	return e, close, err
+	return e, logFile.Sync, close, err
 }
 
 func RunEditor(inputFilename string, logFilename string) error {
@@ -153,7 +115,7 @@ func RunEditor(inputFilename string, logFilename string) error {
 	defer cancel()
 	width, height := s.Size()
 
-	e, close, err := makeEditor(ctx, inputFilename, logFilename, width, height, nil)
+	e, flush, close, err := makeEditor(ctx, inputFilename, logFilename, width, height, nil)
 	if err != nil {
 		return err
 	}
@@ -174,13 +136,19 @@ func RunEditor(inputFilename string, logFilename string) error {
 	// event loop
 	running := true
 	for running {
-		ev := s.PollEvent()
-		switch ev := ev.(type) {
+		event := s.PollEvent()
+		switch event := event.(type) {
 		case *tcell.EventKey:
-			handleKey(e)(ev)
-			if tcell.KeyCtrlC == ev.Key() {
+			if event.Key() == tcell.KeyCtrlC {
+				// Ctrl+C to stop
 				running = false
+			} else if event.Key() == tcell.KeyCtrlS {
+				// Ctrl+S to flush
+				flush()
+			} else {
+				handleEditorKey(e, event)
 			}
+
 		case *tcell.EventResize:
 			s.Sync()
 			width, height = s.Size()
@@ -197,4 +165,41 @@ func fileNonEmpty(filename string) bool {
 		return false
 	}
 	return info.Size() > 0
+}
+
+func handleEditorKey(e editor.Editor, event *tcell.EventKey) {
+	switch event.Key() {
+	case tcell.KeyRune:
+		e.Type(event.Rune())
+	case tcell.KeyEnter:
+		e.Enter()
+	case tcell.KeyBackspace, tcell.KeyBackspace2:
+		e.Backspace()
+	case tcell.KeyDelete:
+		e.Delete()
+
+	case tcell.KeyEsc:
+		e.Escape()
+	case tcell.KeyTab:
+		e.Tabular()
+
+	case tcell.KeyRight:
+		e.MoveRight()
+	case tcell.KeyLeft:
+		e.MoveLeft()
+	case tcell.KeyUp:
+		e.MoveUp()
+	case tcell.KeyDown:
+		e.MoveDown()
+	case tcell.KeyHome:
+		e.MoveHome()
+	case tcell.KeyEnd:
+		e.MoveEnd()
+	case tcell.KeyPgUp:
+		e.MovePageUp()
+	case tcell.KeyPgDn:
+		e.MovePageDown()
+
+	default:
+	}
 }
