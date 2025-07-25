@@ -45,7 +45,7 @@ func (l *loader) add(amount int) bool {
 	l.loadedSize += amount
 	percentage := int(100 * float64(l.loadedSize) / float64(l.totalSize))
 	t := time.Now()
-	if percentage > l.lastRenderPercentage || t.Sub(l.lastRenderTime) >= config.Load().LOADING_PROGRESS_INTERVAL_MS*time.Millisecond {
+	if percentage > l.lastRenderPercentage || t.Sub(l.lastRenderTime) >= config.Load().LOADING_PROGRESS_INTERVAL {
 		l.lastRenderPercentage = percentage
 		l.lastRenderTime = t
 		return true

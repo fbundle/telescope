@@ -44,7 +44,7 @@ func Read(filename string, apply func(e Entry) bool) error {
 				return s, true, err
 			}
 			if config.Debug() {
-				time.Sleep(config.Load().DEBUG_IO_INTERVAL_MS * time.Millisecond)
+				time.Sleep(config.Load().DEBUG_IO_DELAY)
 			}
 			return s, apply(e), nil
 		}(s, line)

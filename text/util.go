@@ -45,7 +45,7 @@ func indexFile(ctx context.Context, reader *mmap.ReaderAt, delim byte, update fu
 			line := make([]byte, i+1-offset)
 			_, _ = reader.ReadAt(line, int64(offset))
 			if config.Debug() {
-				time.Sleep(config.Load().DEBUG_IO_INTERVAL_MS * time.Millisecond)
+				time.Sleep(config.Load().DEBUG_IO_DELAY)
 			}
 			update(offset, line)
 			offset += len(line)
@@ -58,7 +58,7 @@ func indexFile(ctx context.Context, reader *mmap.ReaderAt, delim byte, update fu
 			return err
 		}
 		if config.Debug() {
-			time.Sleep(config.Load().DEBUG_IO_INTERVAL_MS * time.Millisecond)
+			time.Sleep(config.Load().DEBUG_IO_DELAY)
 		}
 		update(offset, line)
 	}

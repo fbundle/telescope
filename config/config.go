@@ -11,24 +11,24 @@ const (
 )
 
 type Config struct {
-	DEBUG_IO_INTERVAL_MS         time.Duration
-	LOG_FLUSH_INTERVAL_S         time.Duration
-	LOADING_PROGRESS_INTERVAL_MS time.Duration
-	SERIALIZER_VERSION           uint64
-	INITIAL_SERIALIZER_VERSION   uint64
-	MAXSIZE_HISTORY              int
+	DEBUG_IO_DELAY             time.Duration
+	LOG_AUTOFLUSH_INTERVAL     time.Duration
+	LOADING_PROGRESS_INTERVAL  time.Duration
+	SERIALIZER_VERSION         uint64
+	INITIAL_SERIALIZER_VERSION uint64
+	MAXSIZE_HISTORY            int
 }
 
 // TODO - export these into environment variables
 
 func Load() Config {
 	return Config{
-		DEBUG_IO_INTERVAL_MS:         100 * time.Millisecond,
-		LOG_FLUSH_INTERVAL_S:         60 * time.Second,
-		LOADING_PROGRESS_INTERVAL_MS: 100 * time.Millisecond,
-		SERIALIZER_VERSION:           BINARY_SERIALIZER,
-		INITIAL_SERIALIZER_VERSION:   HUMAN_READABLE_SERIALIZER,
-		MAXSIZE_HISTORY:              1024,
+		DEBUG_IO_DELAY:             100 * time.Millisecond,
+		LOG_AUTOFLUSH_INTERVAL:     60 * time.Second,
+		LOADING_PROGRESS_INTERVAL:  100 * time.Millisecond,
+		SERIALIZER_VERSION:         BINARY_SERIALIZER,
+		INITIAL_SERIALIZER_VERSION: HUMAN_READABLE_SERIALIZER,
+		MAXSIZE_HISTORY:            1024,
 	}
 }
 
