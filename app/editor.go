@@ -76,7 +76,6 @@ func RunEditor(inputFilename string, logFilename string) error {
 	}
 	defer closer()
 	_ = loadCtx // do nothing with load ctx
-	defer cancel()
 
 	// draw loop
 	go func() {
@@ -128,6 +127,7 @@ func RunEditor(inputFilename string, logFilename string) error {
 			// nothing
 		}
 	}
+	cancel()
 	return nil
 }
 
