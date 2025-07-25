@@ -14,7 +14,7 @@
 - add journal file replay, remove save function completely. if user wants to save a file, they has to use `telescope -r <input_file>`, the content will be written to stdout. `DISABLE_JOURNAL=1` no longer works
 - rename journal to log
 - fix a critical bug, printing using fmt.Fprintf doesn't escape `%` in code
-- enable logging with multiple serializers using set_version log entry, log is now use length-prefixed format
+- log is now use length-prefixed format so that the same file can be decoded using multiple format
 
 # TODO
 
