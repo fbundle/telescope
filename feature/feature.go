@@ -13,4 +13,5 @@ func ParallelIndexing() bool {
 const (
 	DEBUG_IO_INTERVAL_MS         = 100
 	LOADING_PROGRESS_INTERVAL_MS = 100
+	SERIALIZER_VERSION           = 0
 )
