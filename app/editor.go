@@ -110,7 +110,6 @@ func RunEditor(inputFilename string, logFilename string) error {
 		case *tcell.EventKey:
 			if event.Key() == tcell.KeyCtrlC {
 				// Ctrl+C to stop
-				cancel()
 				running = false
 			} else if event.Key() == tcell.KeyCtrlS {
 				// Ctrl+S to flush
@@ -128,6 +127,13 @@ func RunEditor(inputFilename string, logFilename string) error {
 			// nothing
 		}
 	}
+	cancel()
+	e.Message("stopping")
+	// part of the code uses mmap.Reader
+	// even though it check for ctx.Done()
+	// but if we close the file too soon, the reading is still on going
+	// hence we will wait for a while before closing the file
+	time.Sleep(time.Second)
 	return nil
 }
 
