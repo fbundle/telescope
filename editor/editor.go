@@ -58,10 +58,8 @@ func NewEditor(
 			Row: 0, Col: 0,
 		},
 		window: window{
-			tlRow:  0,
-			tlCol:  0,
-			height: height,
-			width:  width,
+			tlRow: 0, tlCol: 0,
+			width: width, height: height,
 		},
 		view: internalView{
 			winName:    winName,
