@@ -6,83 +6,31 @@ an extremely fast text editor
 
 ## FEATURE SET
 
-here are the projected feature sets
+- basic text editor
+    - navigate with `Left`, `Right`, `Up`, `Down`, `PgUp`, `PgDn`, `Home`, `End`
+    - undo redo with `Ctrl+U`, `Ctrl+R`
 
-- `nano`-like basic text editor
+- instant start-up, instant edit
 
-- extremely fast start up, extremely fast edit
+- able to handle very large files, potentially even larger than system memory.
 
 - able to recover from crash
 
-- able to handle very large files, potentially even larger than system memory using persistent vector
+- able to edit while still loading the file and exit without losing any progress
 
-## EDITOR INTERFACE
+- [TODO] add vim-like command mode, search, goto line, etc.
 
-```go
-package editor
+## INTERACTION WITH FILE SYSTEM
 
-import (
-	"context"
-	"telescope/log"
+0. use `telescope -h` for help
 
-	"golang.org/x/exp/mmap"
-)
+1. when user opens a file using `telescope dir/file`, the program will create a log file (journal file) at `dir/.file.log` (if the directory is not writable, user can specify the log file by `telescope dir/file logdir/logfile`).
 
-type Cursor struct {
-	Row int
-	Col int
-}
+2. when user edit the file, every action will be written to log file.
 
-type View struct {
-	WinData    [][]rune
-	WinCursor  Cursor
-	TextCursor Cursor
-	Message    string
-	Background string // consider change it to {totalSize, loadedSize, ...}
-}
+3. when exit the program the log file is preserved to export
 
-type Controller interface {
-	Load(ctx context.Context, inputMmapReader *mmap.ReaderAt) (context.Context, error)
-	Resize(height int, width int)
-
-	Type(ch rune)
-	Enter()
-	Backspace()
-	Delete()
-	Tabular()
-
-	Goto(row int, col int)
-	MoveLeft()
-	MoveRight()
-	MoveUp()
-	MoveDown()
-	MoveHome()
-	MoveEnd()
-	MovePageUp()
-	MovePageDown()
-
-	Undo()
-	Redo()
-
-	Apply(entry log.Entry)
-	Message(string)
-}
-
-type Renderer interface {
-	Update() <-chan View
-}
-
-type Text interface {
-	Iter(func(i int, line []rune) bool)
-}
-
-type Editor interface {
-	Renderer
-	Controller
-	Text
-}
+4. user use `telescope -r dir/file` to apply the log together with original file to make a new file. the program will write the output to stdout, so user should be `telescope -r dir/file 1> outputfile`
 
 
-```
 
-## NOTE
