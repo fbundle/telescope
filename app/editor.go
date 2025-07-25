@@ -3,9 +3,11 @@ package app
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"os"
 	"telescope/editor"
+	"telescope/feature"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -79,6 +81,19 @@ func RunEditor(inputFilename string, logFilename string) error {
 				return
 			case view := <-e.Update():
 				draw(s, view)
+			}
+		}
+	}()
+	// manual flush loop
+	go func() {
+		ticker := time.NewTicker(feature.LOG_FLUSH_INTERVAL_S * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				flush()
 			}
 		}
 	}()

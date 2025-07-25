@@ -16,10 +16,10 @@
 - fix a critical bug, printing using fmt.Fprintf doesn't escape `%` in code
 - log is now use length-prefixed format so that the same file can be decoded using multiple format
 - add function to print out human readable log format
+- fixed exit condition - log will be written at the end of the program
 
 # TODO
 
-- check carefully on the exit condition so that journal/log is written eventually
 - add vim-like command at status bar
 - fix bug with reading and writing to the same file
 - add undo,redo

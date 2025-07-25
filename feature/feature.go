@@ -13,6 +13,7 @@ func ParallelIndexing() bool {
 }
 
 const (
+	LOG_FLUSH_INTERVAL_S         = 60
 	DEBUG_IO_INTERVAL_MS         = 100
 	LOADING_PROGRESS_INTERVAL_MS = 100
 	SERIALIZER_VERSION           = 1 // for writer
