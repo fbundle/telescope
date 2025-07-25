@@ -84,7 +84,7 @@ func RunEditor(inputFilename string, logFilename string) error {
 			}
 		}
 	}()
-	// manual flush loop
+	// manual flush loop in the event of crash
 	go func() {
 		ticker := time.NewTicker(feature.LOG_FLUSH_INTERVAL_S * time.Second)
 		defer ticker.Stop()

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bufio"
 	"context"
 	"os"
 	"path/filepath"
@@ -44,12 +45,14 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 		}
 		closerList = append(closerList, logFile.Close)
 
-		logWriter, err = log.NewWriter(logFile)
+		writer := bufio.NewWriter(logFile)
+
+		logWriter, err = log.NewWriter(writer)
 		if err != nil {
 			close()
 			return nil, nil, nil, err
 		}
-		flush = logFile.Sync
+		flush = writer.Flush
 	}
 
 	// editor

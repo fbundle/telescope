@@ -16,7 +16,7 @@
 - fix a critical bug, printing using fmt.Fprintf doesn't escape `%` in code
 - log is now use length-prefixed format so that the same file can be decoded using multiple format
 - add function to print out human readable log format
-- fixed exit condition - log will be written at the end of the program
+- fixed exit condition - bufio.Writer is used, log will be written at the end of the program or every `LOG_FLUSH_INTERVAL_S=60` seconds
 
 # TODO
 
