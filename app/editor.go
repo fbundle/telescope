@@ -128,6 +128,7 @@ func RunEditor(inputFilename string, logFilename string) error {
 		}
 	}
 
+	cancel()
 	for i := 0; i < 3; i++ {
 		e.Message(fmt.Sprintf("exiting in %d second", 3-i))
 		time.Sleep(time.Second)
