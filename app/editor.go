@@ -127,7 +127,7 @@ func RunEditor(inputFilename string, logFilename string) error {
 			// nothing
 		}
 	}
-	e.Message("stopping")
+	time.Sleep(time.Second)
 	return nil
 }
 
