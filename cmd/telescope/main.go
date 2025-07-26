@@ -23,6 +23,7 @@ Options:
   -r --replay       : replay the edited file 
   -l --log          : print the human readable log format
   -w --overwrite    : force delete log
+  -c --command      : command editor (experimental)
 
 Keyboard Shortcuts:
   Ctrl+C            : exit
@@ -64,6 +65,11 @@ func main() {
 		}
 	case "-w", "--overwrite":
 		err := app.RunEditor(args.inputFilename, args.logFilename)
+		if err != nil {
+			exit.Write(err)
+		}
+	case "-c", "--command":
+		err := app.RunCommandEditor(args.inputFilename, args.logFilename)
 		if err != nil {
 			exit.Write(err)
 		}
