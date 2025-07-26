@@ -6,6 +6,4 @@ type CommandEditor interface {
 	editor.Editor
 
 	Escape()
-
-	Search(subtext string)
 }

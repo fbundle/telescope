@@ -3,6 +3,7 @@ package editor
 import (
 	"context"
 	"telescope/log"
+	"telescope/text"
 
 	"golang.org/x/exp/mmap"
 )
@@ -51,12 +52,8 @@ type Renderer interface {
 	Update() <-chan View
 }
 
-type Text interface {
-	Iter(func(i int, line []rune) bool)
-}
-
 type Editor interface {
 	Renderer
 	Controller
-	Text
+	Text() text.Text
 }

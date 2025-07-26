@@ -46,7 +46,8 @@ func RunReplay(inputFilename string, logFilename string) error {
 		return err
 	}
 	_, _ = fmt.Fprintf(os.Stderr, "replaying file\n")
-	for _, line := range e.Iter {
+	t := e.Text()
+	for _, line := range t.Iter {
 		_, _ = fmt.Fprintln(os.Stdout, string(line))
 	}
 	return nil

@@ -34,8 +34,10 @@ func (e *editor) renderWithoutLock() {
 	e.renderCh <- render()
 }
 
-func (e *editor) Iter(f func(i int, line []rune) bool) {
+func (e *editor) Text() text.Text {
+	var t text.Text
 	e.lockUpdate(func() {
-		e.text.Get().Iter(f)
+		t = e.text.Get()
 	})
+	return t
 }
