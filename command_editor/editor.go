@@ -49,9 +49,20 @@ func (c *commandEditor) Resize(height int, width int) {
 	})
 }
 
+// NOTE - begins with VISUAL mode, type : to enter COMMAND mode
+// press enter in COMMAND mode to apply command, if command is :i or :insert, enter insert mode
+// otherwise, enter COMMAND mode
+// press esc in any mode go back to VISUAL mode
+
 func (c *commandEditor) Type(ch rune) {
 	c.lockUpdateRender(func() {
 		switch c.mode {
+		case ModeVisual:
+			if ch == ':' {
+				c.mode = ModeCommand
+				c.command = []rune{':'}
+				c.renderWithoutLock()
+			}
 		case ModeInsert:
 			c.e.Type(ch)
 		case ModeCommand:
@@ -71,22 +82,28 @@ func (c *commandEditor) Enter() {
 
 	c.lockUpdateRender(func() {
 		switch c.mode {
+		case ModeVisual:
+			// do nothing
 		case ModeInsert:
 			c.e.Enter()
 		case ModeCommand:
 			// apply command
 			cmd := string(c.command)
+			cmd = strings.TrimSpace(cmd)
+			cmd = strings.TrimPrefix(cmd, ":")
 			switch {
 			case cmd == "i" || cmd == "insert":
 				c.mode = ModeInsert
 				c.command = nil
 				c.renderWithoutLock()
 			case strings.HasPrefix(cmd, "s ") || strings.HasPrefix(cmd, "search "):
+				c.mode = ModeVisual
 				cmd = strings.TrimPrefix(cmd, "s ")
 				cmd = strings.TrimPrefix(cmd, "search ")
 				// TODO search
 				exit.Write("search not implemented")
 			case strings.HasPrefix(cmd, "g ") || strings.HasPrefix(cmd, "goto "):
+				c.mode = ModeVisual
 				cmd = strings.TrimPrefix(cmd, "g ")
 				cmd = strings.TrimPrefix(cmd, "goto ")
 				lineNum, err := strconv.Atoi(cmd)
@@ -98,6 +115,7 @@ func (c *commandEditor) Enter() {
 				c.command = nil
 				c.renderWithoutLock()
 			default:
+				c.mode = ModeVisual
 				c.e.Message("unknown command: " + string(c.command))
 				c.command = nil
 				c.renderWithoutLock()
@@ -111,9 +129,28 @@ func (c *commandEditor) Enter() {
 	})
 }
 
+func (c *commandEditor) Escape() {
+	c.lockUpdateRender(func() {
+		switch c.mode {
+		case ModeVisual:
+			// do nothing
+		case ModeInsert:
+			c.mode = ModeVisual
+			c.renderWithoutLock()
+		case ModeCommand:
+			c.mode = ModeVisual
+			c.command = nil
+		default:
+			exit.Write("unknown mode: ", c.mode)
+		}
+	})
+}
+
 func (c *commandEditor) Backspace() {
 	c.lockUpdateRender(func() {
 		switch c.mode {
+		case ModeVisual:
+			// do nothing
 		case ModeInsert:
 			c.e.Backspace()
 		case ModeCommand:
@@ -129,6 +166,8 @@ func (c *commandEditor) Backspace() {
 func (c *commandEditor) Delete() {
 	c.lockUpdateRender(func() {
 		switch c.mode {
+		case ModeVisual:
+			// do nothing
 		case ModeInsert:
 			c.e.Delete()
 		case ModeCommand:
@@ -142,10 +181,12 @@ func (c *commandEditor) Delete() {
 func (c *commandEditor) Tabular() {
 	c.lockUpdateRender(func() {
 		switch c.mode {
+		case ModeVisual:
+			// do nothing
 		case ModeInsert:
 			c.e.Tabular()
 		case ModeCommand:
-		// do nothing
+			// do nothing
 		default:
 			exit.Write("unknown mode: ", c.mode)
 		}
@@ -228,21 +269,6 @@ func (c *commandEditor) Message(s string) {
 	c.lockUpdateRender(func() {
 		c.command = nil
 		c.e.Message(s)
-	})
-}
-
-func (c *commandEditor) Escape() {
-	c.lockUpdateRender(func() {
-		switch c.mode {
-		case ModeInsert:
-			c.mode = ModeCommand
-			c.command = nil
-			c.renderWithoutLock()
-		case ModeCommand:
-		// do nothing
-		default:
-			exit.Write("unknown mode: ", c.mode)
-		}
 	})
 }
 
