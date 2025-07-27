@@ -25,8 +25,10 @@
 - fixed some bug when refactoring code, fix some rendering bug and improve usability
 - fixed bug with replaying log
 - remove exitting delay
+- [experimental] added VISUAL/COMMAND/INSERT mode
 
 # TODO
 
+- fix VISUAL/COMMAND/INSERT mode sometimes hangs at start-up
 - add vim-like command at status bar, search, goto line number, etc.
 - allow open multiple files by concatenating them

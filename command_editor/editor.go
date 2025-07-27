@@ -100,8 +100,7 @@ func (c *commandEditor) Enter() {
 				c.mode = ModeVisual
 				cmd = strings.TrimPrefix(cmd, "s ")
 				cmd = strings.TrimPrefix(cmd, "search ")
-				// TODO search
-				exit.Write("search not implemented")
+				writeMessage("search not implemented yet")
 			case strings.HasPrefix(cmd, "g ") || strings.HasPrefix(cmd, "goto "):
 				c.mode = ModeVisual
 				cmd = strings.TrimPrefix(cmd, "g ")
