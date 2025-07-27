@@ -2,6 +2,7 @@ package command_editor
 
 import (
 	"context"
+	"fmt"
 	"golang.org/x/exp/mmap"
 	"strconv"
 	"strings"
@@ -14,15 +15,12 @@ import (
 	"time"
 )
 
-// TODO - add INSERT mode and VISUAL mode
-// press i VISUAL -> INSERT
-// press ESC INSERT -> VISUAL
-// add a command buffer, press ESC reset command buffer
 type Mode = string
 
 const (
 	ModeInsert  Mode = "INSERT"
 	ModeCommand Mode = "COMMAND"
+	ModeVisual  Mode = "VISUAL"
 )
 
 type commandEditor struct {
@@ -68,9 +66,6 @@ func (c *commandEditor) Enter() {
 	writeMessage := func(msg string) {
 		c.e.Message(msg)
 		c.command = nil
-		c.renderWithoutLock()
-		time.Sleep(config.Load().BLINKING_TIME)
-		c.e.Message("")
 		c.renderWithoutLock()
 	}
 
@@ -262,7 +257,7 @@ func (c *commandEditor) renderWithoutLock() {
 	view := fromEditorView(*c.latestEditorView)
 	view.Mode = c.mode
 	if len(c.command) > 0 {
-		view.Message = string(c.command)
+		view.Message = fmt.Sprintf("%s > %s", string(c.command), view.Message)
 	}
 	c.renderCh <- view
 }
@@ -284,7 +279,7 @@ func (c *commandEditor) lockUpdateRender(f func()) {
 func NewCommandEditor(ctx context.Context, e editor.Editor) Editor {
 	c := &commandEditor{
 		mu:               sync.Mutex{},
-		mode:             ModeCommand,
+		mode:             ModeVisual,
 		e:                e,
 		command:          nil,
 		latestEditorView: nil,
