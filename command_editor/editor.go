@@ -30,7 +30,7 @@ type commandEditor struct {
 	mode             Mode
 	e                editor.Editor
 	command          []rune
-	latestEditorView editor.View
+	latestEditorView *editor.View
 	renderCh         chan View
 }
 
@@ -256,7 +256,10 @@ func (c *commandEditor) Text() text.Text {
 }
 
 func (c *commandEditor) renderWithoutLock() {
-	view := fromEditorView(c.latestEditorView)
+	if c.latestEditorView == nil {
+		return
+	}
+	view := fromEditorView(*c.latestEditorView)
 	view.Mode = c.mode
 	if len(c.command) > 0 {
 		view.Message = string(c.command)
@@ -274,6 +277,8 @@ func (c *commandEditor) lockUpdateRender(f func()) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	defer c.renderWithoutLock()
+
+	f()
 }
 
 func NewCommandEditor(ctx context.Context, e editor.Editor) Editor {
@@ -282,8 +287,8 @@ func NewCommandEditor(ctx context.Context, e editor.Editor) Editor {
 		mode:             ModeCommand,
 		e:                e,
 		command:          nil,
-		latestEditorView: editor.View{},
-		renderCh:         make(chan View, 1),
+		latestEditorView: nil,
+		renderCh:         make(chan View, 1024),
 	}
 	go func() {
 		for {
@@ -292,7 +297,7 @@ func NewCommandEditor(ctx context.Context, e editor.Editor) Editor {
 				return
 			case view := <-c.e.Update():
 				c.lockUpdateRender(func() {
-					c.latestEditorView = view
+					c.latestEditorView = &view
 				})
 			}
 		}
