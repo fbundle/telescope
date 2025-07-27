@@ -18,7 +18,25 @@ an extremely fast text editor
 
 - able to edit while still loading the file and exit without losing any progress
 
-- [TODO] add vim-like command mode, search, goto line, etc.
+- [experimental - with known bugs] add vim-like command mode, search, goto line, etc.
+
+  - the text editor is now has 3 states/modes: `VISUAL/COMMAND/INSERT`
+
+  - the text editor starts with `VISUAL` mode, when user types `:` it will switch to `COMMAND` mode
+
+  - in `COMMAND` mode, if user keeps typing, it will write into the command buffer, and when user press `ENTER`, the command is executed
+
+  - command `:i` or `:insert` will change the mode to INSERT
+
+  - command `:s <pattern>` or `:search <pattern>` will do a search
+
+  - command `:g <line_number>` or `:goto <line_number>` will go to a certain line
+
+  - after a command is executed, except `:i` or `:insert`, command buffer will be deleted and the editor will go back to `VISUAL` mode
+
+  - in `INSERT` mode, user will edit the file as usual
+
+  - in any mode, press `ESCAPE` will delete the command buffer and go back to `VISUAL` mode
 
 ## INTERACTION WITH FILE SYSTEM
 
