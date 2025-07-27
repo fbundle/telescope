@@ -17,6 +17,7 @@ type Config struct {
 	SERIALIZER_VERSION         uint64
 	INITIAL_SERIALIZER_VERSION uint64
 	MAXSIZE_HISTORY            int
+	BLINKING_TIME              time.Duration
 }
 
 // TODO - export these into environment variables
@@ -29,6 +30,7 @@ func Load() Config {
 		SERIALIZER_VERSION:         BINARY_SERIALIZER,
 		INITIAL_SERIALIZER_VERSION: HUMAN_READABLE_SERIALIZER,
 		MAXSIZE_HISTORY:            1024,
+		BLINKING_TIME:              100 * time.Millisecond,
 	}
 }
 

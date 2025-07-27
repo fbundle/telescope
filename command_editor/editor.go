@@ -3,11 +3,15 @@ package command_editor
 import (
 	"context"
 	"golang.org/x/exp/mmap"
+	"strconv"
+	"strings"
 	"sync"
+	"telescope/config"
 	"telescope/editor"
 	"telescope/exit"
 	"telescope/log"
 	"telescope/text"
+	"time"
 )
 
 // TODO - add INSERT mode and VISUAL mode
@@ -61,23 +65,50 @@ func (c *commandEditor) Type(ch rune) {
 }
 
 func (c *commandEditor) Enter() {
+	writeMessage := func(msg string) {
+		c.e.Message(msg)
+		c.command = nil
+		c.renderWithoutLock()
+		time.Sleep(config.Load().BLINKING_TIME)
+		c.e.Message("")
+		c.renderWithoutLock()
+	}
+
 	c.lockUpdateRender(func() {
 		switch c.mode {
 		case ModeInsert:
 			c.e.Enter()
 		case ModeCommand:
 			// apply command
-			command := string(c.command)
+			cmd := string(c.command)
 			switch {
-			case command == "i":
+			case cmd == "i" || cmd == "insert":
 				c.mode = ModeInsert
 				c.command = nil
 				c.renderWithoutLock()
-			default:
+			case strings.HasPrefix(cmd, "s ") || strings.HasPrefix(cmd, "search "):
+				cmd = strings.TrimPrefix(cmd, "s ")
+				cmd = strings.TrimPrefix(cmd, "search ")
+				// TODO search
+				exit.Write("search not implemented")
+			case strings.HasPrefix(cmd, "g ") || strings.HasPrefix(cmd, "goto "):
+				cmd = strings.TrimPrefix(cmd, "g ")
+				cmd = strings.TrimPrefix(cmd, "goto ")
+				lineNum, err := strconv.Atoi(cmd)
+				if err != nil {
+					writeMessage("invalid line number " + cmd)
+					return
+				}
+				c.e.Goto(lineNum-1, 0)
 				c.command = nil
-				c.e.Message("unknown command: " + command)
 				c.renderWithoutLock()
-				// TODO - keep writing later - my brain is damn tired
+			default:
+				c.e.Message("unknown command: " + string(c.command))
+				c.command = nil
+				c.renderWithoutLock()
+				time.Sleep(config.Load().BLINKING_TIME)
+				c.e.Message("")
+				c.renderWithoutLock()
 			}
 		default:
 			exit.Write("unknown mode: ", c.mode)
@@ -86,93 +117,138 @@ func (c *commandEditor) Enter() {
 }
 
 func (c *commandEditor) Backspace() {
-	//TODO implement me
-	panic("implement me")
+	c.lockUpdateRender(func() {
+		switch c.mode {
+		case ModeInsert:
+			c.e.Backspace()
+		case ModeCommand:
+			if len(c.command) > 0 {
+				c.command = c.command[:len(c.command)-1]
+			}
+		default:
+			exit.Write("unknown mode: ", c.mode)
+		}
+	})
 }
 
 func (c *commandEditor) Delete() {
-	//TODO implement me
-	panic("implement me")
+	c.lockUpdateRender(func() {
+		switch c.mode {
+		case ModeInsert:
+			c.e.Delete()
+		case ModeCommand:
+			// do nothing
+		default:
+			exit.Write("unknown mode: ", c.mode)
+		}
+	})
 }
 
 func (c *commandEditor) Tabular() {
-	//TODO implement me
-	panic("implement me")
+	c.lockUpdateRender(func() {
+		switch c.mode {
+		case ModeInsert:
+			c.e.Tabular()
+		case ModeCommand:
+		// do nothing
+		default:
+			exit.Write("unknown mode: ", c.mode)
+		}
+	})
 }
 
 func (c *commandEditor) Goto(row int, col int) {
-	//TODO implement me
-	panic("implement me")
+	c.lockUpdateRender(func() {
+		c.e.Goto(row, col)
+	})
 }
 
 func (c *commandEditor) MoveLeft() {
-	//TODO implement me
-	panic("implement me")
+	c.lockUpdateRender(func() {
+		c.e.MoveLeft()
+	})
 }
 
 func (c *commandEditor) MoveRight() {
-	//TODO implement me
-	panic("implement me")
+	c.lockUpdateRender(func() {
+		c.e.MoveRight()
+	})
 }
 
 func (c *commandEditor) MoveUp() {
-	//TODO implement me
-	panic("implement me")
+	c.lockUpdateRender(func() {
+		c.e.MoveUp()
+	})
 }
 
 func (c *commandEditor) MoveDown() {
-	//TODO implement me
-	panic("implement me")
+	c.lockUpdateRender(func() {
+		c.e.MoveDown()
+	})
 }
 
 func (c *commandEditor) MoveHome() {
-	//TODO implement me
-	panic("implement me")
+	c.lockUpdateRender(func() {
+		c.e.MoveHome()
+	})
 }
 
 func (c *commandEditor) MoveEnd() {
-	//TODO implement me
-	panic("implement me")
+	c.lockUpdateRender(func() {
+		c.e.MoveEnd()
+	})
 }
 
 func (c *commandEditor) MovePageUp() {
-	//TODO implement me
-	panic("implement me")
+	c.lockUpdateRender(func() {
+		c.e.MovePageUp()
+	})
 }
 
 func (c *commandEditor) MovePageDown() {
-	//TODO implement me
-	panic("implement me")
+	c.lockUpdateRender(func() {
+		c.e.MovePageDown()
+	})
 }
 
 func (c *commandEditor) Undo() {
-	//TODO implement me
-	panic("implement me")
+	c.lockUpdateRender(func() {
+		c.e.Undo()
+	})
 }
 
 func (c *commandEditor) Redo() {
-	//TODO implement me
-	panic("implement me")
+	c.lockUpdateRender(func() {
+		c.e.Redo()
+	})
 }
 
 func (c *commandEditor) Apply(entry log.Entry) {
-	//TODO implement me
-	panic("implement me")
+	c.lockUpdateRender(func() {
+		c.e.Apply(entry)
+	})
 }
 
 func (c *commandEditor) Message(s string) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (c *commandEditor) Iter(f func(i int, line []rune) bool) {
-	//TODO implement me
-	panic("implement me")
+	c.lockUpdateRender(func() {
+		c.command = nil
+		c.e.Message(s)
+	})
 }
 
 func (c *commandEditor) Escape() {
-	//TODO implement me
-	panic("implement me")
+	c.lockUpdateRender(func() {
+		switch c.mode {
+		case ModeInsert:
+			c.mode = ModeCommand
+			c.command = nil
+			c.renderWithoutLock()
+		case ModeCommand:
+		// do nothing
+		default:
+			exit.Write("unknown mode: ", c.mode)
+		}
+	})
 }
 
 func (c *commandEditor) Text() text.Text {
