@@ -49,7 +49,7 @@ func (p *pseudoVector[T]) Height() int {
 
 func (p *pseudoVector[T]) Split(i int) (Vector[T], Vector[T]) {
 	n1 := make([]T, i)
-	n2 := make([]T, len(p.vec)-int(i))
+	n2 := make([]T, len(p.vec)-i)
 	copy(n1, p.vec[:i])
 	copy(n2, p.vec[i:])
 	return &pseudoVector[T]{vec: n1}, &pseudoVector[T]{vec: n2}

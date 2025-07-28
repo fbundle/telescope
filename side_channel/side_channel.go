@@ -8,7 +8,7 @@ import (
 
 var initialized bool = false
 
-func write(vs []any, msg string) bool {
+func writeln(vs []any, msg string) bool {
 	if !initialized {
 		initialized = true
 		_ = os.Remove("side_channel.txt")
@@ -30,21 +30,21 @@ func write(vs []any, msg string) bool {
 func Panic(vs ...any) {
 	_, file, line, ok := runtime.Caller(1)
 	if !ok {
-		write(vs, "exit from unknown location")
+		writeln(vs, "exit from unknown location")
 		os.Exit(1)
 	}
 
-	write(vs, fmt.Sprintf("%s:%d", file, line))
+	writeln(vs, fmt.Sprintf("%s:%d", file, line))
 	os.Exit(1)
 }
 
-func Write(vs ...any) {
+func WriteLn(vs ...any) {
 	_, file, line, ok := runtime.Caller(1)
 	if !ok {
-		write(vs, "exit from unknown location")
+		writeln(vs, "exit from unknown location")
 		os.Exit(1)
 	}
-	ok = write(vs, fmt.Sprintf("%s:%d", file, line))
+	ok = writeln(vs, fmt.Sprintf("%s:%d", file, line))
 	if !ok {
 		os.Exit(1)
 	}
