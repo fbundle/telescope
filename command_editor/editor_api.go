@@ -2,7 +2,6 @@ package command_editor
 
 import (
 	"context"
-	"telescope/editor"
 	"telescope/log"
 	"telescope/text"
 
@@ -21,17 +20,6 @@ type View struct {
 	TextCursor Cursor
 	Message    string
 	Background string // consider change it to {totalSize, loadedSize, ...}
-}
-
-func fromEditorView(view editor.View) View {
-	return View{
-		Mode:       "",
-		WinData:    view.WinData,
-		WinCursor:  Cursor{Row: view.WinCursor.Row, Col: view.WinCursor.Col},
-		TextCursor: Cursor{Row: view.TextCursor.Row, Col: view.TextCursor.Col},
-		Message:    view.Message,
-		Background: view.Background,
-	}
 }
 
 type Controller interface {

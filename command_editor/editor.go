@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"telescope/editor"
 	"telescope/side_channel"
 
@@ -26,12 +27,13 @@ const (
 )
 
 type commandEditor struct {
-	mu               sync.Mutex
-	mode             Mode
-	e                editor.Editor
-	command          []rune
-	latestEditorView *editor.View
-	renderCh         chan View
+	mu                 sync.Mutex
+	mode               Mode
+	e                  editor.Editor
+	command            []rune
+	firstEditorViewCtx context.Context
+	latestEditorView   *atomic.Value // editor.View
+	renderCh           chan View
 }
 
 func (c *commandEditor) Update() <-chan View {
@@ -88,7 +90,7 @@ func applyCommand(command []rune, c *commandEditor) ([]rune, Mode, string) {
 		cmd = strings.TrimPrefix(cmd, ":search ")
 
 		text := c.e.Text()
-		row := c.latestEditorView.TextCursor.Row
+		row := c.latestEditorView.Load().(editor.View).TextCursor.Row
 		_, text2 := text.Split(row)
 
 		for i, line := range text2.Iter { // TODO check error here
@@ -304,11 +306,23 @@ func (c *commandEditor) Text() text.Text {
 	return c.e.Text()
 }
 
-func (c *commandEditor) renderWithoutLock() {
-	if c.latestEditorView == nil {
-		return
+func fromEditorView(view editor.View) View {
+	return View{
+		Mode:       "",
+		WinData:    view.WinData,
+		WinCursor:  Cursor{Row: view.WinCursor.Row, Col: view.WinCursor.Col},
+		TextCursor: Cursor{Row: view.TextCursor.Row, Col: view.TextCursor.Col},
+		Message:    view.Message,
+		Background: view.Background,
 	}
-	view := fromEditorView(*c.latestEditorView)
+}
+
+func (c *commandEditor) renderWithoutLock() {
+	c.mu.Unlock()
+	<-c.firstEditorViewCtx.Done()
+	c.mu.Lock()
+
+	view := fromEditorView(c.latestEditorView.Load().(editor.View))
 	view.Mode = c.mode
 	if len(c.command) > 0 {
 		view.Message = fmt.Sprintf("%s > %s", string(c.command), view.Message)
@@ -325,23 +339,27 @@ func (c *commandEditor) lockUpdateRender(f func()) {
 }
 
 func NewCommandEditor(ctx context.Context, e editor.Editor) Editor {
+	firstEditorViewCtx, cancel := context.WithCancel(ctx)
 	c := &commandEditor{
-		mu:               sync.Mutex{},
-		mode:             ModeVisual,
-		e:                e,
-		command:          nil,
-		latestEditorView: nil,
-		renderCh:         make(chan View, 1024),
+		mu:                 sync.Mutex{},
+		mode:               ModeVisual,
+		e:                  e,
+		command:            nil,
+		firstEditorViewCtx: firstEditorViewCtx,
+		latestEditorView:   &atomic.Value{},
+		renderCh:           make(chan View, 1024),
 	}
+
+	c.latestEditorView.Store(editor.View{})
+
 	go func() {
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			case view := <-c.e.Update():
-				c.lockUpdateRender(func() {
-					c.latestEditorView = &view
-				})
+				c.latestEditorView.Store(view)
+				cancel()
 			}
 		}
 	}()
