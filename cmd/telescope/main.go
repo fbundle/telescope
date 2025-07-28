@@ -64,6 +64,16 @@ func main() {
 			exit.Write(err)
 		}
 	case "-w", "--overwrite":
+		if fileNonEmpty(args.logFilename) {
+			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.logFilename), false)
+			if !ok {
+				return
+			}
+			err := os.Remove(args.logFilename)
+			if err != nil {
+				exit.Write(err)
+			}
+		}
 		err := app.RunEditor(args.inputFilename, args.logFilename)
 		if err != nil {
 			exit.Write(err)
