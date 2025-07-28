@@ -306,7 +306,10 @@ func (c *commandEditor) Text() text.Text {
 	return c.e.Text()
 }
 
-func fromEditorView(view editor.View) View {
+func (c *commandEditor) getView() View {
+	<-c.firstEditorViewCtx.Done()
+	view := c.latestEditorView.Load().(editor.View)
+
 	return View{
 		Mode:       "",
 		WinData:    view.WinData,
@@ -318,11 +321,7 @@ func fromEditorView(view editor.View) View {
 }
 
 func (c *commandEditor) renderWithoutLock() {
-	c.mu.Unlock()
-	<-c.firstEditorViewCtx.Done()
-	c.mu.Lock()
-
-	view := fromEditorView(c.latestEditorView.Load().(editor.View))
+	view := c.getView()
 	view.Mode = c.mode
 	if len(c.command) > 0 {
 		view.Message = fmt.Sprintf("%s > %s", string(c.command), view.Message)
@@ -347,7 +346,7 @@ func NewCommandEditor(ctx context.Context, e editor.Editor) Editor {
 		command:            nil,
 		firstEditorViewCtx: firstEditorViewCtx,
 		latestEditorView:   &atomic.Value{},
-		renderCh:           make(chan View, 1024),
+		renderCh:           make(chan View, 1),
 	}
 
 	c.latestEditorView.Store(editor.View{})
@@ -360,6 +359,7 @@ func NewCommandEditor(ctx context.Context, e editor.Editor) Editor {
 			case view := <-c.e.Update():
 				c.latestEditorView.Store(view)
 				cancel()
+				// c.lockUpdateRender(func() {})
 			}
 		}
 	}()
