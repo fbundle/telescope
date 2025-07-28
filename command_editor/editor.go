@@ -74,12 +74,64 @@ func (c *commandEditor) Type(ch rune) {
 	})
 }
 
+func (c *commandEditor) applyCommandWithoutLock() {
+	cmd := string(c.command)
+	cmd = strings.TrimSpace(cmd)
+	c.command = nil
+	c.mode = ModeVisual
+
+	msg := func() string {
+		switch {
+		case cmd == ":i" || cmd == ":insert":
+			c.mode = ModeInsert
+			return ""
+
+		case strings.HasPrefix(cmd, ":s ") || strings.HasPrefix(cmd, ":search "):
+			cmd = strings.TrimPrefix(cmd, ":s ")
+			cmd = strings.TrimPrefix(cmd, ":search ")
+			return "search not implemented yet"
+
+		case strings.HasPrefix(cmd, ":g ") || strings.HasPrefix(cmd, ":goto "):
+			cmd = strings.TrimPrefix(cmd, ":g ")
+			cmd = strings.TrimPrefix(cmd, ":goto ")
+			lineNum, err := strconv.Atoi(cmd)
+			if err != nil {
+				return "invalid line number " + cmd
+			}
+			c.e.Goto(lineNum-1, 0)
+			return ""
+
+		case strings.HasPrefix(cmd, ":w ") || strings.HasPrefix(cmd, ":write "):
+			cmd = strings.TrimPrefix(cmd, ":w ")
+			cmd = strings.TrimPrefix(cmd, ":write ")
+
+			filename := cmd
+			text := c.Text()
+			file, err := os.Create(filename)
+			if err != nil {
+				return "error open file " + err.Error()
+			}
+			defer file.Close()
+			writer := bufio.NewWriter(file)
+			for _, line := range text.Iter {
+				writer.WriteString(string(line) + "\n")
+			}
+			err = writer.Flush()
+			if err != nil {
+				return "error flush file " + err.Error()
+			}
+
+			return "file written into " + filename
+		default:
+			return "unknown command: " + cmd
+		}
+	}()
+
+	c.e.Message(msg)
+	c.renderWithoutLock()
+}
+
 func (c *commandEditor) Enter() {
-	writeMessage := func(msg string) {
-		c.e.Message(msg)
-		c.command = nil
-		c.renderWithoutLock()
-	}
 
 	c.lockUpdateRender(func() {
 		switch c.mode {
@@ -88,58 +140,7 @@ func (c *commandEditor) Enter() {
 		case ModeInsert:
 			c.e.Enter()
 		case ModeCommand:
-			// apply command
-			cmd := string(c.command)
-			cmd = strings.TrimSpace(cmd)
-			cmd += " "
-			c.command = nil
-			c.mode = ModeVisual
-			switch {
-			case strings.HasPrefix(cmd, ":i ") || strings.HasPrefix(cmd, ":insert "):
-				c.mode = ModeInsert
-
-				c.renderWithoutLock()
-			case strings.HasPrefix(cmd, ":s ") || strings.HasPrefix(cmd, ":search "):
-				cmd = strings.TrimPrefix(cmd, ":s ")
-				cmd = strings.TrimPrefix(cmd, ":search ")
-				writeMessage("search not implemented yet")
-			case strings.HasPrefix(cmd, ":g ") || strings.HasPrefix(cmd, ":goto "):
-				cmd = strings.TrimPrefix(cmd, ":g ")
-				cmd = strings.TrimPrefix(cmd, ":goto ")
-				lineNum, err := strconv.Atoi(cmd)
-				if err != nil {
-					writeMessage("invalid line number " + cmd)
-					return
-				}
-				c.e.Goto(lineNum-1, 0)
-				c.renderWithoutLock()
-			case strings.HasPrefix(cmd, ":w ") || strings.HasPrefix(cmd, ":write "):
-				cmd = strings.TrimPrefix(cmd, ":w ")
-				cmd = strings.TrimPrefix(cmd, ":write ")
-
-				filename := cmd
-				text := c.Text()
-				file, err := os.Create(filename)
-				if err != nil {
-					writeMessage("error open file " + err.Error())
-					return
-				}
-				defer file.Close()
-				writer := bufio.NewWriter(file)
-				for _, line := range text.Iter {
-					writer.WriteString(string(line) + "\n")
-				}
-				err = writer.Flush()
-				if err != nil {
-					writeMessage("error flush file " + err.Error())
-					return
-				}
-
-				writeMessage("file written into " + filename)
-			default:
-				c.e.Message("unknown command: " + cmd)
-				c.renderWithoutLock()
-			}
+			c.applyCommandWithoutLock()
 		default:
 			exit.Write("unknown mode: ", c.mode)
 		}

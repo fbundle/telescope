@@ -32,6 +32,8 @@ an extremely fast text editor
 
   - command `:g <line_number>` or `:goto <line_number>` will go to a certain line
 
+  - command `:w <file_name>` or `:write <file_name>` write write the current content into a new file (must be a new file)
+
   - after a command is executed, except `:i` or `:insert`, command buffer will be deleted and the editor will go back to `VISUAL` mode
 
   - in `INSERT` mode, user will edit the file as usual
@@ -49,6 +51,4 @@ an extremely fast text editor
 3. when exit the program the log file is preserved to export
 
 4. user use `telescope -r dir/file` to apply the log together with original file to make a new file. the program will write the output to stdout, so user should be `telescope -r dir/file 1> outputfile`
-
-
 
