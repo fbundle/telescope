@@ -24,16 +24,13 @@ func (e *editor) Type(ch rune) {
 				t = t.Ins(0, []rune{ch})
 				return t
 			}
-
-			for col >= len(t.Get(row)) {
-				newRow := slices.Clone(t.Get(row))
-				newRow = append(newRow, ch)
-				t = t.Set(row, newRow)
-				return t
+			line := slices.Clone(t.Get(row))
+			if col >= len(t.Get(row)) {
+				line = append(line, ch)
+			} else {
+				line = insertToSlice(line, col, ch)
 			}
-			newRow := slices.Clone(t.Get(row))
-			newRow = insertToSlice(newRow, col, ch)
-			t = t.Set(row, newRow)
+			t = t.Set(row, line)
 			return t
 		}
 
