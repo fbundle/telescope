@@ -2,9 +2,8 @@ package text
 
 import (
 	"context"
+	"telescope/bytes"
 	"telescope/persistent/vector"
-
-	"golang.org/x/exp/mmap"
 )
 
 type Text interface {
@@ -18,14 +17,14 @@ type Text interface {
 	Append(line Line) Text
 }
 
-func New(r *mmap.ReaderAt) Text {
+func New(reader bytes.Array) Text {
 	return &text{
-		reader: r,
+		reader: reader,
 		vec:    vector.NewVector[Line](),
 	}
 }
 
-func LoadFile(ctx context.Context, reader *mmap.ReaderAt, update func(Line)) error {
+func LoadFile(ctx context.Context, reader bytes.Array, update func(Line)) error {
 	return indexFile(ctx, reader, '\n', func(offset int, line []byte) {
 		line = padNewLine(line)
 		size := len(line) - endOfLineSize(line)
@@ -35,7 +34,7 @@ func LoadFile(ctx context.Context, reader *mmap.ReaderAt, update func(Line)) err
 }
 
 type text struct {
-	reader *mmap.ReaderAt
+	reader bytes.Array
 	vec    vector.Vector[Line]
 }
 

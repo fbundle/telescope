@@ -3,12 +3,11 @@ package text
 import (
 	"context"
 	"slices"
+	"telescope/bytes"
 	"telescope/config"
 	"telescope/side_channel"
 
 	"time"
-
-	"golang.org/x/exp/mmap"
 )
 
 func padNewLine(line []byte) []byte {
@@ -32,7 +31,7 @@ func endOfLineSize(line []byte) int {
 	return 1
 }
 
-func indexFile(ctx context.Context, reader *mmap.ReaderAt, delim byte, update func(offset int, line []byte)) error {
+func indexFile(ctx context.Context, reader bytes.Array, delim byte, update func(offset int, line []byte)) error {
 	var offset int = 0
 
 	for i := 0; i < reader.Len(); i++ {

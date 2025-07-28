@@ -2,9 +2,8 @@ package text
 
 import (
 	"io"
+	"telescope/bytes"
 	"telescope/side_channel"
-
-	"golang.org/x/exp/mmap"
 )
 
 // Line - if offset >= 0, this is a file else this is a []rune buffer
@@ -38,7 +37,7 @@ func (l Line) Size() int {
 	}
 }
 
-func (l Line) repr(r *mmap.ReaderAt) []rune {
+func (l Line) repr(r bytes.Array) []rune {
 	if l.offset < 0 {
 		// in-memory
 		return l.data

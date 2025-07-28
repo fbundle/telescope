@@ -11,10 +11,6 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-const (
-	appName = "telescope"
-)
-
 func draw(s tcell.Screen, view editor.View) {
 	statusStyle := tcell.StyleDefault.
 		Background(tcell.ColorLightGray).
@@ -37,8 +33,7 @@ func draw(s tcell.Screen, view editor.View) {
 		s.SetContent(col, screenHeight-1, ' ', nil, statusStyle)
 	}
 	sep := []rune(" > ")
-	fromLeft := []rune{' '}
-	fromLeft = append(fromLeft, []rune(fmt.Sprintf("(%d, %d)", view.TextCursor.Col+1, view.TextCursor.Row+1))...)
+	fromLeft := []rune(fmt.Sprintf("%s (%d, %d)", string(view.State), view.TextCursor.Col+1, view.TextCursor.Row+1))
 	fromLeft = append(fromLeft, sep...)
 	fromLeft = append(fromLeft, []rune(view.Message)...)
 	for col, ch := range fromLeft {

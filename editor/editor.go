@@ -5,12 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"telescope/bytes"
 	"telescope/hist"
 	"telescope/log"
 	"telescope/text"
 	"time"
-
-	"golang.org/x/exp/mmap"
 )
 
 type internalView struct {
@@ -55,7 +54,7 @@ func NewEditor(
 	return e, nil
 }
 
-func (e *editor) Load(ctx context.Context, inputMmapReader *mmap.ReaderAt) (context.Context, error) {
+func (e *editor) Load(ctx context.Context, reader bytes.Array) (context.Context, error) {
 	loadCtx, loadDone := context.WithCancel(ctx) // if ctx is done then this editor will also stop loading
 	var err error = nil
 	e.lockUpdateRender(func() {
@@ -63,17 +62,17 @@ func (e *editor) Load(ctx context.Context, inputMmapReader *mmap.ReaderAt) (cont
 			err = errors.New("load twice")
 			return
 		}
-		e.text = hist.New(text.New(inputMmapReader))
+		e.text = hist.New(text.New(reader))
 		e.view.background = "loading started"
 		go func() { // load file asynchronously
 			defer loadDone()
-			if inputMmapReader == nil || inputMmapReader.Len() == 0 {
+			if reader == nil || reader.Len() == 0 {
 				return // nothing to load
 			}
 
 			t0 := time.Now()
-			loader := newLoader(inputMmapReader.Len())
-			text.LoadFile(ctx, inputMmapReader, func(l text.Line) {
+			loader := newLoader(reader.Len())
+			text.LoadFile(ctx, reader, func(l text.Line) {
 				e.lockUpdate(func() {
 					e.text.Update(func(t text.Text) text.Text {
 						return t.Append(l)
@@ -156,8 +155,10 @@ func (e *editor) Resize(height int, width int) {
 	})
 }
 
-func (e *editor) Tabular() {
-	// tab is two spaces
-	e.Type(' ')
-	e.Type(' ')
+func (e *editor) Text() text.Text {
+	var t text.Text
+	e.lockUpdate(func() {
+		t = e.text.Get()
+	})
+	return t
 }

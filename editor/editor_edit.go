@@ -175,6 +175,11 @@ func (e *editor) Redo() {
 		e.setMessageWithoutLock("redo")
 	})
 }
+func (e *editor) Tabular() {
+	// tab is two spaces
+	e.Type(' ')
+	e.Type(' ')
+}
 
 func (e *editor) Apply(entry log.Entry) {
 	switch entry.Command {

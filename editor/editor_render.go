@@ -13,6 +13,7 @@ func (e *editor) renderWithoutLock() {
 	render := func() View {
 
 		view := View{
+			State:   nil,
 			WinData: nil,
 			WinCursor: Cursor{
 				Row: e.cursor.Row - e.view.tlRow,
@@ -32,12 +33,4 @@ func (e *editor) renderWithoutLock() {
 	}
 
 	e.renderCh <- render()
-}
-
-func (e *editor) Text() text.Text {
-	var t text.Text
-	e.lockUpdate(func() {
-		t = e.text.Get()
-	})
-	return t
 }

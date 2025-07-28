@@ -2,10 +2,9 @@ package editor
 
 import (
 	"context"
+	"telescope/bytes"
 	"telescope/log"
 	"telescope/text"
-
-	"golang.org/x/exp/mmap"
 )
 
 type Cursor struct {
@@ -14,6 +13,7 @@ type Cursor struct {
 }
 
 type View struct {
+	State      []rune
 	WinData    [][]rune
 	WinCursor  Cursor
 	TextCursor Cursor
@@ -22,7 +22,7 @@ type View struct {
 }
 
 type Controller interface {
-	Load(ctx context.Context, inputMmapReader *mmap.ReaderAt) (context.Context, error)
+	Load(ctx context.Context, reader bytes.Array) (context.Context, error)
 	Resize(height int, width int)
 
 	Type(ch rune)
