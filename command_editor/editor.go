@@ -91,7 +91,7 @@ func applyCommand(command string, c *commandEditor) (nextCommand string, nextMod
 
 		_, text2 := c.e.Text().Split(c.e.Cursor().Row)
 
-		for i, line := range text2.Iter { // TODO check error here
+		for i, line := range text2.Iter {
 			if strings.Contains(string(line), cmd) {
 				c.e.Goto(i, 0)
 				return command, ModeCommand, ""

@@ -32,7 +32,8 @@ func (p *pseudoVector[T]) Del(i int) Vector[T] {
 
 func (p *pseudoVector[T]) Iter(f func(i int, val T) bool) {
 	for i, val := range p.vec {
-		if !f(i, val) {
+		ok := !f(i, val)
+		if !ok {
 			break
 		}
 	}

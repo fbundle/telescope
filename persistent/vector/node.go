@@ -57,7 +57,8 @@ func iter[T any](n *node[T], f func(e T) bool) {
 		return
 	}
 	iter(n.left, f)
-	if !f(n.entry) {
+	ok := f(n.entry)
+	if !ok {
 		return
 	}
 	iter(n.right, f)

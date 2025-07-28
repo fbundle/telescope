@@ -70,8 +70,9 @@ func (v *vector[T]) Concat(other Vector[T]) Vector[T] {
 
 func (v *vector[T]) Repr() []T {
 	buffer := make([]T, 0, v.Len())
-	for _, val := range v.Iter {
+	v.Iter(func(i int, val T) bool {
 		buffer = append(buffer, val)
-	}
+		return true
+	})
 	return buffer
 }
