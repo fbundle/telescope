@@ -4,7 +4,8 @@ import (
 	"context"
 	"slices"
 	"telescope/config"
-	"telescope/exit"
+	"telescope/side_channel"
+
 	"time"
 
 	"golang.org/x/exp/mmap"
@@ -19,10 +20,10 @@ func padNewLine(line []byte) []byte {
 
 func endOfLineSize(line []byte) int {
 	if len(line) == 0 {
-		exit.Write("empty line")
+		side_channel.Panic("empty line")
 	}
 	if line[len(line)-1] != '\n' {
-		exit.Write("not end of line")
+		side_channel.Panic("not end of line")
 	}
 	if len(line) >= 2 && line[len(line)-2] == '\r' {
 		// for windows

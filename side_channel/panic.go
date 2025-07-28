@@ -1,4 +1,4 @@
-package exit
+package side_channel
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"runtime"
 )
 
-func Write(vs ...any) {
+func Panic(vs ...any) {
 	var buffer []byte
 
 	pc, file, line, ok := runtime.Caller(1)

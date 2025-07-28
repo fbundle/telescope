@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"telescope/app"
-	"telescope/exit"
+	"telescope/side_channel"
 )
 
 const VERSION = "0.1.6"
@@ -61,7 +61,7 @@ func main() {
 	case "-l", "--log":
 		err := app.RunLog(args.logFilename)
 		if err != nil {
-			exit.Write(err)
+			side_channel.Panic(err)
 		}
 	case "-w", "--overwrite":
 		if fileNonEmpty(args.logFilename) {
@@ -71,12 +71,12 @@ func main() {
 			}
 			err := os.Remove(args.logFilename)
 			if err != nil {
-				exit.Write(err)
+				side_channel.Panic(err)
 			}
 		}
 		err := app.RunEditor(args.inputFilename, args.logFilename)
 		if err != nil {
-			exit.Write(err)
+			side_channel.Panic(err)
 		}
 	case "-c", "--command":
 		if fileNonEmpty(args.logFilename) {
@@ -86,12 +86,12 @@ func main() {
 			}
 			err := os.Remove(args.logFilename)
 			if err != nil {
-				exit.Write(err)
+				side_channel.Panic(err)
 			}
 		}
 		err := app.RunCommandEditor(args.inputFilename, args.logFilename)
 		if err != nil {
-			exit.Write(err)
+			side_channel.Panic(err)
 		}
 	default:
 		if fileNonEmpty(args.logFilename) {
@@ -101,12 +101,12 @@ func main() {
 			}
 			err := os.Remove(args.logFilename)
 			if err != nil {
-				exit.Write(err)
+				side_channel.Panic(err)
 			}
 		}
 		err := app.RunEditor(args.inputFilename, args.logFilename)
 		if err != nil {
-			exit.Write(err)
+			side_channel.Panic(err)
 		}
 	}
 }

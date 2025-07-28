@@ -9,7 +9,8 @@ import (
 	"strings"
 	"sync"
 	"telescope/editor"
-	"telescope/exit"
+	"telescope/side_channel"
+
 	"telescope/log"
 	"telescope/text"
 
@@ -69,7 +70,7 @@ func (c *commandEditor) Type(ch rune) {
 		case ModeCommand:
 			c.command = append(c.command, ch)
 		default:
-			exit.Write("unknown mode: ", c.mode)
+			side_channel.Panic("unknown mode: ", c.mode)
 		}
 	})
 }
@@ -151,7 +152,7 @@ func (c *commandEditor) Enter() {
 			c.e.Message(message)
 			c.renderWithoutLock()
 		default:
-			exit.Write("unknown mode: ", c.mode)
+			side_channel.Panic("unknown mode: ", c.mode)
 		}
 	})
 }
@@ -168,7 +169,7 @@ func (c *commandEditor) Escape() {
 			c.mode = ModeVisual
 			c.command = nil
 		default:
-			exit.Write("unknown mode: ", c.mode)
+			side_channel.Panic("unknown mode: ", c.mode)
 		}
 	})
 }
@@ -185,7 +186,7 @@ func (c *commandEditor) Backspace() {
 				c.command = c.command[:len(c.command)-1]
 			}
 		default:
-			exit.Write("unknown mode: ", c.mode)
+			side_channel.Panic("unknown mode: ", c.mode)
 		}
 	})
 }
@@ -200,7 +201,7 @@ func (c *commandEditor) Delete() {
 		case ModeCommand:
 			// do nothing
 		default:
-			exit.Write("unknown mode: ", c.mode)
+			side_channel.Panic("unknown mode: ", c.mode)
 		}
 	})
 }
@@ -215,7 +216,7 @@ func (c *commandEditor) Tabular() {
 		case ModeCommand:
 			// do nothing
 		default:
-			exit.Write("unknown mode: ", c.mode)
+			side_channel.Panic("unknown mode: ", c.mode)
 		}
 	})
 }
@@ -313,12 +314,6 @@ func (c *commandEditor) renderWithoutLock() {
 		view.Message = fmt.Sprintf("%s > %s", string(c.command), view.Message)
 	}
 	c.renderCh <- view
-}
-
-func (c *commandEditor) lockUpdate(f func()) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	f()
 }
 
 func (c *commandEditor) lockUpdateRender(f func()) {

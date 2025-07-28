@@ -2,7 +2,7 @@ package text
 
 import (
 	"io"
-	"telescope/exit"
+	"telescope/side_channel"
 
 	"golang.org/x/exp/mmap"
 )
@@ -47,7 +47,7 @@ func (l Line) repr(r *mmap.ReaderAt) []rune {
 		buf := make([]byte, l.size)
 		_, err := r.ReadAt(buf, int64(l.offset))
 		if err != nil && err != io.EOF {
-			exit.Write(err)
+			side_channel.Panic(err)
 			return nil
 		}
 		return []rune(string(buf))

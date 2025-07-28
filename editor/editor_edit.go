@@ -2,8 +2,9 @@ package editor
 
 import (
 	"slices"
-	"telescope/exit"
+
 	"telescope/log"
+	"telescope/side_channel"
 	"telescope/text"
 )
 
@@ -73,7 +74,7 @@ func (e *editor) Backspace() {
 				m = m.Set(row, newRow)
 				moveRow, moveCol = 0, -1 // move left
 			default:
-				exit.Write("unreachable")
+				side_channel.Panic("unreachable")
 			}
 			return m
 		}
@@ -110,7 +111,7 @@ func (e *editor) Delete() {
 				newRow = deleteFromSlice(newRow, col)
 				m = m.Set(row, newRow)
 			default:
-				exit.Write("unreachable")
+				side_channel.Panic("unreachable")
 			}
 			return m
 		}
@@ -145,7 +146,7 @@ func (e *editor) Enter() {
 				t = t.Set(e.cursor.Row, r1).Ins(e.cursor.Row+1, r2)
 				return t
 			default:
-				exit.Write("unreachable")
+				side_channel.Panic("unreachable")
 				return t
 			}
 		}
@@ -194,6 +195,6 @@ func (e *editor) Apply(entry log.Entry) {
 	case log.CommandRedo:
 		e.Redo()
 	default:
-		exit.Write("command not found")
+		side_channel.Panic("command not found")
 	}
 }
