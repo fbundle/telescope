@@ -6,15 +6,16 @@ import (
 	"runtime"
 )
 
-var initialized bool = false
+var initialized = false
 
 func writeln(vs []any, msg string) bool {
+	sideChannelPath := "side_channel.txt"
+
 	if !initialized {
 		initialized = true
-		_ = os.Remove("side_channel.txt")
+		_ = os.Remove(sideChannelPath)
 	}
 
-	sideChannelPath := "side_channel.txt"
 	prepend := func(vs []any, v any) []any {
 		return append([]any{v}, vs...)
 	}

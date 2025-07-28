@@ -52,16 +52,24 @@ func get[T any](n *node[T], i uint) T {
 	panic("index out of range")
 }
 
-func iter[T any](n *node[T], f func(e T) bool) {
+func iter[T any](n *node[T], f func(e T) bool) bool {
 	if n == nil {
-		return
+		return true
 	}
-	iter(n.left, f)
-	ok := f(n.entry)
+	var ok bool
+	ok = iter(n.left, f)
 	if !ok {
-		return
+		return false
 	}
-	iter(n.right, f)
+	ok = f(n.entry)
+	if !ok {
+		return false
+	}
+	ok = iter(n.right, f)
+	if !ok {
+		return false
+	}
+	return true
 }
 
 func balance[T any](n *node[T]) *node[T] {
