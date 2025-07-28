@@ -136,7 +136,7 @@ func (c *commandEditor) Enter() {
 					return
 				}
 
-				writeMessage("write done into " + filename)
+				writeMessage("file written into " + filename)
 			default:
 				c.e.Message("unknown command: " + cmd)
 				c.renderWithoutLock()
