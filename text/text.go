@@ -14,6 +14,7 @@ type Text interface {
 	Del(i int) Text
 	Iter(f func(i int, val []rune) bool)
 	Len() int
+	Split(i int) (Text, Text)
 	Append(line Line) Text
 }
 
@@ -78,4 +79,15 @@ func (t *text) Iter(f func(i int, val []rune) bool) {
 
 func (t *text) Len() int {
 	return t.vec.Len()
+}
+
+func (t *text) Split(i int) (Text, Text) {
+	v1, v2 := t.vec.Split(i)
+	return &text{
+			reader: t.reader,
+			vec:    v1,
+		}, &text{
+			reader: t.reader,
+			vec:    v2,
+		}
 }

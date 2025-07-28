@@ -74,7 +74,7 @@ func (c *commandEditor) Type(ch rune) {
 	})
 }
 
-func applyCommandToEditor(command []rune, e editor.Editor) ([]rune, Mode, string) {
+func applyCommand(command []rune, c *commandEditor) ([]rune, Mode, string) {
 	cmd := string(command)
 	cmd = strings.TrimSpace(cmd)
 
@@ -85,7 +85,19 @@ func applyCommandToEditor(command []rune, e editor.Editor) ([]rune, Mode, string
 	case strings.HasPrefix(cmd, ":s ") || strings.HasPrefix(cmd, ":search "):
 		cmd = strings.TrimPrefix(cmd, ":s ")
 		cmd = strings.TrimPrefix(cmd, ":search ")
-		return nil, ModeVisual, "search not implemented yet"
+
+		text := c.e.Text()
+		row := c.latestEditorView.TextCursor.Row
+		_, text2 := text.Split(row)
+
+		for i, line := range text2.Iter { // TODO check error here
+			if strings.Contains(string(line), cmd) {
+				c.e.Goto(i, 0)
+				return command, ModeCommand, ""
+			}
+		}
+
+		return nil, ModeVisual, "substring not found"
 
 	case strings.HasPrefix(cmd, ":g ") || strings.HasPrefix(cmd, ":goto "):
 		cmd = strings.TrimPrefix(cmd, ":g ")
@@ -94,7 +106,7 @@ func applyCommandToEditor(command []rune, e editor.Editor) ([]rune, Mode, string
 		if err != nil {
 			return nil, ModeVisual, "invalid line number " + cmd
 		}
-		e.Goto(lineNum-1, 0)
+		c.e.Goto(lineNum-1, 0)
 		return nil, ModeVisual, ""
 
 	case strings.HasPrefix(cmd, ":w ") || strings.HasPrefix(cmd, ":write "):
@@ -102,7 +114,7 @@ func applyCommandToEditor(command []rune, e editor.Editor) ([]rune, Mode, string
 		cmd = strings.TrimPrefix(cmd, ":write ")
 
 		filename := cmd
-		text := e.Text()
+		text := c.e.Text()
 		file, err := os.Create(filename)
 		if err != nil {
 			return nil, ModeVisual, "error open file " + err.Error()
@@ -133,7 +145,7 @@ func (c *commandEditor) Enter() {
 		case ModeInsert:
 			c.e.Enter()
 		case ModeCommand:
-			command, mode, message := applyCommandToEditor(c.command, c.e)
+			command, mode, message := applyCommand(c.command, c)
 			c.command = command
 			c.mode = mode
 			c.e.Message(message)
