@@ -3,19 +3,16 @@ package command_editor
 import (
 	"bufio"
 	"context"
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
-	"sync/atomic"
+	"telescope/bytes"
 	"telescope/editor"
 	"telescope/side_channel"
 
 	"telescope/log"
 	"telescope/text"
-
-	"golang.org/x/exp/mmap"
 )
 
 type Mode = string
@@ -27,28 +24,25 @@ const (
 )
 
 type commandEditor struct {
-	mu                 sync.Mutex
-	mode               Mode
-	e                  editor.Editor
-	command            []rune
-	firstEditorViewCtx context.Context
-	latestEditorView   *atomic.Value // editor.View
-	renderCh           chan View
+	mu      sync.Mutex
+	mode    Mode
+	e       editor.Editor
+	command string
 }
 
-func (c *commandEditor) Update() <-chan View {
-	return c.renderCh
+func (c *commandEditor) Update() <-chan editor.View {
+	return c.e.Update()
 }
 
-func (c *commandEditor) Load(ctx context.Context, inputMmapReader *mmap.ReaderAt) (loadCtx context.Context, err error) {
-	c.lockUpdateRender(func() {
-		loadCtx, err = c.e.Load(ctx, inputMmapReader)
+func (c *commandEditor) Load(ctx context.Context, reader bytes.Array) (loadCtx context.Context, err error) {
+	c.lockUpdate(func() {
+		loadCtx, err = c.e.Load(ctx, reader)
 	})
 	return loadCtx, err
 }
 
 func (c *commandEditor) Resize(height int, width int) {
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		c.e.Resize(height, width)
 	})
 }
@@ -59,39 +53,43 @@ func (c *commandEditor) Resize(height int, width int) {
 // press esc in any mode go back to VISUAL mode
 
 func (c *commandEditor) Type(ch rune) {
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		switch c.mode {
 		case ModeVisual:
-			if ch == ':' {
+			switch ch {
+			case 'i':
+				c.mode = ModeInsert
+				c.WriteHeaderAndMessage(c.mode, "enter insert mode")
+			case ':':
 				c.mode = ModeCommand
-				c.command = []rune{':'}
-				c.renderWithoutLock()
+				c.command = string(ch)
+				c.WriteHeaderAndMessage(c.mode, c.command)
+			default:
 			}
 		case ModeInsert:
 			c.e.Type(ch)
 		case ModeCommand:
-			c.command = append(c.command, ch)
+			c.command += string(ch)
+			c.WriteHeaderAndMessage(c.mode, c.command)
 		default:
 			side_channel.Panic("unknown mode: ", c.mode)
 		}
 	})
 }
 
-func applyCommand(command []rune, c *commandEditor) ([]rune, Mode, string) {
-	cmd := string(command)
+func applyCommand(command string, c *commandEditor) (nextCommand string, nextMode Mode, message string) {
+	cmd := command
 	cmd = strings.TrimSpace(cmd)
 
 	switch {
 	case cmd == ":i" || cmd == ":insert":
-		return nil, ModeInsert, ""
+		return "", ModeInsert, ""
 
 	case strings.HasPrefix(cmd, ":s ") || strings.HasPrefix(cmd, ":search "):
 		cmd = strings.TrimPrefix(cmd, ":s ")
 		cmd = strings.TrimPrefix(cmd, ":search ")
 
-		text := c.e.Text()
-		row := c.latestEditorView.Load().(editor.View).TextCursor.Row
-		_, text2 := text.Split(row)
+		_, text2 := c.e.Text().Split(c.e.Cursor().Row)
 
 		for i, line := range text2.Iter { // TODO check error here
 			if strings.Contains(string(line), cmd) {
@@ -100,59 +98,63 @@ func applyCommand(command []rune, c *commandEditor) ([]rune, Mode, string) {
 			}
 		}
 
-		return nil, ModeVisual, "substring not found"
+		return "", ModeVisual, "substring not found"
 
 	case strings.HasPrefix(cmd, ":g ") || strings.HasPrefix(cmd, ":goto "):
 		cmd = strings.TrimPrefix(cmd, ":g ")
 		cmd = strings.TrimPrefix(cmd, ":goto ")
 		lineNum, err := strconv.Atoi(cmd)
 		if err != nil {
-			return nil, ModeVisual, "invalid line number " + cmd
+			return "", ModeVisual, "invalid line number " + cmd
 		}
 		c.e.Goto(lineNum-1, 0)
-		return nil, ModeVisual, ""
+		return "", ModeVisual, ""
 
 	case strings.HasPrefix(cmd, ":w ") || strings.HasPrefix(cmd, ":write "):
 		cmd = strings.TrimPrefix(cmd, ":w ")
 		cmd = strings.TrimPrefix(cmd, ":write ")
 
 		filename := cmd
-		text := c.e.Text()
 		file, err := os.Create(filename)
 		if err != nil {
-			return nil, ModeVisual, "error open file " + err.Error()
+			return "", ModeVisual, "error open file " + err.Error()
 		}
 		defer file.Close()
 		writer := bufio.NewWriter(file)
-		for _, line := range text.Iter {
-			writer.WriteString(string(line) + "\n")
+		for _, line := range c.e.Text().Iter {
+			_, err = writer.WriteString(string(line) + "\n")
+			if err != nil {
+				return "", ModeVisual, "error write file " + err.Error()
+			}
 		}
 		err = writer.Flush()
 		if err != nil {
-			return nil, ModeVisual, "error flush file " + err.Error()
+			return "", ModeVisual, "error flush file " + err.Error()
 		}
 
-		return nil, ModeVisual, "file written into " + filename
+		return "", ModeVisual, "file written into " + filename
 	default:
-		return nil, ModeVisual, "unknown command: " + cmd
+		return "", ModeVisual, "unknown command: " + cmd
 	}
 
 }
 
 func (c *commandEditor) Enter() {
-
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		switch c.mode {
 		case ModeVisual:
 			// do nothing
 		case ModeInsert:
 			c.e.Enter()
 		case ModeCommand:
-			command, mode, message := applyCommand(c.command, c)
-			c.command = command
-			c.mode = mode
-			c.e.WriteMessage(message)
-			c.renderWithoutLock()
+			nextCommand, nextMode, message := applyCommand(c.command, c)
+			c.command = nextCommand
+			c.mode = nextMode
+			if len(c.command) > 0 {
+				c.WriteHeaderAndMessage(c.mode, c.command)
+			} else {
+				c.WriteHeaderAndMessage(c.mode, message)
+			}
 		default:
 			side_channel.Panic("unknown mode: ", c.mode)
 		}
@@ -160,16 +162,17 @@ func (c *commandEditor) Enter() {
 }
 
 func (c *commandEditor) Escape() {
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		switch c.mode {
 		case ModeVisual:
 			// do nothing
 		case ModeInsert:
 			c.mode = ModeVisual
-			c.renderWithoutLock()
+			c.WriteHeaderAndMessage(c.mode, "enter visual mode")
 		case ModeCommand:
 			c.mode = ModeVisual
-			c.command = nil
+			c.command = ""
+			c.WriteHeaderAndMessage(c.mode, "enter visual mode")
 		default:
 			side_channel.Panic("unknown mode: ", c.mode)
 		}
@@ -177,7 +180,7 @@ func (c *commandEditor) Escape() {
 }
 
 func (c *commandEditor) Backspace() {
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		switch c.mode {
 		case ModeVisual:
 			// do nothing
@@ -187,6 +190,7 @@ func (c *commandEditor) Backspace() {
 			if len(c.command) > 0 {
 				c.command = c.command[:len(c.command)-1]
 			}
+			c.WriteHeaderAndMessage(c.mode, c.command)
 		default:
 			side_channel.Panic("unknown mode: ", c.mode)
 		}
@@ -194,7 +198,7 @@ func (c *commandEditor) Backspace() {
 }
 
 func (c *commandEditor) Delete() {
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		switch c.mode {
 		case ModeVisual:
 			// do nothing
@@ -209,7 +213,7 @@ func (c *commandEditor) Delete() {
 }
 
 func (c *commandEditor) Tabular() {
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		switch c.mode {
 		case ModeVisual:
 			// do nothing
@@ -224,144 +228,110 @@ func (c *commandEditor) Tabular() {
 }
 
 func (c *commandEditor) Goto(row int, col int) {
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		c.e.Goto(row, col)
 	})
 }
 
 func (c *commandEditor) MoveLeft() {
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		c.e.MoveLeft()
 	})
 }
 
 func (c *commandEditor) MoveRight() {
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		c.e.MoveRight()
 	})
 }
 
 func (c *commandEditor) MoveUp() {
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		c.e.MoveUp()
 	})
 }
 
 func (c *commandEditor) MoveDown() {
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		c.e.MoveDown()
 	})
 }
 
 func (c *commandEditor) MoveHome() {
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		c.e.MoveHome()
 	})
 }
 
 func (c *commandEditor) MoveEnd() {
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		c.e.MoveEnd()
 	})
 }
 
 func (c *commandEditor) MovePageUp() {
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		c.e.MovePageUp()
 	})
 }
 
 func (c *commandEditor) MovePageDown() {
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		c.e.MovePageDown()
 	})
 }
 
 func (c *commandEditor) Undo() {
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		c.e.Undo()
 	})
 }
 
 func (c *commandEditor) Redo() {
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		c.e.Redo()
 	})
 }
 
 func (c *commandEditor) Apply(entry log.Entry) {
-	c.lockUpdateRender(func() {
+	c.lockUpdate(func() {
 		c.e.Apply(entry)
 	})
 }
 
-func (c *commandEditor) Message(s string) {
-	c.lockUpdateRender(func() {
-		c.command = nil
-		c.e.WriteMessage(s)
+func (c *commandEditor) WriteHeaderAndMessage(header string, message string) {
+	c.lockUpdate(func() {
+		c.e.WriteHeaderAndMessage(header, message)
+	})
+}
+
+func (c *commandEditor) WriteMessage(message string) {
+	c.lockUpdate(func() {
+		c.e.WriteMessage(message)
 	})
 }
 
 func (c *commandEditor) Text() text.Text {
 	return c.e.Text()
 }
-
-func (c *commandEditor) getView() View {
-	<-c.firstEditorViewCtx.Done()
-	view := c.latestEditorView.Load().(editor.View)
-
-	return View{
-		Mode:       "",
-		WinData:    view.WinData,
-		WinCursor:  Cursor{Row: view.WinCursor.Row, Col: view.WinCursor.Col},
-		TextCursor: Cursor{Row: view.TextCursor.Row, Col: view.TextCursor.Col},
-		Message:    view.Message,
-		Background: view.Background,
-	}
+func (c *commandEditor) Cursor() editor.Cursor {
+	return c.e.Cursor()
 }
 
-func (c *commandEditor) renderWithoutLock() {
-	view := c.getView()
-	view.Mode = c.mode
-	if len(c.command) > 0 {
-		view.Message = fmt.Sprintf("%s > %s", string(c.command), view.Message)
-	}
-	c.renderCh <- view
-}
-
-func (c *commandEditor) lockUpdateRender(f func()) {
+func (c *commandEditor) lockUpdate(f func()) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	defer c.renderWithoutLock()
 
 	f()
 }
 
-func NewCommandEditor(ctx context.Context, e editor.Editor) Editor {
-	firstEditorViewCtx, cancel := context.WithCancel(ctx)
+func NewCommandEditor(e editor.Editor) editor.Editor {
 	c := &commandEditor{
-		mu:                 sync.Mutex{},
-		mode:               ModeVisual,
-		e:                  e,
-		command:            nil,
-		firstEditorViewCtx: firstEditorViewCtx,
-		latestEditorView:   &atomic.Value{},
-		renderCh:           make(chan View, 1),
+		mu:      sync.Mutex{},
+		mode:    ModeVisual,
+		e:       e,
+		command: "",
 	}
-
-	c.latestEditorView.Store(editor.View{})
-
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case view := <-c.e.Update():
-				c.latestEditorView.Store(view)
-				cancel()
-				// c.lockUpdateRender(func() {}) // TODO - enable it seems to make it hang
-			}
-		}
-	}()
+	c.e.WriteHeaderAndMessage(c.mode, "")
 	return c
 }

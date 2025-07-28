@@ -146,6 +146,13 @@ func (e *editor) WriteMessage(message string) {
 		e.view.message = message
 	})
 }
+func (e *editor) WriteHeaderAndMessage(header string, message string) {
+	e.lockUpdateRender(func() {
+		e.view.header = header
+		e.view.message = message
+	})
+}
+
 func (e *editor) Resize(height int, width int) {
 	e.lockUpdateRender(func() {
 		if e.view.height == height && e.view.width == width {
@@ -163,4 +170,12 @@ func (e *editor) Text() text.Text {
 		t = e.text.Get()
 	})
 	return t
+}
+
+func (e *editor) Cursor() Cursor {
+	var c Cursor
+	e.lockUpdate(func() {
+		c = e.cursor
+	})
+	return c
 }

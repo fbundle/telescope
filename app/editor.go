@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"telescope/command_editor"
 	"time"
 
 	"telescope/config"
@@ -52,7 +53,7 @@ func draw(s tcell.Screen, view editor.View) {
 	s.Show()
 }
 
-func RunEditor(inputFilename string, logFilename string) error {
+func RunEditor(inputFilename string, logFilename string, commandMode bool) error {
 	s, err := tcell.NewScreen()
 	if err != nil {
 		return err
@@ -69,6 +70,9 @@ func RunEditor(inputFilename string, logFilename string) error {
 	if err != nil {
 		cancel()
 		return err
+	}
+	if commandMode {
+		e = command_editor.NewCommandEditor(e)
 	}
 	defer closer()
 

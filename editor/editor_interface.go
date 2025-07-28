@@ -21,7 +21,7 @@ type View struct {
 	Background string // consider change it to {totalSize, loadedSize, ...}
 }
 
-type EditController interface {
+type TextController interface {
 	Type(ch rune)
 	Enter()
 	Backspace()
@@ -44,19 +44,21 @@ type EditController interface {
 	Apply(entry log.Entry)
 }
 
-type Controller interface {
+type AppController interface {
 	Load(ctx context.Context, reader bytes.Array) (context.Context, error)
 	Resize(height int, width int)
+	WriteHeaderAndMessage(header string, message string)
 	WriteMessage(message string)
 }
 
 type Renderer interface {
+	Cursor() Cursor
+	Text() text.Text
 	Update() <-chan View
 }
 
 type Editor interface {
 	Renderer
-	Controller
-	EditController
-	Text() text.Text
+	AppController
+	TextController
 }

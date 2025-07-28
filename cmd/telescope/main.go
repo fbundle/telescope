@@ -74,7 +74,22 @@ func main() {
 				side_channel.Panic(err)
 			}
 		}
-		err := app.RunEditor(args.firstFilename, args.secondFilename)
+		err := app.RunEditor(args.firstFilename, args.secondFilename, false)
+		if err != nil {
+			side_channel.Panic(err)
+		}
+	case "-c", "--command":
+		if fileNonEmpty(args.secondFilename) {
+			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.secondFilename), false)
+			if !ok {
+				return
+			}
+			err := os.Remove(args.secondFilename)
+			if err != nil {
+				side_channel.Panic(err)
+			}
+		}
+		err := app.RunEditor(args.firstFilename, args.secondFilename, true)
 		if err != nil {
 			side_channel.Panic(err)
 		}
@@ -89,7 +104,7 @@ func main() {
 				side_channel.Panic(err)
 			}
 		}
-		err := app.RunEditor(args.firstFilename, args.secondFilename)
+		err := app.RunEditor(args.firstFilename, args.secondFilename, false)
 		if err != nil {
 			side_channel.Panic(err)
 		}
