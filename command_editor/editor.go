@@ -359,7 +359,7 @@ func NewCommandEditor(ctx context.Context, e editor.Editor) Editor {
 			case view := <-c.e.Update():
 				c.latestEditorView.Store(view)
 				cancel()
-				c.lockUpdateRender(func() {})
+				// c.lockUpdateRender(func() {}) // TODO - enable it seems to make it hang
 			}
 		}
 	}()
