@@ -6,8 +6,9 @@ import (
 	"telescope/command_editor"
 	"time"
 
-	"github.com/gdamore/tcell/v2"
 	"telescope/config"
+
+	"github.com/gdamore/tcell/v2"
 )
 
 func drawCommandEditor(s tcell.Screen, view command_editor.View) {
@@ -33,7 +34,7 @@ func drawCommandEditor(s tcell.Screen, view command_editor.View) {
 	}
 	sep := []rune(" > ")
 	fromLeft := []rune{' '}
-	fromLeft = append(fromLeft, []rune(fmt.Sprintf("%s (%d, %d)", view.Mode, view.TextCursor.Col, view.TextCursor.Row))...)
+	fromLeft = append(fromLeft, []rune(fmt.Sprintf("%s (%d, %d)", view.Mode, view.TextCursor.Col+1, view.TextCursor.Row+1))...)
 	fromLeft = append(fromLeft, sep...)
 	fromLeft = append(fromLeft, []rune(view.Message)...)
 	for col, ch := range fromLeft {

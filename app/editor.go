@@ -38,7 +38,7 @@ func draw(s tcell.Screen, view editor.View) {
 	}
 	sep := []rune(" > ")
 	fromLeft := []rune{' '}
-	fromLeft = append(fromLeft, []rune(fmt.Sprintf("(%d, %d)", view.TextCursor.Col, view.TextCursor.Row))...)
+	fromLeft = append(fromLeft, []rune(fmt.Sprintf("(%d, %d)", view.TextCursor.Col+1, view.TextCursor.Row+1))...)
 	fromLeft = append(fromLeft, sep...)
 	fromLeft = append(fromLeft, []rune(view.Message)...)
 	for col, ch := range fromLeft {

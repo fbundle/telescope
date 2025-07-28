@@ -8,12 +8,10 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"telescope/config"
 	"telescope/editor"
 	"telescope/exit"
 	"telescope/log"
 	"telescope/text"
-	"time"
 
 	"golang.org/x/exp/mmap"
 )
@@ -139,9 +137,6 @@ func (c *commandEditor) Enter() {
 				writeMessage("file written into " + filename)
 			default:
 				c.e.Message("unknown command: " + cmd)
-				c.renderWithoutLock()
-				time.Sleep(config.Load().BLINKING_TIME)
-				c.e.Message("")
 				c.renderWithoutLock()
 			}
 		default:
