@@ -6,7 +6,14 @@ import (
 	"runtime"
 )
 
+var initialized bool = false
+
 func write(vs []any, msg string) bool {
+	if !initialized {
+		initialized = true
+		_ = os.Remove("side_channel.txt")
+	}
+
 	sideChannelPath := "side_channel.txt"
 	prepend := func(vs []any, v any) []any {
 		return append([]any{v}, vs...)
@@ -16,7 +23,7 @@ func write(vs []any, msg string) bool {
 		return false
 	}
 	defer f.Close()
-	_, _ = fmt.Fprintln(f, prepend(vs, msg))
+	_, _ = fmt.Fprintln(f, prepend(vs, msg)...)
 	return true
 }
 

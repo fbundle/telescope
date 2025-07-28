@@ -89,6 +89,8 @@ func applyCommand(command string, c *commandEditor) (nextCommand string, nextMod
 		cmd = strings.TrimPrefix(cmd, ":s ")
 		cmd = strings.TrimPrefix(cmd, ":search ")
 
+		side_channel.Write(cmd)
+
 		_, text2 := c.e.Text().Split(c.e.Cursor().Row)
 
 		for i, line := range text2.Iter {
