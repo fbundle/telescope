@@ -94,15 +94,15 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		_, text2 := view.Text.Split(row + 1)
 
 		for i, line := range text2.Iter {
-			side_channel.WriteLn(cmd, i, string(line))
 			if strings.Contains(string(line), cmd) {
 				c.e.Goto(row+1+i, 0)
 				c.writeWithoutLock("found substring " + cmd)
+				return
 			}
 		}
 
 		c.mode, c.command = ModeVisual, ""
-		c.writeWithoutLock("substring not found")
+		c.writeWithoutLock("end of file")
 		return
 	case strings.HasPrefix(cmd, ":g ") || strings.HasPrefix(cmd, ":goto "):
 		cmd = strings.TrimPrefix(cmd, ":g ")
