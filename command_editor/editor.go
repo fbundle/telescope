@@ -58,85 +58,101 @@ func (c *commandEditor) Type(ch rune) {
 		case ModeVisual:
 			switch ch {
 			case 'i':
-				c.mode = ModeInsert
-				c.e.WriteHeaderAndMessage(c.mode, "enter insert mode")
+				c.mode, c.command = ModeInsert, ""
+				c.writeWithoutLock("enter insert mode")
 			case ':':
-				c.mode = ModeCommand
-				c.command = string(ch)
-				c.e.WriteHeaderAndMessage(c.mode, c.command)
+				c.mode, c.command = ModeCommand, string(ch)
+				c.writeWithoutLock("enter command mode")
 			default:
 			}
 		case ModeInsert:
 			c.e.Type(ch)
 		case ModeCommand:
 			c.command += string(ch)
-			c.e.WriteHeaderAndMessage(c.mode, c.command)
+			c.writeWithoutLock("")
 		default:
 			side_channel.Panic("unknown mode: ", c.mode)
 		}
 	})
 }
 
-func applyCommand(command string, c *commandEditor) (nextCommand string, nextMode Mode, message string) {
-	cmd := command
-	cmd = strings.TrimSpace(cmd)
+func (c *commandEditor) applyCommand(command string) {
+	c.lockUpdate(func() {
 
-	switch {
-	case cmd == ":i" || cmd == ":insert":
-		return "", ModeInsert, ""
+		cmd := command
+		cmd = strings.TrimSpace(cmd)
 
-	case strings.HasPrefix(cmd, ":s ") || strings.HasPrefix(cmd, ":search "):
-		cmd = strings.TrimPrefix(cmd, ":s ")
-		cmd = strings.TrimPrefix(cmd, ":search ")
+		switch {
+		case cmd == ":i" || cmd == ":insert":
+			c.mode, c.command = ModeInsert, ""
+			c.writeWithoutLock("enter insert mode")
+			return
+		case strings.HasPrefix(cmd, ":s ") || strings.HasPrefix(cmd, ":search "):
+			cmd = strings.TrimPrefix(cmd, ":s ")
+			cmd = strings.TrimPrefix(cmd, ":search ")
 
-		row := c.e.Cursor().Row
-		_, text2 := c.e.Text().Split(row + 1)
-		for i, line := range text2.Iter {
-			if strings.Contains(string(line), cmd) {
-				c.e.Goto(row+1+i, 0)
-				return command, ModeCommand, ""
+			view := c.e.Render()
+			row := view.TextCursor.Row
+			_, text2 := view.Text.Split(row + 1)
+			for i, line := range text2.Iter {
+				if strings.Contains(string(line), cmd) {
+					c.e.Goto(row+1+i, 0)
+					c.writeWithoutLock("found substring " + cmd)
+				}
 			}
-		}
 
-		return "", ModeVisual, "substring not found"
-
-	case strings.HasPrefix(cmd, ":g ") || strings.HasPrefix(cmd, ":goto "):
-		cmd = strings.TrimPrefix(cmd, ":g ")
-		cmd = strings.TrimPrefix(cmd, ":goto ")
-		lineNum, err := strconv.Atoi(cmd)
-		if err != nil {
-			return "", ModeVisual, "invalid line number " + cmd
-		}
-		c.e.Goto(lineNum-1, 0)
-		return "", ModeVisual, ""
-
-	case strings.HasPrefix(cmd, ":w ") || strings.HasPrefix(cmd, ":write "):
-		cmd = strings.TrimPrefix(cmd, ":w ")
-		cmd = strings.TrimPrefix(cmd, ":write ")
-
-		filename := cmd
-		file, err := os.Create(filename)
-		if err != nil {
-			return "", ModeVisual, "error open file " + err.Error()
-		}
-		defer file.Close()
-		writer := bufio.NewWriter(file)
-		for _, line := range c.e.Text().Iter {
-			_, err = writer.WriteString(string(line) + "\n")
+			c.mode = ModeVisual
+			c.writeWithoutLock("substring not found")
+			return
+		case strings.HasPrefix(cmd, ":g ") || strings.HasPrefix(cmd, ":goto "):
+			cmd = strings.TrimPrefix(cmd, ":g ")
+			cmd = strings.TrimPrefix(cmd, ":goto ")
+			lineNum, err := strconv.Atoi(cmd)
 			if err != nil {
-				return "", ModeVisual, "error write file " + err.Error()
+				c.mode, c.command = ModeVisual, ""
+				c.writeWithoutLock("invalid line number " + cmd)
+				return
 			}
-		}
-		err = writer.Flush()
-		if err != nil {
-			return "", ModeVisual, "error flush file " + err.Error()
-		}
+			c.e.Goto(lineNum-1, 0)
+			c.mode, c.command = ModeVisual, ""
+			c.writeWithoutLock("goto line " + cmd)
+			return
+		case strings.HasPrefix(cmd, ":w ") || strings.HasPrefix(cmd, ":writeWithoutLock "):
+			cmd = strings.TrimPrefix(cmd, ":w ")
+			cmd = strings.TrimPrefix(cmd, ":writeWithoutLock ")
 
-		return "", ModeVisual, "file written into " + filename
-	default:
-		return "", ModeVisual, "unknown command: " + cmd
-	}
+			filename := cmd
+			file, err := os.Create(filename)
+			if err != nil {
+				c.mode, c.command = ModeVisual, ""
+				c.writeWithoutLock("error open file " + err.Error())
+				return
+			}
+			defer file.Close()
+			writer := bufio.NewWriter(file)
+			for _, line := range c.e.Text().Iter {
+				_, err = writer.WriteString(string(line) + "\n")
+				if err != nil {
+					c.mode, c.command = ModeVisual, ""
+					c.writeWithoutLock("error writeWithoutLock file " + err.Error())
+					return
+				}
+			}
+			err = writer.Flush()
+			if err != nil {
+				c.mode, c.command = ModeVisual, ""
+				c.writeWithoutLock("error flush file " + err.Error())
+				return
+			}
 
+			c.mode, c.command = ModeVisual, ""
+			c.writeWithoutLock("file written into " + filename)
+			return
+		default:
+			c.mode, c.command = ModeVisual, ""
+			c.writeWithoutLock("unknown command: " + cmd)
+		}
+	})
 }
 
 func (c *commandEditor) Enter() {
@@ -147,14 +163,7 @@ func (c *commandEditor) Enter() {
 		case ModeInsert:
 			c.e.Enter()
 		case ModeCommand:
-			nextCommand, nextMode, message := applyCommand(c.command, c)
-			c.command = nextCommand
-			c.mode = nextMode
-			if len(c.command) > 0 {
-				c.e.WriteHeaderAndMessage(c.mode, c.command)
-			} else {
-				c.e.WriteHeaderAndMessage(c.mode, message)
-			}
+			c.applyCommand(c.command)
 		default:
 			side_channel.Panic("unknown mode: ", c.mode)
 		}
@@ -167,12 +176,11 @@ func (c *commandEditor) Escape() {
 		case ModeVisual:
 			// do nothing
 		case ModeInsert:
-			c.mode = ModeVisual
-			c.e.WriteHeaderAndMessage(c.mode, "enter visual mode")
+			c.mode, c.command = ModeVisual, ""
+			c.writeWithoutLock("enter visual mode")
 		case ModeCommand:
-			c.mode = ModeVisual
-			c.command = ""
-			c.e.WriteHeaderAndMessage(c.mode, "enter visual mode")
+			c.mode, c.command = ModeVisual, ""
+			c.writeWithoutLock("enter visual mode")
 		default:
 			side_channel.Panic("unknown mode: ", c.mode)
 		}
@@ -190,7 +198,7 @@ func (c *commandEditor) Backspace() {
 			if len(c.command) > 0 {
 				c.command = c.command[:len(c.command)-1]
 			}
-			c.e.WriteHeaderAndMessage(c.mode, c.command)
+			c.writeWithoutLock("")
 		default:
 			side_channel.Panic("unknown mode: ", c.mode)
 		}
@@ -299,9 +307,9 @@ func (c *commandEditor) Apply(entry log.Entry) {
 	})
 }
 
-func (c *commandEditor) WriteHeaderAndMessage(header string, message string) {
+func (c *commandEditor) WriteHeaderCommandMessage(header string, command string, message string) {
 	c.lockUpdate(func() {
-		c.e.WriteHeaderAndMessage(header, message)
+		c.e.WriteHeaderCommandMessage(header, command, message)
 	})
 }
 
@@ -332,6 +340,10 @@ func NewCommandEditor(e editor.Editor) editor.Editor {
 		e:       e,
 		command: "",
 	}
-	c.e.WriteHeaderAndMessage(c.mode, "")
+	c.writeWithoutLock("")
 	return c
+}
+
+func (c *commandEditor) writeWithoutLock(message string) {
+	c.e.WriteHeaderCommandMessage(c.mode, c.command, message)
 }

@@ -35,14 +35,24 @@ func draw(s tcell.Screen, view editor.View) {
 	}
 	sep := []rune(" > ")
 	fromLeft := []rune(fmt.Sprintf("%s (%d, %d)", view.Header, view.TextCursor.Col+1, view.TextCursor.Row+1))
-	fromLeft = append(fromLeft, sep...)
-	fromLeft = append(fromLeft, []rune(view.Message)...)
+	if len(view.Command) > 0 {
+		fromLeft = append(fromLeft, sep...)
+		fromLeft = append(fromLeft, []rune(view.Command)...)
+	}
+	if len(view.Message) > 0 {
+		fromLeft = append(fromLeft, sep...)
+		fromLeft = append(fromLeft, []rune(view.Message)...)
+	}
 	for col, ch := range fromLeft {
 		if 0 <= col && col < screenWidth {
 			s.SetContent(col, screenHeight-1, ch, nil, statusStyle)
 		}
 	}
-	fromRight := append(sep, []rune(view.Background)...)
+	fromRight := []rune{}
+	if len(view.Background) > 0 {
+		fromRight = append(fromRight, sep...)
+		fromRight = append(fromRight, []rune(view.Background)...)
+	}
 	for i, ch := range fromRight {
 		col := i + screenWidth - len(fromRight)
 		if 0 <= col && col < screenWidth {

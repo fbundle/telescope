@@ -14,11 +14,13 @@ import (
 )
 
 type internalView struct {
-	tlRow      int
-	tlCol      int
-	height     int
-	width      int
+	tlRow  int
+	tlCol  int
+	height int
+	width  int
+
 	header     string
+	command    string
 	message    string
 	background string
 }
@@ -80,12 +82,12 @@ func (e *editor) Load(ctx context.Context, reader bytes.Array) (context.Context,
 					e.text.Update(func(t text.Text) text.Text {
 						return t.Append(l)
 					})
-					if loader.add(l.Size()) { // to render
+					if loader.add(l.Size()) { // to renderWithoutLock
 						e.view.background = fmt.Sprintf(
 							"loading %d/%d (%d%%)",
 							loader.loadedSize, loader.totalSize, loader.lastRenderPercentage,
 						)
-						e.renderWithoutLock()
+						e.updateWithoutLock()
 					}
 				})
 			})
@@ -104,7 +106,7 @@ func (e *editor) Load(ctx context.Context, reader bytes.Array) (context.Context,
 						int(totalTime.Seconds()),
 					)
 				}
-				e.renderWithoutLock()
+				e.updateWithoutLock()
 			})
 		}()
 	})
@@ -122,7 +124,7 @@ func (e *editor) lockUpdate(f func()) {
 func (e *editor) lockUpdateRender(f func()) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	defer e.renderWithoutLock()
+	defer e.updateWithoutLock()
 
 	f()
 }
@@ -147,9 +149,10 @@ func (e *editor) WriteMessage(message string) {
 		e.view.message = message
 	})
 }
-func (e *editor) WriteHeaderAndMessage(header string, message string) {
+func (e *editor) WriteHeaderCommandMessage(header string, command string, message string) {
 	e.lockUpdateRender(func() {
 		e.view.header = header
+		e.view.command = command
 		e.view.message = message
 	})
 }

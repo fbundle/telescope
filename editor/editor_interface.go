@@ -13,10 +13,14 @@ type Cursor struct {
 }
 
 type View struct {
-	Header     string
 	WinData    [][]rune
 	WinCursor  Cursor
 	TextCursor Cursor
+
+	Text text.Text
+
+	Header     string
+	Command    string
 	Message    string
 	Background string // consider change it to {totalSize, loadedSize, ...}
 }
@@ -49,13 +53,12 @@ type TextController interface {
 type AppController interface {
 	Load(ctx context.Context, reader bytes.Array) (context.Context, error)
 	Resize(height int, width int)
-	WriteHeaderAndMessage(header string, message string)
+	WriteHeaderCommandMessage(header string, command string, message string)
 	WriteMessage(message string)
 }
 
 type Renderer interface {
-	Cursor() Cursor
-	Text() text.Text
+	Render() View
 	Update() <-chan View
 }
 
