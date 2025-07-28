@@ -151,7 +151,7 @@ func (c *commandEditor) Enter() {
 			command, mode, message := applyCommand(c.command, c)
 			c.command = command
 			c.mode = mode
-			c.e.Message(message)
+			c.e.WriteMessage(message)
 			c.renderWithoutLock()
 		default:
 			side_channel.Panic("unknown mode: ", c.mode)
@@ -298,7 +298,7 @@ func (c *commandEditor) Apply(entry log.Entry) {
 func (c *commandEditor) Message(s string) {
 	c.lockUpdateRender(func() {
 		c.command = nil
-		c.e.Message(s)
+		c.e.WriteMessage(s)
 	})
 }
 

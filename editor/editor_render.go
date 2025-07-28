@@ -11,9 +11,8 @@ func (e *editor) renderWithoutLock() {
 		}
 	}
 	render := func() View {
-
 		view := View{
-			State:   nil,
+			Header:  e.view.header,
 			WinData: nil,
 			WinCursor: Cursor{
 				Row: e.cursor.Row - e.view.tlRow,

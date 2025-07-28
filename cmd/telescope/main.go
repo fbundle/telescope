@@ -78,21 +78,6 @@ func main() {
 		if err != nil {
 			side_channel.Panic(err)
 		}
-	case "-c", "--command":
-		if fileNonEmpty(args.secondFilename) {
-			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.secondFilename), false)
-			if !ok {
-				return
-			}
-			err := os.Remove(args.secondFilename)
-			if err != nil {
-				side_channel.Panic(err)
-			}
-		}
-		err := app.RunCommandEditor(args.firstFilename, args.secondFilename)
-		if err != nil {
-			side_channel.Panic(err)
-		}
 	default:
 		if fileNonEmpty(args.secondFilename) {
 			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.secondFilename), false)

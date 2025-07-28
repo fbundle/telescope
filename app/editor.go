@@ -33,7 +33,7 @@ func draw(s tcell.Screen, view editor.View) {
 		s.SetContent(col, screenHeight-1, ' ', nil, statusStyle)
 	}
 	sep := []rune(" > ")
-	fromLeft := []rune(fmt.Sprintf("%s (%d, %d)", string(view.State), view.TextCursor.Col+1, view.TextCursor.Row+1))
+	fromLeft := []rune(fmt.Sprintf("%s (%d, %d)", view.Header, view.TextCursor.Col+1, view.TextCursor.Row+1))
 	fromLeft = append(fromLeft, sep...)
 	fromLeft = append(fromLeft, []rune(view.Message)...)
 	for col, ch := range fromLeft {
@@ -109,7 +109,7 @@ func RunEditor(inputFilename string, logFilename string) error {
 			} else if event.Key() == tcell.KeyCtrlS {
 				// Ctrl+S to flush
 				_ = flush()
-				e.Message("log flushed")
+				e.WriteMessage("log flushed")
 			} else {
 				handleEditorKey(e, event)
 			}
@@ -125,7 +125,7 @@ func RunEditor(inputFilename string, logFilename string) error {
 
 	// we have to cancel here first, then wait for a while before exiting
 	// since exiting will close all the files; waiting time is necessary for all background tasks to stop reading files
-	e.Message("exiting... ")
+	e.WriteMessage("exiting... ")
 	cancel()
 	<-loadCtx.Done() // wait for load context then exit, exec deferred closer function
 	return nil
@@ -168,6 +168,6 @@ func handleEditorKey(e editor.Editor, ev *tcell.EventKey) {
 	case tcell.KeyCtrlR:
 		e.Redo()
 	default:
-		e.Message(fmt.Sprintf("unknown key %v", ev.Name()))
+		e.WriteMessage(fmt.Sprintf("unknown key %v", ev.Name()))
 	}
 }

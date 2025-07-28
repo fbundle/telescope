@@ -13,7 +13,7 @@ type Cursor struct {
 }
 
 type View struct {
-	State      []rune
+	Header     string
 	WinData    [][]rune
 	WinCursor  Cursor
 	TextCursor Cursor
@@ -21,10 +21,7 @@ type View struct {
 	Background string // consider change it to {totalSize, loadedSize, ...}
 }
 
-type Controller interface {
-	Load(ctx context.Context, reader bytes.Array) (context.Context, error)
-	Resize(height int, width int)
-
+type EditController interface {
 	Type(ch rune)
 	Enter()
 	Backspace()
@@ -45,7 +42,12 @@ type Controller interface {
 	Redo()
 
 	Apply(entry log.Entry)
-	Message(string)
+}
+
+type Controller interface {
+	Load(ctx context.Context, reader bytes.Array) (context.Context, error)
+	Resize(height int, width int)
+	WriteMessage(message string)
 }
 
 type Renderer interface {
@@ -55,5 +57,6 @@ type Renderer interface {
 type Editor interface {
 	Renderer
 	Controller
+	EditController
 	Text() text.Text
 }

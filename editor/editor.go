@@ -17,6 +17,7 @@ type internalView struct {
 	tlCol      int
 	height     int
 	width      int
+	header     string
 	message    string
 	background string
 }
@@ -47,6 +48,7 @@ func NewEditor(
 		view: internalView{
 			tlRow: 0, tlCol: 0,
 			width: width, height: height,
+			header:     "",
 			message:    "",
 			background: "",
 		},
@@ -139,9 +141,9 @@ func (e *editor) writeLog(entry log.Entry) {
 	e.logWriter.Write(entry)
 }
 
-func (e *editor) Message(message string) {
+func (e *editor) WriteMessage(message string) {
 	e.lockUpdateRender(func() {
-		e.setMessageWithoutLock(message)
+		e.view.message = message
 	})
 }
 func (e *editor) Resize(height int, width int) {
