@@ -1,8 +1,10 @@
 package command_editor
 
 import (
+	"bufio"
 	"context"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -116,8 +118,25 @@ func (c *commandEditor) Enter() {
 				cmd = strings.TrimPrefix(cmd, ":w ")
 				cmd = strings.TrimPrefix(cmd, ":write ")
 
-				writeMessage("write feature has not been implemented")
+				filename := cmd
+				text := c.Text()
+				file, err := os.Create(filename)
+				if err != nil {
+					writeMessage("error open file " + err.Error())
+					return
+				}
+				defer file.Close()
+				writer := bufio.NewWriter(file)
+				for _, line := range text.Iter {
+					writer.WriteString(string(line) + "\n")
+				}
+				err = writer.Flush()
+				if err != nil {
+					writeMessage("error flush file " + err.Error())
+					return
+				}
 
+				writeMessage("write done into " + filename)
 			default:
 				c.e.Message("unknown command: " + cmd)
 				c.renderWithoutLock()
