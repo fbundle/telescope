@@ -41,6 +41,8 @@ type TextController interface {
 	Undo()
 	Redo()
 
+	Escape()
+
 	Apply(entry log.Entry)
 }
 

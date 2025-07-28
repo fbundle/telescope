@@ -181,6 +181,10 @@ func (e *editor) Tabular() {
 	e.Type(' ')
 }
 
+func (e *editor) Escape() {
+	
+}
+
 func (e *editor) Apply(entry log.Entry) {
 	switch entry.Command {
 	case log.CommandEnter:

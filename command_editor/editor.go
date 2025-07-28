@@ -59,18 +59,18 @@ func (c *commandEditor) Type(ch rune) {
 			switch ch {
 			case 'i':
 				c.mode = ModeInsert
-				c.WriteHeaderAndMessage(c.mode, "enter insert mode")
+				c.e.WriteHeaderAndMessage(c.mode, "enter insert mode")
 			case ':':
 				c.mode = ModeCommand
 				c.command = string(ch)
-				c.WriteHeaderAndMessage(c.mode, c.command)
+				c.e.WriteHeaderAndMessage(c.mode, c.command)
 			default:
 			}
 		case ModeInsert:
 			c.e.Type(ch)
 		case ModeCommand:
 			c.command += string(ch)
-			c.WriteHeaderAndMessage(c.mode, c.command)
+			c.e.WriteHeaderAndMessage(c.mode, c.command)
 		default:
 			side_channel.Panic("unknown mode: ", c.mode)
 		}
@@ -151,9 +151,9 @@ func (c *commandEditor) Enter() {
 			c.command = nextCommand
 			c.mode = nextMode
 			if len(c.command) > 0 {
-				c.WriteHeaderAndMessage(c.mode, c.command)
+				c.e.WriteHeaderAndMessage(c.mode, c.command)
 			} else {
-				c.WriteHeaderAndMessage(c.mode, message)
+				c.e.WriteHeaderAndMessage(c.mode, message)
 			}
 		default:
 			side_channel.Panic("unknown mode: ", c.mode)
@@ -168,11 +168,11 @@ func (c *commandEditor) Escape() {
 			// do nothing
 		case ModeInsert:
 			c.mode = ModeVisual
-			c.WriteHeaderAndMessage(c.mode, "enter visual mode")
+			c.e.WriteHeaderAndMessage(c.mode, "enter visual mode")
 		case ModeCommand:
 			c.mode = ModeVisual
 			c.command = ""
-			c.WriteHeaderAndMessage(c.mode, "enter visual mode")
+			c.e.WriteHeaderAndMessage(c.mode, "enter visual mode")
 		default:
 			side_channel.Panic("unknown mode: ", c.mode)
 		}
@@ -190,7 +190,7 @@ func (c *commandEditor) Backspace() {
 			if len(c.command) > 0 {
 				c.command = c.command[:len(c.command)-1]
 			}
-			c.WriteHeaderAndMessage(c.mode, c.command)
+			c.e.WriteHeaderAndMessage(c.mode, c.command)
 		default:
 			side_channel.Panic("unknown mode: ", c.mode)
 		}
