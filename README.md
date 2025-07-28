@@ -18,27 +18,31 @@ an extremely fast text editor
 
 - able to edit while still loading the file and exit without losing any progress
 
-- [experimental - with known bugs] add vim-like command mode, search, goto line, etc.
+- [experimental] add vim-like command mode, search, goto line, etc.
 
-  - the text editor is now has 3 states/modes: `VISUAL/COMMAND/INSERT`
+  - command mode is enable when user starts with `telescope -c <filename>`
 
-  - the text editor starts with `VISUAL` mode, when user types `:` it will switch to `COMMAND` mode
+  - there are 3 states: `VISUAL/COMMAND/INSERT`, the initial state is `VISUAL`
 
-  - in `COMMAND` mode, if user keeps typing, it will write into the command buffer, and when user press `ENTER`, the command is executed
+  - in `VISUAL` mode, when user type `i`, the editor will go into `INSERT` mode
 
-  - command `:i` or `:insert` will change the mode to INSERT
+  - `INSERT` mode is the basic text editor
 
-  - command `:s <pattern>` or `:search <pattern>` will do a search
+  - in `VISUAL` mode, when user type `:`, the editor will go into `COMMAND` mode
 
-  - command `:g <line_number>` or `:goto <line_number>` will go to a certain line
+  - in `COMMAND` mode, typing will add into command buffer. when user presses `ENTER`, command will be executed
 
-  - command `:w <file_name>` or `:write <file_name>` write write the current content into a new file (must be a new file)
+    - `:i` or `:insert` -> go into `INSERT` mode
 
-  - after a command is executed, except `:i` or `:insert`, command buffer will be deleted and the editor will go back to `VISUAL` mode
+    - `:s <pattern>` or `:search <pattern>` -> search for `<pattern>`
 
-  - in `INSERT` mode, user will edit the file as usual
+    - `:g <line_number>` or `:goto <line_number>` -> go into line `<line_number>`
 
-  - in any mode, press `ESCAPE` will delete the command buffer and go back to `VISUAL` mode
+    - `:w <file_name>` or `:write <file_name>` -> write the current file into `<file_name>`. note, writing into the same file is an undefined behavioriii
+        ii undefined behavior (there is a bug in typing here), because the text editor doesn't load the input file into memory.
+
+  - in any mode, pressing `ESCAPE` will clear command buffer and go to `VISUAL` mode
+  
 
 ## INTERACTION WITH FILE SYSTEM
 
