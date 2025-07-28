@@ -91,10 +91,11 @@ func (c *commandEditor) Enter() {
 			// apply command
 			cmd := string(c.command)
 			cmd = strings.TrimSpace(cmd)
+			cmd += " "
 			c.command = nil
 			c.mode = ModeVisual
 			switch {
-			case cmd == ":i" || cmd == ":insert":
+			case strings.HasPrefix(cmd, ":i ") || strings.HasPrefix(cmd, ":insert "):
 				c.mode = ModeInsert
 
 				c.renderWithoutLock()
