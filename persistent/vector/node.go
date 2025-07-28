@@ -54,10 +54,10 @@ func get[T any](n *node[T], i uint) T {
 
 func iter[T any](n *node[T], f func(e T) bool) bool {
 	if n == nil {
-		return true
+		return true // continue
 	}
-	var ok bool
-	ok = iter(n.left, f)
+
+	ok := iter(n.left, f)
 	if !ok {
 		return false
 	}
@@ -65,11 +65,7 @@ func iter[T any](n *node[T], f func(e T) bool) bool {
 	if !ok {
 		return false
 	}
-	ok = iter(n.right, f)
-	if !ok {
-		return false
-	}
-	return true
+	return iter(n.right, f)
 }
 
 func balance[T any](n *node[T]) *node[T] {
