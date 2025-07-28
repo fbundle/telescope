@@ -3,7 +3,6 @@ package command_editor
 import (
 	"context"
 	"fmt"
-	"golang.org/x/exp/mmap"
 	"strconv"
 	"strings"
 	"sync"
@@ -13,6 +12,8 @@ import (
 	"telescope/log"
 	"telescope/text"
 	"time"
+
+	"golang.org/x/exp/mmap"
 )
 
 type Mode = string
@@ -90,33 +91,35 @@ func (c *commandEditor) Enter() {
 			// apply command
 			cmd := string(c.command)
 			cmd = strings.TrimSpace(cmd)
-			cmd = strings.TrimPrefix(cmd, ":")
+			c.command = nil
+			c.mode = ModeVisual
 			switch {
-			case cmd == "i" || cmd == "insert":
+			case cmd == ":i" || cmd == ":insert":
 				c.mode = ModeInsert
-				c.command = nil
+
 				c.renderWithoutLock()
-			case strings.HasPrefix(cmd, "s ") || strings.HasPrefix(cmd, "search "):
-				c.mode = ModeVisual
-				cmd = strings.TrimPrefix(cmd, "s ")
-				cmd = strings.TrimPrefix(cmd, "search ")
+			case strings.HasPrefix(cmd, ":s ") || strings.HasPrefix(cmd, ":search "):
+				cmd = strings.TrimPrefix(cmd, ":s ")
+				cmd = strings.TrimPrefix(cmd, ":search ")
 				writeMessage("search not implemented yet")
-			case strings.HasPrefix(cmd, "g ") || strings.HasPrefix(cmd, "goto "):
-				c.mode = ModeVisual
-				cmd = strings.TrimPrefix(cmd, "g ")
-				cmd = strings.TrimPrefix(cmd, "goto ")
+			case strings.HasPrefix(cmd, ":g ") || strings.HasPrefix(cmd, ":goto "):
+				cmd = strings.TrimPrefix(cmd, ":g ")
+				cmd = strings.TrimPrefix(cmd, ":goto ")
 				lineNum, err := strconv.Atoi(cmd)
 				if err != nil {
 					writeMessage("invalid line number " + cmd)
 					return
 				}
 				c.e.Goto(lineNum-1, 0)
-				c.command = nil
 				c.renderWithoutLock()
+			case strings.HasPrefix(cmd, ":w ") || strings.HasPrefix(cmd, ":write "):
+				cmd = strings.TrimPrefix(cmd, ":w ")
+				cmd = strings.TrimPrefix(cmd, ":write ")
+
+				writeMessage("write feature has not been implemented")
+
 			default:
-				c.mode = ModeVisual
-				c.e.Message("unknown command: " + string(c.command))
-				c.command = nil
+				c.e.Message("unknown command: " + cmd)
 				c.renderWithoutLock()
 				time.Sleep(config.Load().BLINKING_TIME)
 				c.e.Message("")
