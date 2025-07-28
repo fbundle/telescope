@@ -40,9 +40,9 @@ func printVersion() {
 }
 
 type programArgs struct {
-	option        string
-	inputFilename string
-	logFilename   string
+	option         string
+	firstFilename  string
+	secondFilename string
 }
 
 func main() {
@@ -55,56 +55,56 @@ func main() {
 		printVersion()
 		return
 	case "-r", "--replay":
-		if err := app.RunReplay(args.inputFilename, args.logFilename); err != nil {
+		if err := app.RunReplay(args.firstFilename, args.secondFilename); err != nil {
 			log.Fatalln(err)
 		}
 	case "-l", "--log":
-		err := app.RunLog(args.logFilename)
+		err := app.RunLog(args.firstFilename)
 		if err != nil {
 			side_channel.Panic(err)
 		}
 	case "-w", "--overwrite":
-		if fileNonEmpty(args.logFilename) {
-			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.logFilename), false)
+		if fileNonEmpty(args.secondFilename) {
+			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.secondFilename), false)
 			if !ok {
 				return
 			}
-			err := os.Remove(args.logFilename)
+			err := os.Remove(args.secondFilename)
 			if err != nil {
 				side_channel.Panic(err)
 			}
 		}
-		err := app.RunEditor(args.inputFilename, args.logFilename)
+		err := app.RunEditor(args.firstFilename, args.secondFilename)
 		if err != nil {
 			side_channel.Panic(err)
 		}
 	case "-c", "--command":
-		if fileNonEmpty(args.logFilename) {
-			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.logFilename), false)
+		if fileNonEmpty(args.secondFilename) {
+			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.secondFilename), false)
 			if !ok {
 				return
 			}
-			err := os.Remove(args.logFilename)
+			err := os.Remove(args.secondFilename)
 			if err != nil {
 				side_channel.Panic(err)
 			}
 		}
-		err := app.RunCommandEditor(args.inputFilename, args.logFilename)
+		err := app.RunCommandEditor(args.firstFilename, args.secondFilename)
 		if err != nil {
 			side_channel.Panic(err)
 		}
 	default:
-		if fileNonEmpty(args.logFilename) {
-			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.logFilename), false)
+		if fileNonEmpty(args.secondFilename) {
+			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.secondFilename), false)
 			if !ok {
 				return
 			}
-			err := os.Remove(args.logFilename)
+			err := os.Remove(args.secondFilename)
 			if err != nil {
 				side_channel.Panic(err)
 			}
 		}
-		err := app.RunEditor(args.inputFilename, args.logFilename)
+		err := app.RunEditor(args.firstFilename, args.secondFilename)
 		if err != nil {
 			side_channel.Panic(err)
 		}
@@ -172,10 +172,10 @@ func getProgramArgs() programArgs {
 		pargs.option = head
 		args, _ = consume(args)
 	}
-	args, pargs.inputFilename = consume(args)
-	args, pargs.logFilename = consume(args)
-	if len(pargs.logFilename) == 0 {
-		pargs.logFilename = getDefaultLogFilename(pargs.inputFilename)
+	args, pargs.firstFilename = consume(args)
+	args, pargs.secondFilename = consume(args)
+	if len(pargs.secondFilename) == 0 {
+		pargs.secondFilename = getDefaultLogFilename(pargs.firstFilename)
 	}
 	return pargs
 }
