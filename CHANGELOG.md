@@ -26,9 +26,8 @@
 - fixed bug with replaying log
 - remove exitting delay
 - [experimental] added VISUAL/COMMAND/INSERT mode
+- fixed VISUAL/COMMAND/INSERT mode sometimes hangs at start-up
 
 # TODO
 
-- fix VISUAL/COMMAND/INSERT mode sometimes hangs at start-up
-- add vim-like command at status bar, search, goto line number, etc.
-- allow open multiple files by concatenating them
+- bug when typing to the right end of the screen

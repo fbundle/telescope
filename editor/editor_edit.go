@@ -17,24 +17,24 @@ func (e *editor) Type(ch rune) {
 			CursorCol: uint64(e.cursor.Col),
 		})
 
-		updateText := func(m text.Text) text.Text {
+		updateText := func(t text.Text) text.Text {
 			row, col := e.cursor.Row, e.cursor.Col
 			// NOTE - handle empty file
-			if m.Len() == 0 {
-				m = m.Ins(0, []rune{ch})
-				return m
+			if t.Len() == 0 {
+				t = t.Ins(0, []rune{ch})
+				return t
 			}
 
-			for col >= len(m.Get(row)) {
-				newRow := slices.Clone(m.Get(row))
+			for col >= len(t.Get(row)) {
+				newRow := slices.Clone(t.Get(row))
 				newRow = append(newRow, ch)
-				m = m.Set(row, newRow)
-				return m
+				t = t.Set(row, newRow)
+				return t
 			}
-			newRow := slices.Clone(m.Get(row))
+			newRow := slices.Clone(t.Get(row))
 			newRow = insertToSlice(newRow, col, ch)
-			m = m.Set(row, newRow)
-			return m
+			t = t.Set(row, newRow)
+			return t
 		}
 
 		e.text.Update(updateText)
@@ -182,7 +182,7 @@ func (e *editor) Tabular() {
 }
 
 func (e *editor) Escape() {
-	
+
 }
 
 func (e *editor) Apply(entry log.Entry) {
