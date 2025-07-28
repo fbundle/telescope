@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sync"
 	"telescope/bytes"
+	"telescope/config"
 	"telescope/hist"
 	"telescope/log"
 	"telescope/text"
@@ -37,7 +38,7 @@ func NewEditor(
 	logWriter log.Writer,
 ) (Editor, error) {
 	e := &editor{
-		renderCh:  make(chan View, 1),
+		renderCh:  make(chan View, config.Load().VIEW_CHANNEL_SIZE),
 		logWriter: logWriter,
 
 		mu:   sync.Mutex{},
