@@ -1,7 +1,5 @@
 package vector
 
-import "telescope/config"
-
 type Vector[T any] interface {
 	Get(i int) T
 	Set(i int, val T) Vector[T]
@@ -15,10 +13,7 @@ type Vector[T any] interface {
 	Repr() []T
 }
 
-func NewVector[T any]() Vector[T] {
-	if config.Debug() {
-		return &pseudoVector[T]{}
-	}
+func New[T any]() Vector[T] {
 	return &vector[T]{node: nil}
 }
 

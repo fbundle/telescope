@@ -20,7 +20,7 @@ type Text interface {
 func New(reader bytes.Array) Text {
 	return &text{
 		reader: reader,
-		vec:    vector.NewVector[Line](),
+		vec:    vector.New[Line](),
 	}
 }
 
