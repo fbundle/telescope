@@ -90,8 +90,11 @@ func (c *commandEditor) applyCommandWithoutLock() {
 
 		view := c.e.Render()
 		row := view.TextCursor.Row
+
 		_, text2 := view.Text.Split(row + 1)
+
 		for i, line := range text2.Iter {
+			side_channel.WriteLn(cmd, i, string(line))
 			if strings.Contains(string(line), cmd) {
 				c.e.Goto(row+1+i, 0)
 				c.writeWithoutLock("found substring " + cmd)
