@@ -62,6 +62,10 @@ type programArgs struct {
 
 func main() {
 	args := getProgramArgs()
+	if len(args.firstFilename) == 0 {
+		printHelp()
+		return
+	}
 	switch args.option {
 	case "-h", "--help":
 		printHelp()
