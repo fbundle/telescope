@@ -46,6 +46,7 @@ Commands:
   :s :search        search
   :g :goto          goto line
   :w :write         write into file
+  :q :quit          quit
 	`
 	fmt.Println(help)
 }

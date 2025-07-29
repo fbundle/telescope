@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"telescope/command_editor"
+	"telescope/side_channel"
 	"time"
 
 	"telescope/config"
@@ -74,6 +75,20 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 	defer s.Fini()
 
 	ctx, cancel := context.WithCancel(context.Background())
+	stop := func() {
+		cancel()
+		var err error
+		for i := 0; i < 5; i++ {
+			err = s.PostEvent(tcell.NewEventKey(tcell.KeyCtrlC, 0, tcell.ModNone))
+			if err == nil {
+				break
+			}
+			if err != tcell.ErrEventQFull {
+				side_channel.Panic(err)
+			}
+		}
+	}
+
 	width, height := s.Size()
 
 	e, loadCtx, flush, closer, err := makeEditor(ctx, inputFilename, logFilename, width, height)
@@ -82,7 +97,7 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 		return err
 	}
 	if commandMode {
-		e = command_editor.NewCommandEditor(e)
+		e = command_editor.NewCommandEditor(stop, e)
 	}
 	defer closer()
 

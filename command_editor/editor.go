@@ -26,6 +26,7 @@ const (
 )
 
 type commandEditor struct {
+	cancel  func()
 	mu      sync.Mutex
 	mode    Mode
 	e       editor.Editor
@@ -86,6 +87,12 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		c.mode, c.command = ModeInsert, ""
 		c.writeWithoutLock("enter insert mode")
 		return
+		
+	case cmd == ":q" || cmd == ":quit":
+		c.cancel()
+		c.writeWithoutLock("exitting ...")
+		return
+
 	case strings.HasPrefix(cmd, ":s ") || strings.HasPrefix(cmd, ":search "):
 		cmd = strings.TrimPrefix(cmd, ":s ")
 		cmd = strings.TrimPrefix(cmd, ":search ")
@@ -337,8 +344,13 @@ func (c *commandEditor) lockUpdate(f func()) {
 	f()
 }
 
-func NewCommandEditor(e editor.Editor) editor.Editor {
+func (c *commandEditor) writeWithoutLock(message string) {
+	c.e.WriteHeaderCommandMessage(c.mode, c.command, message)
+}
+
+func NewCommandEditor(cancel func(), e editor.Editor) editor.Editor {
 	c := &commandEditor{
+		cancel:  cancel,
 		mu:      sync.Mutex{},
 		mode:    ModeVisual,
 		e:       e,
@@ -346,8 +358,4 @@ func NewCommandEditor(e editor.Editor) editor.Editor {
 	}
 	c.writeWithoutLock("")
 	return c
-}
-
-func (c *commandEditor) writeWithoutLock(message string) {
-	c.e.WriteHeaderCommandMessage(c.mode, c.command, message)
 }
