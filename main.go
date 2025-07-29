@@ -11,7 +11,7 @@ import (
 	"telescope/side_channel"
 )
 
-const VERSION = "0.1.6a"
+const VERSION = "0.1.6b"
 
 var HELP = `
 Usage: "telescope [option] file [logfile]"
