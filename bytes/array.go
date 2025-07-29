@@ -8,6 +8,10 @@ type Array interface {
 	ReadAt(b []byte, i int64) (n int, err error)
 }
 
+func NewMemArray(b []byte) Array {
+	return &memArray{b: b}
+}
+
 type memArray struct {
 	b []byte
 }
@@ -29,8 +33,4 @@ func (m *memArray) ReadAt(b []byte, i int64) (n int, err error) {
 		return n, io.EOF
 	}
 	return n, nil
-}
-
-func NewMemArray(b []byte) Array {
-	return &memArray{b: b}
 }
