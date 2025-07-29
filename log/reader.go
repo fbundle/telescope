@@ -20,38 +20,34 @@ func Read(filename string, apply func(e Entry) bool) error {
 	}
 
 	for {
-		line, readErr := lengthPrefixRead(f)
+		b, readErr := lengthPrefixRead(f)
 
 		if readErr != nil && readErr != io.EOF {
 			return readErr
 		}
-		if len(line) > 0 && line[len(line)-1] == '\n' {
-			line = line[:len(line)-1]
-		}
 
-		// process line, update serializer
-		s1, ok, processErr := func(s Serializer, line []byte) (Serializer, bool, error) {
-			if len(line) == 0 {
-				return s, true, nil
-			}
-			e, err := s.Unmarshal(line)
+		s1, ok, processErr := func(s Serializer, b []byte) (Serializer, bool, error) {
+			e, err := s.Unmarshal(b)
 			if err != nil {
-				return nil, false, err
+				return nil, true, err
 			}
-			if e.Command == CommandSetVersion {
-				// when log entry is a set_version, change the version of serializer
-				s, err = GetSerializer(e.Version)
-				return s, true, err
+			switch e.Command {
+			case CommandSetVersion:
+				s1, err := GetSerializer(e.Version)
+				return s1, true, err
+			default:
+				if config.Debug() {
+					time.Sleep(config.Load().DEBUG_IO_DELAY)
+				}
+				return s, apply(e), nil
 			}
-			if config.Debug() {
-				time.Sleep(config.Load().DEBUG_IO_DELAY)
-			}
-			return s, apply(e), nil
-		}(s, line)
+		}(s, b)
 
-		//
-		if processErr != nil || !ok || readErr == io.EOF {
-			return err
+		if processErr != nil {
+			return processErr
+		}
+		if !ok || readErr == io.EOF {
+			return nil
 		}
 
 		s = s1

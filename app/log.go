@@ -14,7 +14,7 @@ func RunLog(logFilename string) error {
 		return err
 	}
 
-	log.Read(logFilename, func(e log.Entry) bool {
+	readErr := log.Read(logFilename, func(e log.Entry) bool {
 		var b []byte
 		b, err = s.Marshal(e)
 		if err != nil {
@@ -26,6 +26,8 @@ func RunLog(logFilename string) error {
 		}
 		return true
 	})
-	return err
-
+	if err != nil {
+		return err
+	}
+	return readErr
 }
