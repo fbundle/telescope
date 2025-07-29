@@ -26,7 +26,7 @@ type internalView struct {
 }
 
 type editor struct {
-	renderCh  chan View // buffered channel is necessary  for preventing deadlock
+	renderCh  chan View
 	logWriter log.Writer
 
 	mu     sync.Mutex // the fields below are protected by mu
@@ -40,6 +40,7 @@ func NewEditor(
 	logWriter log.Writer,
 ) (Editor, error) {
 	e := &editor{
+		// buffered channel is necessary  for preventing deadlock
 		renderCh:  make(chan View, config.Load().VIEW_CHANNEL_SIZE),
 		logWriter: logWriter,
 
@@ -87,7 +88,7 @@ func (e *editor) Load(ctx context.Context, reader bytes.Array) (context.Context,
 							"loading %d/%d (%d%%)",
 							loader.loadedSize, loader.totalSize, loader.lastRenderPercentage,
 						)
-						e.updateWithoutLock()
+						e.postWithoutLock()
 					}
 				})
 			})
@@ -106,7 +107,7 @@ func (e *editor) Load(ctx context.Context, reader bytes.Array) (context.Context,
 						int(totalTime.Seconds()),
 					)
 				}
-				e.updateWithoutLock()
+				e.postWithoutLock()
 			})
 		}()
 	})
@@ -124,13 +125,9 @@ func (e *editor) lockUpdate(f func()) {
 func (e *editor) lockUpdateRender(f func()) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	defer e.updateWithoutLock()
+	defer e.postWithoutLock()
 
 	f()
-}
-
-func (e *editor) Update() <-chan View {
-	return e.renderCh
 }
 
 func (e *editor) setMessageWithoutLock(format string, a ...any) {
@@ -168,18 +165,6 @@ func (e *editor) Resize(height int, width int) {
 	})
 }
 
-func (e *editor) Text() text.Text {
-	var t text.Text
-	e.lockUpdate(func() {
-		t = e.text.Get()
-	})
-	return t
-}
+func (e *editor) Escape() {
 
-func (e *editor) Cursor() Cursor {
-	var c Cursor
-	e.lockUpdate(func() {
-		c = e.cursor
-	})
-	return c
 }

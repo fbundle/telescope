@@ -158,6 +158,12 @@ func (e *editor) Enter() {
 	})
 }
 
+func (e *editor) Tabular() {
+	for i := 0; i < config.Load().TAB_SIZE; i++ {
+		e.Type(' ')
+	}
+}
+
 func (e *editor) Undo() {
 	e.lockUpdateRender(func() {
 		e.writeLog(log.Entry{
@@ -167,6 +173,7 @@ func (e *editor) Undo() {
 		e.setMessageWithoutLock("undo")
 	})
 }
+
 func (e *editor) Redo() {
 	e.lockUpdateRender(func() {
 		e.writeLog(log.Entry{
@@ -176,16 +183,6 @@ func (e *editor) Redo() {
 		e.setMessageWithoutLock("redo")
 	})
 }
-func (e *editor) Tabular() {
-	for i := 0; i < config.Load().TAB_SIZE; i++ {
-		e.Type(' ')
-	}
-}
-
-func (e *editor) Escape() {
-
-}
-
 func (e *editor) Apply(entry log.Entry) {
 	switch entry.Command {
 	case log.CommandEnter:

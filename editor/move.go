@@ -7,7 +7,7 @@ func (e *editor) moveRelativeAndFixWithoutLock(moveRow int, moveCol int) {
 	e.cursor.Row += moveRow
 	e.cursor.Col += moveCol
 
-	// fix textCursor
+	// fix text cursor
 	if t.Len() == 0 { // NOTE - handle empty file
 		e.cursor.Row = 0
 		e.cursor.Col = 0
@@ -15,7 +15,7 @@ func (e *editor) moveRelativeAndFixWithoutLock(moveRow int, moveCol int) {
 		e.cursor.Row = max(0, e.cursor.Row)
 		e.cursor.Col = max(0, e.cursor.Col)
 		e.cursor.Row = min(e.cursor.Row, t.Len()-1)
-		e.cursor.Col = min(e.cursor.Col, len(t.Get(e.cursor.Row))) // textCursor col can be outside of text
+		e.cursor.Col = min(e.cursor.Col, len(t.Get(e.cursor.Row))) // textCursor col can be 1 char outside of text
 	}
 
 	// fix window

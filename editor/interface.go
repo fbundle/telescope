@@ -13,26 +13,19 @@ type Cursor struct {
 }
 
 type View struct {
-	WinData    [][]rune
-	WinCursor  Cursor
-	TextCursor Cursor
+	WinData   [][]rune
+	WinCursor Cursor
 
-	Text text.Text
+	TextCursor Cursor
+	Text       text.Text
 
 	Header     string
 	Command    string
 	Message    string
-	Background string // consider change it to {totalSize, loadedSize, ...}
+	Background string
 }
 
-type TextController interface {
-	Type(ch rune)
-	Enter()
-	Backspace()
-	Delete()
-	Tabular()
-
-	Goto(row int, col int)
+type Move interface {
 	MoveLeft()
 	MoveRight()
 	MoveUp()
@@ -41,29 +34,36 @@ type TextController interface {
 	MoveEnd()
 	MovePageUp()
 	MovePageDown()
+	Goto(row int, col int)
+}
 
+type Edit interface {
+	Type(ch rune)
+	Enter()
+	Backspace()
+	Delete()
+	Tabular()
 	Undo()
 	Redo()
-
-	Escape()
-
 	Apply(entry log.Entry)
 }
 
-type AppController interface {
-	Load(ctx context.Context, reader bytes.Array) (context.Context, error)
-	Resize(height int, width int)
+type App interface {
 	WriteHeaderCommandMessage(header string, command string, message string)
 	WriteMessage(message string)
 }
 
-type Renderer interface {
+type Render interface {
 	Render() View
 	Update() <-chan View
 }
 
 type Editor interface {
-	Renderer
-	AppController
-	TextController
+	Load(ctx context.Context, reader bytes.Array) (context.Context, error)
+	Escape()
+	Resize(height int, width int)
+	Render
+	Edit
+	Move
+	App
 }

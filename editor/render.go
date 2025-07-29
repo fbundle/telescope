@@ -2,7 +2,7 @@ package editor
 
 import "telescope/text"
 
-func (e *editor) updateWithoutLock() {
+func (e *editor) postWithoutLock() {
 	e.renderCh <- e.renderWithoutLock()
 }
 
@@ -51,4 +51,7 @@ func (e *editor) Render() (view View) {
 		view = e.renderWithoutLock()
 	})
 	return view
+}
+func (e *editor) Update() <-chan View {
+	return e.renderCh
 }
