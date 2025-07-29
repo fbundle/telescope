@@ -80,7 +80,6 @@ func (c *commandEditor) Type(ch rune) {
 
 func (c *commandEditor) applyCommandWithoutLock() {
 	cmd := c.command
-	cmd = strings.TrimSpace(cmd)
 
 	switch {
 	case cmd == ":i" || cmd == ":insert":
