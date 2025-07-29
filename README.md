@@ -18,31 +18,7 @@ an extremely fast text editor
 
 - able to edit while still loading the file and exit without losing any progress
 
-- [experimental] add vim-like command mode, search, goto line, etc.
-
-  - command mode is enable when user starts with `telescope -c <filename>`
-
-  - there are 3 states: `VISUAL/COMMAND/INSERT`, the initial state is `VISUAL`
-
-  - in `VISUAL` mode, when user type `i`, the editor will go into `INSERT` mode
-
-  - `INSERT` mode is the basic text editor
-
-  - in `VISUAL` mode, when user type `:`, the editor will go into `COMMAND` mode
-
-  - in `COMMAND` mode, typing will add into command buffer. when user presses `ENTER`, command will be executed
-
-    - `:i` or `:insert` -> go into `INSERT` mode
-
-    - `:s <pattern>` or `:search <pattern>` -> search for `<pattern>`
-
-    - `:g <line_number>` or `:goto <line_number>` -> go into line `<line_number>`
-
-    - `:w <file_name>` or `:write <file_name>` -> write the current file into `<file_name>`. note, writing into the same file is an undefined behavioriii
-        ii undefined behavior (there is a bug in typing here), because the text editor doesn't load the input file into memory.
-
-  - in any mode, pressing `ESCAPE` will clear command buffer and go to `VISUAL` mode
-  
+- vim-like command mode, search, goto line, etc.
 
 ## INTERACTION WITH FILE SYSTEM
 
@@ -54,5 +30,6 @@ an extremely fast text editor
 
 3. when exit the program the log file is preserved to export
 
-4. user use `telescope -r dir/file` to apply the log together with original file to make a new file. the program will write the output to stdout, so user should be `telescope -r dir/file 1> outputfile`
+4. user can use command `:w outputfile` to write the current edit into a new file or replay the log
 
+4. user use `telescope -r dir/file` to replay the log to make a new file. the program will write the output to stdout
