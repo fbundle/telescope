@@ -42,6 +42,7 @@ VISUAL/COMMAND/INSERT mode:
 Commands:
   :i :insert        enter INSERT mode
   :s :search        search
+     :regex         search with regex
   :g :goto          goto line
   :w :write         write into file
   :q :quit          quit

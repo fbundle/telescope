@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -87,15 +88,32 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		c.mode, c.command = ModeInsert, ""
 		c.writeWithoutLock("enter insert mode")
 		return
-		
+
 	case cmd == ":q" || cmd == ":quit":
 		c.cancel()
 		c.writeWithoutLock("exitting ...")
 		return
 
-	case strings.HasPrefix(cmd, ":s ") || strings.HasPrefix(cmd, ":search "):
+	case strings.HasPrefix(cmd, ":s ") || strings.HasPrefix(cmd, ":search ") || strings.HasPrefix(cmd, ":regex "):
+		regex := strings.HasPrefix(cmd, ":regex ")
 		cmd = strings.TrimPrefix(cmd, ":s ")
 		cmd = strings.TrimPrefix(cmd, ":search ")
+		cmd = strings.TrimPrefix(cmd, ":regex ")
+
+		re, err := regexp.Compile(cmd)
+		if err != nil {
+			c.mode, c.command = ModeVisual, ""
+			c.writeWithoutLock(fmt.Sprintf("regexp compile error %s", err.Error()))
+			return
+		}
+		var match func(line string) bool
+		if regex {
+			match = re.MatchString
+		} else {
+			match = func(line string) bool {
+				return strings.Contains(line, cmd)
+			}
+		}
 
 		view := c.e.Render()
 		row := view.TextCursor.Row
@@ -104,7 +122,7 @@ func (c *commandEditor) applyCommandWithoutLock() {
 
 		t0 := time.Now()
 		for i, line := range text2.Iter {
-			if strings.Contains(string(line), cmd) {
+			if match(string(line)) {
 				c.e.Goto(row+1+i, 0)
 				c.writeWithoutLock("found substring " + cmd)
 				return
