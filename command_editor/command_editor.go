@@ -338,6 +338,24 @@ func (c *commandEditor) Render() editor.View {
 	return c.e.Render()
 }
 
+func (c *commandEditor) Status(update func(status editor.Status) editor.Status) {
+	c.lock(func() {
+		c.e.Status(update)
+	})
+}
+
+func NewCommandEditor(cancel func(), e editor.Editor) editor.Editor {
+	c := &commandEditor{
+		cancel:  cancel,
+		mu:      sync.Mutex{},
+		mode:    ModeVisual,
+		e:       e,
+		command: "",
+	}
+	c.writeWithoutLock("")
+	return c
+}
+
 func (c *commandEditor) lock(f func()) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -352,20 +370,4 @@ func (c *commandEditor) writeWithoutLock(message string) {
 		status.Message = message
 		return status
 	})
-}
-
-func (c *commandEditor) Status(update func(status editor.Status) editor.Status) {
-	c.e.Status(update)
-}
-
-func NewCommandEditor(cancel func(), e editor.Editor) editor.Editor {
-	c := &commandEditor{
-		cancel:  cancel,
-		mu:      sync.Mutex{},
-		mode:    ModeVisual,
-		e:       e,
-		command: "",
-	}
-	c.writeWithoutLock("")
-	return c
 }
