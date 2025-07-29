@@ -18,4 +18,5 @@ type Entry struct {
 	CursorRow uint64  `json:"cursor_row,omitempty"`
 	CursorCol uint64  `json:"cursor_col,omitempty"`
 	Rune      rune    `json:"rune,omitempty"`
+	Line      []rune  `json:"line,omitempty"` // only for version 2+
 }
