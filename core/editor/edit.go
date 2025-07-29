@@ -3,10 +3,9 @@ package editor
 import (
 	"slices"
 	"telescope/config"
-
-	"telescope/log"
-	"telescope/side_channel"
-	"telescope/text"
+	"telescope/core/log"
+	"telescope/core/text"
+	"telescope/util/side_channel"
 )
 
 func (e *editor) Type(ch rune) {

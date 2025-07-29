@@ -1,10 +1,10 @@
-package app
+package ui
 
 import (
 	"context"
 	"fmt"
 	"os"
-	"telescope/log"
+	"telescope/core/log"
 )
 
 func RunReplay(inputFilename string, logFilename string) error {

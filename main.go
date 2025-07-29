@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"telescope/app"
-	"telescope/side_channel"
+	"telescope/ui"
+	"telescope/util/side_channel"
 )
 
 const VERSION = "0.1.6b"
@@ -77,11 +77,11 @@ func main() {
 		printVersion()
 		return
 	case "-r", "--replay":
-		if err := app.RunReplay(args.firstFilename, args.secondFilename); err != nil {
+		if err := ui.RunReplay(args.firstFilename, args.secondFilename); err != nil {
 			log.Fatalln(err)
 		}
 	case "-l", "--log":
-		err := app.RunLog(args.firstFilename)
+		err := ui.RunLog(args.firstFilename)
 		if err != nil {
 			side_channel.Panic(err)
 		}
@@ -96,7 +96,7 @@ func main() {
 				side_channel.Panic(err)
 			}
 		}
-		err := app.RunEditor(args.firstFilename, args.secondFilename, false)
+		err := ui.RunEditor(args.firstFilename, args.secondFilename, false)
 		if err != nil {
 			side_channel.Panic(err)
 		}
@@ -111,7 +111,7 @@ func main() {
 				side_channel.Panic(err)
 			}
 		}
-		err := app.RunEditor(args.firstFilename, args.secondFilename, true)
+		err := ui.RunEditor(args.firstFilename, args.secondFilename, true)
 		if err != nil {
 			side_channel.Panic(err)
 		}
@@ -127,7 +127,7 @@ func main() {
 				side_channel.Panic(err)
 			}
 		}
-		err := app.RunEditor(args.firstFilename, args.secondFilename, true)
+		err := ui.RunEditor(args.firstFilename, args.secondFilename, true)
 		if err != nil {
 			side_channel.Panic(err)
 		}

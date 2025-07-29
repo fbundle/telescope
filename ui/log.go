@@ -1,11 +1,11 @@
-package app
+package ui
 
 import (
 	"fmt"
 	"os"
 	"strings"
 	"telescope/config"
-	"telescope/log"
+	"telescope/core/log"
 )
 
 func RunLog(logFilename string) error {

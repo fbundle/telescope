@@ -1,14 +1,13 @@
-package app
+package ui
 
 import (
 	"bufio"
 	"context"
+	"golang.org/x/exp/mmap"
 	"os"
 	"path/filepath"
-	"telescope/editor"
-	"telescope/log"
-
-	"golang.org/x/exp/mmap"
+	"telescope/core/editor"
+	"telescope/core/log"
 )
 
 func fileNonEmpty(filename string) bool {

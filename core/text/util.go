@@ -3,10 +3,9 @@ package text
 import (
 	"context"
 	"slices"
-	"telescope/bytes"
 	"telescope/config"
-	"telescope/side_channel"
-
+	"telescope/core/bytes"
+	"telescope/util/side_channel"
 	"time"
 )
 

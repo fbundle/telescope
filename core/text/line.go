@@ -2,8 +2,8 @@ package text
 
 import (
 	"io"
-	"telescope/bytes"
-	"telescope/side_channel"
+	"telescope/core/bytes"
+	"telescope/util/side_channel"
 )
 
 // Line - if offset >= 0, this is a file else this is a []rune buffer

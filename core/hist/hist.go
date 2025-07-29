@@ -1,6 +1,8 @@
 package hist
 
-import "telescope/config"
+import (
+	"telescope/config"
+)
 
 type Hist[T any] interface {
 	Update(modifier func(T) T)

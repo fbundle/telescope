@@ -1,6 +1,8 @@
 package editor
 
-import "telescope/text"
+import (
+	"telescope/core/text"
+)
 
 func (e *editor) renderWithoutLock() {
 	e.renderCh <- e.makeView()

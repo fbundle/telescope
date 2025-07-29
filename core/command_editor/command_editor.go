@@ -9,13 +9,12 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"telescope/bytes"
 	"telescope/config"
-	"telescope/editor"
-	"telescope/side_channel"
+	"telescope/core/bytes"
+	"telescope/core/editor"
+	"telescope/core/log"
+	"telescope/util/side_channel"
 	"time"
-
-	"telescope/log"
 )
 
 type Mode = string

@@ -2,8 +2,8 @@ package text
 
 import (
 	"context"
-	"telescope/bytes"
-	"telescope/persistent/vector"
+	"telescope/core/bytes"
+	"telescope/core/persistent/vector"
 )
 
 type Text interface {

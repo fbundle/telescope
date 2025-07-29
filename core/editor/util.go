@@ -2,7 +2,7 @@ package editor
 
 import (
 	"telescope/config"
-	"telescope/side_channel"
+	"telescope/util/side_channel"
 	"time"
 )
 

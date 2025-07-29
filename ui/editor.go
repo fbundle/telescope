@@ -1,15 +1,14 @@
-package app
+package ui
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"telescope/command_editor"
-	"telescope/side_channel"
-	"time"
-
 	"telescope/config"
-	"telescope/editor"
+	"telescope/core/command_editor"
+	"telescope/core/editor"
+	"telescope/util/side_channel"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
