@@ -13,24 +13,27 @@ func insertToSlice[T any](l []T, i int, v T) []T {
 	}
 	if i == len(l) {
 		return append(l, v)
-	} else {
-		l = append(l, v)
-		copy(l[i+1:], l[i:])
-		l[i] = v
-		return l
 	}
+	l = append(l, v)
+	copy(l[i+1:], l[i:])
+	l[i] = v
+	return l
 }
 
 func deleteFromSlice[T any](l []T, i int) []T {
+	if i < 0 || i >= len(l) {
+		side_channel.Panic("invalid index", i, l)
+		return nil
+	}
 	copy(l[i:], l[i+1:])
 	return l[:len(l)-1]
 }
 func concatSlices[T any](ls ...[]T) []T {
-	l := make([]T, 0)
-	for _, s := range ls {
-		l = append(l, s...)
+	c := make([]T, 0)
+	for _, l := range ls {
+		c = append(c, l...)
 	}
-	return l
+	return c
 }
 
 func newLoader(totalSize int) *loader {
