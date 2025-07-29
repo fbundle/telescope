@@ -87,6 +87,7 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 			if !errors.Is(err, tcell.ErrEventQFull) {
 				side_channel.Panic(err)
 			}
+			time.Sleep(100 * time.Millisecond) // retry stopping
 		}
 	}
 
