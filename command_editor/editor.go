@@ -39,25 +39,20 @@ func (c *commandEditor) Update() <-chan editor.View {
 }
 
 func (c *commandEditor) Load(ctx context.Context, reader bytes.Array) (loadCtx context.Context, err error) {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		loadCtx, err = c.e.Load(ctx, reader)
 	})
 	return loadCtx, err
 }
 
 func (c *commandEditor) Resize(height int, width int) {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		c.e.Resize(height, width)
 	})
 }
 
-// NOTE - begins with VISUAL mode, type : to enter COMMAND mode
-// press enter in COMMAND mode to apply command, if command is :i or :insert, enter insert mode
-// otherwise, enter COMMAND mode
-// press esc in any mode go back to VISUAL mode
-
 func (c *commandEditor) Type(ch rune) {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		switch c.mode {
 		case ModeVisual:
 			switch ch {
@@ -188,7 +183,7 @@ func (c *commandEditor) applyCommandWithoutLock() {
 }
 
 func (c *commandEditor) Enter() {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		switch c.mode {
 		case ModeVisual:
 			// do nothing
@@ -203,7 +198,7 @@ func (c *commandEditor) Enter() {
 }
 
 func (c *commandEditor) Escape() {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		switch c.mode {
 		case ModeVisual:
 			// do nothing
@@ -220,7 +215,7 @@ func (c *commandEditor) Escape() {
 }
 
 func (c *commandEditor) Backspace() {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		switch c.mode {
 		case ModeVisual:
 			// do nothing
@@ -238,7 +233,7 @@ func (c *commandEditor) Backspace() {
 }
 
 func (c *commandEditor) Delete() {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		switch c.mode {
 		case ModeVisual:
 			// do nothing
@@ -253,7 +248,7 @@ func (c *commandEditor) Delete() {
 }
 
 func (c *commandEditor) Tabular() {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		switch c.mode {
 		case ModeVisual:
 			// do nothing
@@ -268,80 +263,74 @@ func (c *commandEditor) Tabular() {
 }
 
 func (c *commandEditor) Goto(row int, col int) {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		c.e.Goto(row, col)
 	})
 }
 
 func (c *commandEditor) MoveLeft() {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		c.e.MoveLeft()
 	})
 }
 
 func (c *commandEditor) MoveRight() {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		c.e.MoveRight()
 	})
 }
 
 func (c *commandEditor) MoveUp() {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		c.e.MoveUp()
 	})
 }
 
 func (c *commandEditor) MoveDown() {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		c.e.MoveDown()
 	})
 }
 
 func (c *commandEditor) MoveHome() {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		c.e.MoveHome()
 	})
 }
 
 func (c *commandEditor) MoveEnd() {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		c.e.MoveEnd()
 	})
 }
 
 func (c *commandEditor) MovePageUp() {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		c.e.MovePageUp()
 	})
 }
 
 func (c *commandEditor) MovePageDown() {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		c.e.MovePageDown()
 	})
 }
 
 func (c *commandEditor) Undo() {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		c.e.Undo()
 	})
 }
 
 func (c *commandEditor) Redo() {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		c.e.Redo()
 	})
 }
 
 func (c *commandEditor) Apply(entry log.Entry) {
-	c.lockUpdate(func() {
+	c.lock(func() {
 		c.e.Apply(entry)
-	})
-}
-
-func (c *commandEditor) WriteHeaderCommandMessage(header string, command string, message string) {
-	c.lockUpdate(func() {
-		writeHeaderCommandMessage(c.e, header, command, message)
 	})
 }
 
@@ -349,7 +338,7 @@ func (c *commandEditor) Render() editor.View {
 	return c.e.Render()
 }
 
-func (c *commandEditor) lockUpdate(f func()) {
+func (c *commandEditor) lock(f func()) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -357,7 +346,12 @@ func (c *commandEditor) lockUpdate(f func()) {
 }
 
 func (c *commandEditor) writeWithoutLock(message string) {
-	writeHeaderCommandMessage(c.e, c.mode, c.command, message)
+	c.e.Status(func(status editor.Status) editor.Status {
+		status.Header = c.mode
+		status.Command = c.command
+		status.Message = message
+		return status
+	})
 }
 
 func (c *commandEditor) Status(update func(status editor.Status) editor.Status) {
@@ -374,13 +368,4 @@ func NewCommandEditor(cancel func(), e editor.Editor) editor.Editor {
 	}
 	c.writeWithoutLock("")
 	return c
-}
-
-func writeHeaderCommandMessage(e editor.Editor, header string, command string, message string) {
-	e.Status(func(status editor.Status) editor.Status {
-		status.Header = header
-		status.Command = command
-		status.Message = message
-		return status
-	})
 }
