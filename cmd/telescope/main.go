@@ -32,13 +32,13 @@ Keyboard Shortcuts:
   Ctrl+R            redo
 
 VISUAL/COMMAND/INSERT mode:
-  VISUAL mode
+  in VISUAL mode:
     i               enter INSERT mode
     :               enter COMMAND mode
-  COMMAND mode
+  in COMMAND mode:
     ENTER           execute command
     ESCAPE          delete command buffer and enter VISUAL mode
-  INSERT mode
+  in INSERT mode:
     ESCAPE          enter VISUAL mode
 
 Commands:
