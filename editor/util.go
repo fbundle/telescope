@@ -2,15 +2,23 @@ package editor
 
 import (
 	"telescope/config"
+	"telescope/side_channel"
 	"time"
 )
 
 func insertToSlice[T any](l []T, i int, v T) []T {
-	var zero T
-	l = append(l, zero)
-	copy(l[i+1:], l[i:])
-	l[i] = v
-	return l
+	if i < 0 || i > len(l) {
+		side_channel.Panic("invalid index", i, l)
+		return nil
+	}
+	if i == len(l) {
+		return append(l, v)
+	} else {
+		l = append(l, v)
+		copy(l[i+1:], l[i:])
+		l[i] = v
+		return l
+	}
 }
 
 func deleteFromSlice[T any](l []T, i int) []T {
