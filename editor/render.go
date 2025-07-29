@@ -7,7 +7,7 @@ func (e *editor) renderWithoutLock() {
 }
 
 func (e *editor) makeView() View {
-	getRowForView := func(t text.Text, row int, col int) []rune {
+	getLineForView := func(t text.Text, row int, col int) []rune {
 		if row < t.Len() {
 			line := t.Get(row)
 			if col >= len(line) {
@@ -24,7 +24,7 @@ func (e *editor) makeView() View {
 		t := e.text.Get()
 		data := make([][]rune, e.windowInfo.height)
 		for row := 0; row < e.windowInfo.height; row++ {
-			data[row] = getRowForView(t, row+e.windowInfo.tlRow, e.windowInfo.tlCol)
+			data[row] = getLineForView(t, row+e.windowInfo.tlRow, e.windowInfo.tlCol)
 		}
 
 		return View{
