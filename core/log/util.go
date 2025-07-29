@@ -37,7 +37,7 @@ func bytesToRune(b []byte) rune {
 }
 
 func lengthPrefixWrite(w io.Writer, b []byte) error {
-	lb := uint32ToBytes(uint32(len(b)))
+	lb := uint64ToBytes(uint64(len(b)))
 	buf := append(lb, b...)
 
 	_, err := w.Write(buf)
@@ -45,12 +45,12 @@ func lengthPrefixWrite(w io.Writer, b []byte) error {
 }
 
 func lengthPrefixRead(r io.Reader) ([]byte, error) {
-	lb := make([]byte, 4)
+	lb := make([]byte, 8)
 	_, err := r.Read(lb)
 	if err != nil {
 		return nil, err
 	}
-	l := bytesToUint32(lb)
+	l := bytesToUint64(lb)
 
 	b := make([]byte, l)
 	_, err = r.Read(b)
