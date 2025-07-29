@@ -22,8 +22,8 @@ Options:
   -v --version      get version
   -r --replay       replay the edited file 
   -l --log          print the human readable log format
-  -w --overwrite    force delete log
-  -c --command      command editor (experimental)
+  -i --insert       open with INSERT mode
+  -c --command      open with VISUAL/COMMAND/INSERT mode
 
 Keyboard Shortcuts:
   Ctrl+C            exit
@@ -78,7 +78,7 @@ func main() {
 		if err != nil {
 			side_channel.Panic(err)
 		}
-	case "-w", "--overwrite":
+	case "-i", "--insert":
 		if fileNonEmpty(args.secondFilename) {
 			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.secondFilename), false)
 			if !ok {
@@ -109,6 +109,7 @@ func main() {
 			side_channel.Panic(err)
 		}
 	default:
+		// by default - open with command mode
 		if fileNonEmpty(args.secondFilename) {
 			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.secondFilename), false)
 			if !ok {
@@ -119,7 +120,7 @@ func main() {
 				side_channel.Panic(err)
 			}
 		}
-		err := app.RunEditor(args.firstFilename, args.secondFilename, false)
+		err := app.RunEditor(args.firstFilename, args.secondFilename, true)
 		if err != nil {
 			side_channel.Panic(err)
 		}
