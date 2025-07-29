@@ -33,3 +33,5 @@
 
 # TODO
 
+- add using `V`, `d`, `y`, `p` to select, copy, cut, paste lines 
+
