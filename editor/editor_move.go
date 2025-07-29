@@ -66,7 +66,10 @@ func (e *editor) MoveHome() {
 func (e *editor) MoveEnd() {
 	e.lockUpdateRender(func() {
 		t := e.text.Get()
-		e.moveRelativeAndFixWithoutLock(0, len(t.Get(e.cursor.Row))-e.cursor.Col)
+		if e.cursor.Row < t.Len() {
+			line := t.Get(e.cursor.Row)
+			e.moveRelativeAndFixWithoutLock(0, len(line)-e.cursor.Col)
+		}
 		e.setMessageWithoutLock("move end")
 	})
 }
