@@ -82,3 +82,9 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 
 	return e, loadCtx, flush, closer, err
 }
+func writeMessage(e editor.Editor, message string) {
+	e.Status(func(status editor.Status) editor.Status {
+		status.Message = message
+		return status
+	})
+}

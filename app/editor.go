@@ -138,7 +138,7 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 			} else if event.Key() == tcell.KeyCtrlS {
 				// Ctrl+S to flush
 				_ = flush()
-				e.WriteMessage("log flushed")
+				writeMessage(e, "log flushed")
 			} else {
 				handleEditorKey(e, event)
 			}
@@ -154,7 +154,7 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 
 	// we have to cancel here first, then wait for a while before exiting
 	// since exiting will close all the files; waiting time is necessary for all background tasks to stop reading files
-	e.WriteMessage("exiting... ")
+	writeMessage(e, "exiting... ")
 	cancel()
 	<-loadCtx.Done() // wait for load context then exit, exec deferred closer function
 	return nil
@@ -197,6 +197,6 @@ func handleEditorKey(e editor.Editor, ev *tcell.EventKey) {
 	case tcell.KeyCtrlR:
 		e.Redo()
 	default:
-		e.WriteMessage(fmt.Sprintf("unknown key %v", ev.Name()))
+		writeMessage(e, fmt.Sprintf("unknown key %v", ev.Name()))
 	}
 }

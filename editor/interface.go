@@ -68,6 +68,7 @@ type Editor interface {
 	Load(ctx context.Context, reader bytes.Array) (context.Context, error)
 	Escape()
 	Resize(height int, width int)
+	Status(update func(status Status) Status)
 	Render
 	Edit
 	Move

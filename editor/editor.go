@@ -167,3 +167,9 @@ func (e *editor) Resize(height int, width int) {
 func (e *editor) Escape() {
 
 }
+
+func (e *editor) Status(update func(status Status) Status) {
+	e.lockUpdateRender(func() {
+		e.status = update(e.status)
+	})
+}
