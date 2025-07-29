@@ -2,9 +2,9 @@ package editor
 
 import (
 	"context"
-	"telescope/core/bytes"
 	"telescope/core/log"
 	"telescope/core/text"
+	"telescope/util/bytes"
 )
 
 type Cursor struct {

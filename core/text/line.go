@@ -2,7 +2,7 @@ package text
 
 import (
 	"io"
-	"telescope/core/bytes"
+	"telescope/util/bytes"
 	"telescope/util/side_channel"
 )
 

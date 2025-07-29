@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"sync"
 	"telescope/config"
-	"telescope/core/bytes"
 	"telescope/core/hist"
 	log2 "telescope/core/log"
 	text2 "telescope/core/text"
+	"telescope/util/bytes"
 	"telescope/util/side_channel"
 	"time"
 )

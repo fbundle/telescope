@@ -10,9 +10,9 @@ import (
 	"strings"
 	"sync"
 	"telescope/config"
-	"telescope/core/bytes"
 	"telescope/core/editor"
 	"telescope/core/log"
+	"telescope/util/bytes"
 	"telescope/util/side_channel"
 	"time"
 )
