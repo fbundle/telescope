@@ -2,6 +2,7 @@ package log
 
 import (
 	"encoding/binary"
+	"errors"
 	"io"
 )
 
@@ -36,8 +37,10 @@ func bytesToRune(b []byte) rune {
 }
 
 func lengthPrefixWrite(w io.Writer, b []byte) error {
-	l := uint32ToBytes(uint32(len(b)))
-	_, err := w.Write(append(l, b...))
+	lb := uint32ToBytes(uint32(len(b)))
+	buf := append(lb, b...)
+
+	_, err := w.Write(buf)
 	return err
 }
 
@@ -51,5 +54,8 @@ func lengthPrefixRead(r io.Reader) ([]byte, error) {
 
 	b := make([]byte, l)
 	_, err = r.Read(b)
-	return b, err
+	if err != nil {
+		return nil, errors.New("incomplete read")
+	}
+	return b, nil
 }

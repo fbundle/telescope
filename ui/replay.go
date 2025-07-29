@@ -3,6 +3,7 @@ package ui
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"telescope/core/log"
 )
@@ -38,10 +39,13 @@ func RunReplay(inputFilename string, logFilename string) error {
 
 	_, _ = fmt.Fprintf(os.Stderr, "loading log file %s\n", logFilename)
 
-	_ = log.Read(logFilename, func(entry log.Entry) bool {
+	err = log.Read(logFilename, func(entry log.Entry) bool {
 		e.Apply(entry)
 		return true
 	})
+	if err != nil && err != io.EOF {
+		return err
+	}
 	_, _ = fmt.Fprintf(os.Stderr, "replaying file\n")
 	t := e.Render().Text
 	for _, line := range t.Iter {

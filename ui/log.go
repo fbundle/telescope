@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"telescope/config"
@@ -14,7 +15,7 @@ func RunLog(logFilename string) error {
 		return err
 	}
 
-	_ = log.Read(logFilename, func(e log.Entry) bool {
+	err = log.Read(logFilename, func(e log.Entry) bool {
 		var b []byte
 		b, err = s.Marshal(e)
 		if err != nil {
@@ -26,5 +27,8 @@ func RunLog(logFilename string) error {
 		}
 		return true
 	})
+	if err == io.EOF {
+		err = nil
+	}
 	return err
 }
