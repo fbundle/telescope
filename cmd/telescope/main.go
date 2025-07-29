@@ -13,9 +13,7 @@ import (
 
 const VERSION = "0.1.6a"
 
-func printHelp() {
-	fmt.Printf("telescope version %s\n", VERSION)
-	help := `
+var HELP = `
 Usage: "telescope [option] file [logfile]"
 Options:
   -h --help         show help
@@ -47,8 +45,11 @@ Commands:
   :g :goto          goto line
   :w :write         write into file
   :q :quit          quit
-	`
-	fmt.Println(help)
+`
+
+func printHelp() {
+	fmt.Printf("telescope version %s\n", VERSION)
+	fmt.Println(HELP)
 }
 
 func printVersion() {
