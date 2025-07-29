@@ -23,9 +23,8 @@ type Config struct {
 	TAB_SIZE                   int
 }
 
-// TODO - export these into environment variables
-
 func Load() Config {
+	// TODO - export these into environment variables
 	return Config{
 		DEBUG_IO_DELAY:             100 * time.Millisecond,
 		LOG_AUTOFLUSH_INTERVAL:     60 * time.Second,
