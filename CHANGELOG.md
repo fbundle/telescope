@@ -29,6 +29,7 @@
 - fixed VISUAL/COMMAND/INSERT mode sometimes hangs at start-up
 - fixed bug when typing to the right end of the screen
 - added default behavior when there is no input file specified
+- added regexp search
 
 # TODO
 
