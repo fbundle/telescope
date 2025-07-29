@@ -27,7 +27,7 @@
 - remove exitting delay
 - [experimental] added VISUAL/COMMAND/INSERT mode
 - fixed VISUAL/COMMAND/INSERT mode sometimes hangs at start-up
+- fixed bug when typing to the right end of the screen
 
 # TODO
 
-- bug when typing to the right end of the screen

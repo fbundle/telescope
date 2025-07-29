@@ -7,9 +7,14 @@ func (e *editor) updateWithoutLock() {
 }
 
 func (e *editor) renderWithoutLock() View {
-	getRowForView := func(t text.Text, row int) []rune {
+	getRowForView := func(t text.Text, row int, col int) []rune {
 		if row < t.Len() {
-			return t.Get(row)
+			line := t.Get(row)
+			if col >= len(line) {
+				return nil
+			} else {
+				return line[col:]
+			}
 		} else {
 			return []rune{'~'}
 		}
@@ -34,7 +39,7 @@ func (e *editor) renderWithoutLock() View {
 		// data
 		view.WinData = make([][]rune, e.view.height)
 		for row := 0; row < e.view.height; row++ {
-			view.WinData[row] = getRowForView(e.text.Get(), row+e.view.tlRow)
+			view.WinData[row] = getRowForView(e.text.Get(), row+e.view.tlRow, e.view.tlCol)
 		}
 		return view
 	}
