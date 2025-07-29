@@ -13,26 +13,22 @@ import (
 	"time"
 )
 
-type internalView struct {
+type windowInfo struct {
 	tlRow  int
 	tlCol  int
 	height int
 	width  int
-
-	header     string
-	command    string
-	message    string
-	background string
 }
 
 type editor struct {
 	renderCh  chan View
 	logWriter log.Writer
 
-	mu     sync.Mutex // the fields below are protected by mu
-	text   hist.Hist[text.Text]
-	cursor Cursor
-	view   internalView
+	mu         sync.Mutex // the fields below are protected by mu
+	text       hist.Hist[text.Text]
+	cursor     Cursor
+	windowInfo windowInfo
+	status     Status
 }
 
 func NewEditor(
@@ -49,12 +45,15 @@ func NewEditor(
 		cursor: Cursor{
 			Row: 0, Col: 0,
 		},
-		view: internalView{
+		windowInfo: windowInfo{
 			tlRow: 0, tlCol: 0,
-			width: width, height: height,
-			header:     "",
-			message:    "",
-			background: "",
+			height: height, width: width,
+		},
+		status: Status{
+			Header:     "",
+			Command:    "",
+			Message:    "",
+			Background: "",
 		},
 	}
 	return e, nil
@@ -69,7 +68,7 @@ func (e *editor) Load(ctx context.Context, reader bytes.Array) (context.Context,
 			return
 		}
 		e.text = hist.New(text.New(reader))
-		e.view.background = "loading started"
+		e.status.Background = "loading started"
 		go func() { // load file asynchronously
 			defer loadDone()
 			if reader == nil || reader.Len() == 0 {
@@ -84,7 +83,7 @@ func (e *editor) Load(ctx context.Context, reader bytes.Array) (context.Context,
 						return t.Append(l)
 					})
 					if loader.add(l.Size()) { // to renderWithoutLock
-						e.view.background = fmt.Sprintf(
+						e.status.Background = fmt.Sprintf(
 							"loading %d/%d (%d%%)",
 							loader.loadedSize, loader.totalSize, loader.lastRenderPercentage,
 						)
@@ -94,15 +93,15 @@ func (e *editor) Load(ctx context.Context, reader bytes.Array) (context.Context,
 			})
 			e.lockUpdateRender(func() {
 				totalTime := time.Since(t0)
-				e.view.background = ""
+				e.status.Background = ""
 				select {
 				case <-ctx.Done():
-					e.view.message = fmt.Sprintf(
+					e.status.Message = fmt.Sprintf(
 						"loading was cancelled after %d seconds",
 						int(totalTime.Seconds()),
 					)
 				default:
-					e.view.message = fmt.Sprintf(
+					e.status.Message = fmt.Sprintf(
 						"loaded for %d seconds",
 						int(totalTime.Seconds()),
 					)
@@ -131,7 +130,7 @@ func (e *editor) lockUpdateRender(f func()) {
 }
 
 func (e *editor) setMessageWithoutLock(format string, a ...any) {
-	e.view.message = fmt.Sprintf(format, a...)
+	e.status.Message = fmt.Sprintf(format, a...)
 }
 
 func (e *editor) writeLog(entry log.Entry) {
@@ -143,23 +142,23 @@ func (e *editor) writeLog(entry log.Entry) {
 
 func (e *editor) WriteMessage(message string) {
 	e.lockUpdateRender(func() {
-		e.view.message = message
+		e.status.Message = message
 	})
 }
 func (e *editor) WriteHeaderCommandMessage(header string, command string, message string) {
 	e.lockUpdateRender(func() {
-		e.view.header = header
-		e.view.command = command
-		e.view.message = message
+		e.status.Header = header
+		e.status.Command = command
+		e.status.Message = message
 	})
 }
 
 func (e *editor) Resize(height int, width int) {
 	e.lockUpdateRender(func() {
-		if e.view.height == height && e.view.width == width {
+		if e.windowInfo.height == height && e.windowInfo.width == width {
 			return
 		}
-		e.view.height, e.view.width = height, width
+		e.windowInfo.height, e.windowInfo.width = height, width
 		e.moveRelativeAndFixWithoutLock(0, 0)
 		e.setMessageWithoutLock("resize to %dx%d", height, width)
 	})

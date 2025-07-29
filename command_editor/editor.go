@@ -116,7 +116,7 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		}
 
 		view := c.e.Render()
-		row := view.TextCursor.Row
+		row := view.Cursor.Row
 
 		_, text2 := view.Text.Split(row + 1)
 

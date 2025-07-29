@@ -12,17 +12,23 @@ type Cursor struct {
 	Col int
 }
 
-type View struct {
-	WinData   [][]rune
-	WinCursor Cursor
-
-	TextCursor Cursor
-	Text       text.Text
-
+type Status struct {
 	Header     string
 	Command    string
 	Message    string
 	Background string
+}
+
+type Window struct {
+	Data   [][]rune
+	Cursor Cursor // relative cursor to window
+}
+
+type View struct {
+	Window Window
+	Status Status
+	Cursor Cursor // absolute cursor
+	Text   text.Text
 }
 
 type Move interface {

@@ -13,35 +13,33 @@ func (e *editor) renderWithoutLock() View {
 			if col >= len(line) {
 				return nil
 			} else {
-				return line[col:]
+				return line[col:] // shifted by col
 			}
 		} else {
 			return []rune{'~'}
 		}
 	}
 	render := func() View {
-		view := View{
-			WinData: nil,
-			WinCursor: Cursor{
-				Row: e.cursor.Row - e.view.tlRow,
-				Col: e.cursor.Col - e.view.tlCol,
+		c := e.cursor
+		t := e.text.Get()
+		data := make([][]rune, e.windowInfo.height)
+		for row := 0; row < e.windowInfo.height; row++ {
+			data[row] = getRowForView(t, row+e.windowInfo.tlRow, e.windowInfo.tlCol)
+		}
+
+		return View{
+			Window: Window{
+				Data: data,
+				Cursor: Cursor{
+					Row: e.cursor.Row - e.windowInfo.tlRow,
+					Col: e.cursor.Col - e.windowInfo.tlCol,
+				},
 			},
-			TextCursor: e.cursor,
-
-			Text: e.text.Get(),
-
-			Header:     e.view.header,
-			Command:    e.view.command,
-			Background: e.view.background,
-			Message:    e.view.message,
+			Status: e.status,
+			Cursor: c,
+			Text:   t,
 		}
 
-		// data
-		view.WinData = make([][]rune, e.view.height)
-		for row := 0; row < e.view.height; row++ {
-			view.WinData[row] = getRowForView(e.text.Get(), row+e.view.tlRow, e.view.tlCol)
-		}
-		return view
 	}
 	return render()
 }

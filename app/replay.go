@@ -26,8 +26,8 @@ func RunReplay(inputFilename string, logFilename string) error {
 			case <-ctx.Done():
 				return
 			case view := <-e.Update(): // consume view
-				if len(view.Background) > 0 {
-					_, _ = fmt.Fprintln(os.Stderr, view.Background)
+				if len(view.Status.Background) > 0 {
+					_, _ = fmt.Fprintln(os.Stderr, view.Status.Background)
 				}
 			}
 		}

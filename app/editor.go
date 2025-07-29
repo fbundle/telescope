@@ -22,27 +22,27 @@ func draw(s tcell.Screen, view editor.View) {
 	s.Clear()
 	screenWidth, screenHeight := s.Size()
 	// Draw editor content from (0, 0)
-	for row, line := range view.WinData {
+	for row, line := range view.Window.Data {
 		for col, ch := range line {
 			s.SetContent(col, row, ch, nil, textStyle)
 		}
 	}
 	// Draw cursor from (0, 0)
-	s.ShowCursor(view.WinCursor.Col, view.WinCursor.Row)
+	s.ShowCursor(view.Window.Cursor.Col, view.Window.Cursor.Row)
 
 	// Draw the status bar at the bottom
 	for col := 0; col < screenWidth; col++ {
 		s.SetContent(col, screenHeight-1, ' ', nil, statusStyle)
 	}
 	sep := []rune(" > ")
-	fromLeft := []rune(fmt.Sprintf(" %s (%d, %d)", view.Header, view.TextCursor.Col+1, view.TextCursor.Row+1))
-	if len(view.Command) > 0 {
+	fromLeft := []rune(fmt.Sprintf(" %s (%d, %d)", view.Status.Header, view.Cursor.Col+1, view.Cursor.Row+1))
+	if len(view.Status.Command) > 0 {
 		fromLeft = append(fromLeft, sep...)
-		fromLeft = append(fromLeft, []rune(view.Command)...)
+		fromLeft = append(fromLeft, []rune(view.Status.Command)...)
 	}
-	if len(view.Message) > 0 {
+	if len(view.Status.Message) > 0 {
 		fromLeft = append(fromLeft, sep...)
-		fromLeft = append(fromLeft, []rune(view.Message)...)
+		fromLeft = append(fromLeft, []rune(view.Status.Message)...)
 	}
 	for col, ch := range fromLeft {
 		if 0 <= col && col < screenWidth {
@@ -50,9 +50,9 @@ func draw(s tcell.Screen, view editor.View) {
 		}
 	}
 	fromRight := []rune{}
-	if len(view.Background) > 0 {
+	if len(view.Status.Background) > 0 {
 		fromRight = append(fromRight, sep...)
-		fromRight = append(fromRight, []rune(view.Background)...)
+		fromRight = append(fromRight, []rune(view.Status.Background)...)
 	}
 	for i, ch := range fromRight {
 		col := i + screenWidth - len(fromRight)
