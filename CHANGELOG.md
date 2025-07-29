@@ -30,7 +30,7 @@
 - fixed bug when typing to the right end of the screen
 - added default behavior when there is no input file specified
 - added regexp search
-- refactor
+- refactor - VISUAL/COMMAND/INSERT is now default
 
 # TODO
 
