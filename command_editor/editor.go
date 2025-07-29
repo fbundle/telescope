@@ -3,13 +3,16 @@ package command_editor
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
 	"telescope/bytes"
+	"telescope/config"
 	"telescope/editor"
 	"telescope/side_channel"
+	"time"
 
 	"telescope/log"
 )
@@ -93,10 +96,16 @@ func (c *commandEditor) applyCommandWithoutLock() {
 
 		_, text2 := view.Text.Split(row + 1)
 
+		t0 := time.Now()
 		for i, line := range text2.Iter {
 			if strings.Contains(string(line), cmd) {
 				c.e.Goto(row+1+i, 0)
 				c.writeWithoutLock("found substring " + cmd)
+				return
+			}
+			t1 := time.Now()
+			if t1.Sub(t0) > config.Load().MAX_SEACH_TIME {
+				c.writeWithoutLock(fmt.Sprintf("search timeout after %d seconds and %d entries", config.Load().MAX_SEACH_TIME/time.Second, i+1))
 				return
 			}
 		}

@@ -19,6 +19,7 @@ type Config struct {
 	MAXSIZE_HISTORY            int
 	BLINKING_TIME              time.Duration
 	VIEW_CHANNEL_SIZE          int
+	MAX_SEACH_TIME             time.Duration
 }
 
 // TODO - export these into environment variables
@@ -33,6 +34,7 @@ func Load() Config {
 		MAXSIZE_HISTORY:            1024,
 		BLINKING_TIME:              100 * time.Millisecond,
 		VIEW_CHANNEL_SIZE:          64,
+		MAX_SEACH_TIME:             5 * time.Second,
 	}
 }
 
