@@ -24,7 +24,7 @@ an extremely fast text editor
 
 0. use `telescope -h` for help
 
-1. when user opens a file using `telescope dir/file`, the program will create a log file (journal file) at `dir/.file.log` (if the directory is not writable, user can specify the log file by `telescope dir/file logdir/logfile`).
+1. when user opens a file using `telescope dir/file`, the program will create a log file (journal file)
 
 2. when user edit the file, every action will be written to log file.
 
