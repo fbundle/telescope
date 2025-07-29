@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"telescope/command_editor"
 	"telescope/side_channel"
@@ -83,7 +84,7 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 			if err == nil {
 				break
 			}
-			if err != tcell.ErrEventQFull {
+			if !errors.Is(err, tcell.ErrEventQFull) {
 				side_channel.Panic(err)
 			}
 		}
