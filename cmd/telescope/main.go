@@ -18,7 +18,7 @@ func printHelp() {
 	help := `
 Usage: "telescope [option] file [logfile]"
 Options:
-  -h --help	: show help
+  -h --help         show help
   -v --version      get version
   -r --replay       replay the edited file 
   -l --log          print the human readable log format
