@@ -2,6 +2,7 @@ package editor
 
 import (
 	"slices"
+	"telescope/config"
 
 	"telescope/log"
 	"telescope/side_channel"
@@ -176,9 +177,9 @@ func (e *editor) Redo() {
 	})
 }
 func (e *editor) Tabular() {
-	// tab is two spaces
-	e.Type(' ')
-	e.Type(' ')
+	for i := 0; i < config.Load().TAB_SIZE; i++ {
+		e.Type(' ')
+	}
 }
 
 func (e *editor) Escape() {
