@@ -24,11 +24,10 @@ func endOfLineSize(line []byte) int {
 	if line[len(line)-1] != '\n' {
 		side_channel.Panic("not end of line")
 	}
-	if len(line) >= 2 && line[len(line)-2] == '\r' {
-		// for windows
+	if len(line) >= 2 && line[len(line)-2] == '\r' { // ends with \r\n
 		return 2
 	}
-	return 1
+	return 1 // ends with \n
 }
 
 func indexFile(ctx context.Context, reader bytes.Array, delim byte, update func(offset int, line []byte)) error {

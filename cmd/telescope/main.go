@@ -167,9 +167,9 @@ func promptYesNo(prompt string, defaultOption bool) bool {
 		}
 	}
 }
-func getDefaultLogFilename(filenameTextIn string) string {
-	dir := filepath.Dir(filenameTextIn)
-	name := "." + filepath.Base(filenameTextIn) + ".log"
+func getDefaultLogFilename(inputFilename string) string {
+	dir := filepath.Dir(inputFilename)
+	name := "." + filepath.Base(inputFilename) + ".log"
 	logPath := filepath.Join(dir, name)
 	return logPath
 }
