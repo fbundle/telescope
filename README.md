@@ -24,7 +24,7 @@ an extremely fast text editor
 
 0. use `telescope -h` for help
 
-1. when user opens a file using `telescope dir/file`, the program will create a log file (journal file)
+1. when user opens a file using `telescope inputfile`, the program will create a log file (journal file)
 
 2. when user edit the file, every action will be written to log file.
 
@@ -32,4 +32,4 @@ an extremely fast text editor
 
 4. user can use command `:w outputfile` to write the current edit into a new file or replay the log
 
-4. user use `telescope -r dir/file` to replay the log to make a new file. the program will write the output to stdout
+4. user use `telescope -r inputfile` to replay the log to make a new file. the program will write the output to stdout
