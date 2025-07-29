@@ -168,10 +168,20 @@ func promptYesNo(prompt string, defaultOption bool) bool {
 	}
 }
 func getDefaultLogFilename(inputFilename string) string {
-	dir := filepath.Dir(inputFilename)
-	name := "." + filepath.Base(inputFilename) + ".log"
-	logPath := filepath.Join(dir, name)
-	return logPath
+	absPath, err := filepath.Abs(inputFilename)
+	if err != nil {
+		side_channel.Panic(err)
+		return ""
+	}
+	tempDir := os.TempDir()
+	destPath := filepath.Join(tempDir, "telescope_log", absPath)
+	err = os.MkdirAll(filepath.Dir(destPath), 0o700)
+	if err != nil {
+		side_channel.Panic(err)
+		return ""
+	}
+
+	return destPath
 }
 
 func consume(args []string) ([]string, string) {
