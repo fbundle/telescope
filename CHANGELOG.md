@@ -33,5 +33,5 @@
 
 # TODO
 
-- add using `V`, `d`, `y`, `p` to select, copy, cut, paste lines 
+- add using `V`, `d`, `y`, `p` to select, copy, cut, paste lines. probably need another mode `SELECT` and edit view to support arbitrary highlighting 
 
