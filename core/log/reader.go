@@ -22,7 +22,8 @@ func Read(filename string, apply func(e Entry) bool) error {
 	for {
 		b, readErr := lengthPrefixRead(f)
 
-		if readErr != nil && readErr != io.EOF {
+		if readErr != nil {
+			// if readErr is EOF - discard b
 			return readErr
 		}
 
