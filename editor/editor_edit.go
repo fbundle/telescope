@@ -45,32 +45,33 @@ func (e *editor) Backspace() {
 			CursorCol: uint64(e.cursor.Col),
 		})
 
-		var moveRow, moveCol int
-		updateText := func(m text.Text) text.Text {
+		moveRow, moveCol := 0, 0
+		updateText := func(t text.Text) text.Text {
 			row, col := e.cursor.Row, e.cursor.Col
 			// NOTE - handle empty file
-			if m.Len() == 0 {
-				return m
+			if t.Len() == 0 {
+				return t
 			}
 			switch {
 			case col == 0 && row == 0:
 			// first line do nothing
 			case col == 0 && row != 0:
-				// merge 2 texts
-				r1 := m.Get(row - 1)
-				r2 := m.Get(row)
+				// merge 2 lines
+				line1 := t.Get(row - 1)
+				line2 := t.Get(row)
 
-				m = m.Set(row-1, concatSlices(r1, r2)).Del(row)
-				moveRow, moveCol = -1, len(r1) // move up and to the end of last line
+				t = t.Set(row-1, concatSlices(line1, line2)).Del(row)
+				moveRow, moveCol = -1, len(line1) // move up and to the end of last line
 			case col != 0:
-				newRow := slices.Clone(m.Get(row))
-				newRow = deleteFromSlice(newRow, col-1)
-				m = m.Set(row, newRow)
+				// t.Get(row) always well-defined
+				line := slices.Clone(t.Get(row))
+				line = deleteFromSlice(line, col-1)
+				t = t.Set(row, line)
 				moveRow, moveCol = 0, -1 // move left
 			default:
 				side_channel.Panic("unreachable")
 			}
-			return m
+			return t
 		}
 		e.text.Update(updateText)
 		e.moveRelativeAndFixWithoutLock(moveRow, moveCol)
@@ -86,28 +87,29 @@ func (e *editor) Delete() {
 			CursorCol: uint64(e.cursor.Col),
 		})
 
-		updateText := func(m text.Text) text.Text {
+		updateText := func(t text.Text) text.Text {
 			row, col := e.cursor.Row, e.cursor.Col
 			// NOTE - handle empty file
-			if m.Len() == 0 {
-				return m
+			if t.Len() == 0 {
+				return t
 			}
+			// t.Get(row) always well-defined
+			line1 := t.Get(row)
 			switch {
-			case col == len(m.Get(row)) && row == m.Len()-1:
+			case col == len(line1) && row == t.Len()-1:
 			// last line, do nothing
-			case col == len(m.Get(row)) && row < m.Len()-1:
-				// merge 2 Text
-				r1 := m.Get(row)
-				r2 := m.Get(row + 1)
-				m = m.Set(row, concatSlices(r1, r2)).Del(row + 1)
-			case col != len(m.Get(row)):
-				newRow := slices.Clone(m.Get(row))
-				newRow = deleteFromSlice(newRow, col)
-				m = m.Set(row, newRow)
+			case col == len(line1) && row < t.Len()-1:
+				// merge 2 lines
+				line2 := t.Get(row + 1)
+				t = t.Set(row, concatSlices(line1, line2)).Del(row + 1)
+			case col != len(line1):
+				line := slices.Clone(line1)
+				line = deleteFromSlice(line, col)
+				t = t.Set(row, line)
 			default:
 				side_channel.Panic("unreachable")
 			}
-			return m
+			return t
 		}
 		e.text.Update(updateText)
 		e.setMessageWithoutLock("delete")
@@ -123,21 +125,25 @@ func (e *editor) Enter() {
 		})
 
 		updateText := func(t text.Text) text.Text {
+			row, col := e.cursor.Row, e.cursor.Col
 			// NOTE - handle empty file
 			if t.Len() == 0 {
 				t = t.Ins(0, nil)
 				return t
 			}
+			// t.Get(row) always well-defined
+			line := t.Get(row)
 			switch {
-			case e.cursor.Col == len(t.Get(e.cursor.Row)):
+			case col == len(line):
 				// add new line
-				t = t.Ins(e.cursor.Row+1, nil)
+				t = t.Ins(row+1, nil)
 				return t
-			case e.cursor.Col < len(t.Get(e.cursor.Row)):
+			case col < len(line):
 				// split a line
-				r1 := slices.Clone(t.Get(e.cursor.Row)[:e.cursor.Col])
-				r2 := slices.Clone(t.Get(e.cursor.Row)[e.cursor.Col:])
-				t = t.Set(e.cursor.Row, r1).Ins(e.cursor.Row+1, r2)
+				line1 := slices.Clone(line[:col])
+				line2 := slices.Clone(line[col:])
+				t = t.Set(row, line1)
+				t = t.Ins(row+1, line2)
 				return t
 			default:
 				side_channel.Panic("unreachable")
