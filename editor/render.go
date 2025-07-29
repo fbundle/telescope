@@ -2,11 +2,11 @@ package editor
 
 import "telescope/text"
 
-func (e *editor) postWithoutLock() {
-	e.renderCh <- e.renderWithoutLock()
+func (e *editor) renderWithoutLock() {
+	e.renderCh <- e.makeView()
 }
 
-func (e *editor) renderWithoutLock() View {
+func (e *editor) makeView() View {
 	getRowForView := func(t text.Text, row int, col int) []rune {
 		if row < t.Len() {
 			line := t.Get(row)
@@ -45,11 +45,12 @@ func (e *editor) renderWithoutLock() View {
 }
 
 func (e *editor) Render() (view View) {
-	e.lockUpdate(func() {
-		view = e.renderWithoutLock()
+	e.lock(func() {
+		view = e.makeView()
 	})
 	return view
 }
+
 func (e *editor) Update() <-chan View {
 	return e.renderCh
 }

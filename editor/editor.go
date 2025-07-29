@@ -9,6 +9,7 @@ import (
 	"telescope/config"
 	"telescope/hist"
 	"telescope/log"
+	"telescope/side_channel"
 	"telescope/text"
 	"time"
 )
@@ -62,7 +63,7 @@ func NewEditor(
 func (e *editor) Load(ctx context.Context, reader bytes.Array) (context.Context, error) {
 	loadCtx, loadDone := context.WithCancel(ctx) // if ctx is done then this editor will also stop loading
 	var err error = nil
-	e.lockUpdateRender(func() {
+	e.lockRender(func() {
 		if e.text != nil {
 			err = errors.New("load twice")
 			return
@@ -76,22 +77,26 @@ func (e *editor) Load(ctx context.Context, reader bytes.Array) (context.Context,
 			}
 
 			t0 := time.Now()
-			loader := newLoader(reader.Len())
-			text.LoadFile(ctx, reader, func(l text.Line) {
-				e.lockUpdate(func() {
+			l := newLoader(reader.Len())
+			err = text.LoadFile(ctx, reader, func(line text.Line) {
+				e.lock(func() {
 					e.text.Update(func(t text.Text) text.Text {
-						return t.Append(l)
+						return t.Append(line)
 					})
-					if loader.add(l.Size()) { // to renderWithoutLock
+					if l.add(line.Size()) { // to makeView
 						e.status.Background = fmt.Sprintf(
 							"loading %d/%d (%d%%)",
-							loader.loadedSize, loader.totalSize, loader.lastRenderPercentage,
+							l.loadedSize, l.totalSize, l.lastRenderPercentage,
 						)
-						e.postWithoutLock()
+						e.renderWithoutLock()
 					}
 				})
 			})
-			e.lockUpdateRender(func() {
+			if err != nil {
+				side_channel.Panic("error load file", err)
+				return
+			}
+			e.lockRender(func() {
 				totalTime := time.Since(t0)
 				e.status.Background = ""
 				select {
@@ -106,7 +111,6 @@ func (e *editor) Load(ctx context.Context, reader bytes.Array) (context.Context,
 						int(totalTime.Seconds()),
 					)
 				}
-				e.postWithoutLock()
 			})
 		}()
 	})
@@ -114,17 +118,17 @@ func (e *editor) Load(ctx context.Context, reader bytes.Array) (context.Context,
 	return loadCtx, err
 }
 
-func (e *editor) lockUpdate(f func()) {
+func (e *editor) lock(f func()) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
 	f()
 }
 
-func (e *editor) lockUpdateRender(f func()) {
+func (e *editor) lockRender(f func()) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	defer e.postWithoutLock()
+	defer e.renderWithoutLock()
 
 	f()
 }
@@ -137,24 +141,15 @@ func (e *editor) writeLog(entry log.Entry) {
 	if e.logWriter == nil {
 		return
 	}
-	e.logWriter.Write(entry)
-}
-
-func (e *editor) WriteMessage(message string) {
-	e.lockUpdateRender(func() {
-		e.status.Message = message
-	})
-}
-func (e *editor) WriteHeaderCommandMessage(header string, command string, message string) {
-	e.lockUpdateRender(func() {
-		e.status.Header = header
-		e.status.Command = command
-		e.status.Message = message
-	})
+	_, err := e.logWriter.Write(entry)
+	if err != nil {
+		side_channel.Panic("error write log", err)
+		return
+	}
 }
 
 func (e *editor) Resize(height int, width int) {
-	e.lockUpdateRender(func() {
+	e.lockRender(func() {
 		if e.windowInfo.height == height && e.windowInfo.width == width {
 			return
 		}
@@ -169,7 +164,7 @@ func (e *editor) Escape() {
 }
 
 func (e *editor) Status(update func(status Status) Status) {
-	e.lockUpdateRender(func() {
+	e.lockRender(func() {
 		e.status = update(e.status)
 	})
 }

@@ -10,7 +10,7 @@ import (
 )
 
 func (e *editor) Type(ch rune) {
-	e.lockUpdateRender(func() {
+	e.lockRender(func() {
 		e.writeLog(log.Entry{
 			Command:   log.CommandType,
 			Rune:      ch,
@@ -39,7 +39,7 @@ func (e *editor) Type(ch rune) {
 }
 
 func (e *editor) Backspace() {
-	e.lockUpdateRender(func() {
+	e.lockRender(func() {
 		e.writeLog(log.Entry{
 			Command:   log.CommandBackspace,
 			CursorRow: uint64(e.cursor.Row),
@@ -81,7 +81,7 @@ func (e *editor) Backspace() {
 }
 
 func (e *editor) Delete() {
-	e.lockUpdateRender(func() {
+	e.lockRender(func() {
 		e.writeLog(log.Entry{
 			Command:   log.CommandDelete,
 			CursorRow: uint64(e.cursor.Row),
@@ -118,7 +118,7 @@ func (e *editor) Delete() {
 }
 
 func (e *editor) Enter() {
-	e.lockUpdateRender(func() {
+	e.lockRender(func() {
 		e.writeLog(log.Entry{
 			Command:   log.CommandEnter,
 			CursorRow: uint64(e.cursor.Row),
@@ -165,7 +165,7 @@ func (e *editor) Tabular() {
 }
 
 func (e *editor) Undo() {
-	e.lockUpdateRender(func() {
+	e.lockRender(func() {
 		e.writeLog(log.Entry{
 			Command: log.CommandUndo,
 		})
@@ -175,7 +175,7 @@ func (e *editor) Undo() {
 }
 
 func (e *editor) Redo() {
-	e.lockUpdateRender(func() {
+	e.lockRender(func() {
 		e.writeLog(log.Entry{
 			Command: log.CommandRedo,
 		})
@@ -183,6 +183,7 @@ func (e *editor) Redo() {
 		e.setMessageWithoutLock("redo")
 	})
 }
+
 func (e *editor) Apply(entry log.Entry) {
 	switch entry.Command {
 	case log.CommandEnter:

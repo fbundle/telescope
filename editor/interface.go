@@ -45,18 +45,13 @@ type Move interface {
 
 type Edit interface {
 	Type(ch rune)
-	Enter()
 	Backspace()
 	Delete()
+	Enter()
 	Tabular()
 	Undo()
 	Redo()
 	Apply(entry log.Entry)
-}
-
-type App interface {
-	WriteHeaderCommandMessage(header string, command string, message string)
-	WriteMessage(message string)
 }
 
 type Render interface {
@@ -72,5 +67,4 @@ type Editor interface {
 	Render
 	Edit
 	Move
-	App
 }

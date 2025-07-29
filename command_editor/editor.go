@@ -341,13 +341,7 @@ func (c *commandEditor) Apply(entry log.Entry) {
 
 func (c *commandEditor) WriteHeaderCommandMessage(header string, command string, message string) {
 	c.lockUpdate(func() {
-		c.e.WriteHeaderCommandMessage(header, command, message)
-	})
-}
-
-func (c *commandEditor) WriteMessage(message string) {
-	c.lockUpdate(func() {
-		c.e.WriteMessage(message)
+		writeHeaderCommandMessage(c.e, header, command, message)
 	})
 }
 
@@ -363,7 +357,11 @@ func (c *commandEditor) lockUpdate(f func()) {
 }
 
 func (c *commandEditor) writeWithoutLock(message string) {
-	c.e.WriteHeaderCommandMessage(c.mode, c.command, message)
+	writeHeaderCommandMessage(c.e, c.mode, c.command, message)
+}
+
+func (c *commandEditor) Status(update func(status editor.Status) editor.Status) {
+	c.e.Status(update)
 }
 
 func NewCommandEditor(cancel func(), e editor.Editor) editor.Editor {
@@ -376,4 +374,13 @@ func NewCommandEditor(cancel func(), e editor.Editor) editor.Editor {
 	}
 	c.writeWithoutLock("")
 	return c
+}
+
+func writeHeaderCommandMessage(e editor.Editor, header string, command string, message string) {
+	e.Status(func(status editor.Status) editor.Status {
+		status.Header = header
+		status.Command = command
+		status.Message = message
+		return status
+	})
 }
