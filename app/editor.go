@@ -34,7 +34,7 @@ func draw(s tcell.Screen, view editor.View) {
 		s.SetContent(col, screenHeight-1, ' ', nil, statusStyle)
 	}
 	sep := []rune(" > ")
-	fromLeft := []rune(fmt.Sprintf("%s (%d, %d)", view.Header, view.TextCursor.Col+1, view.TextCursor.Row+1))
+	fromLeft := []rune(fmt.Sprintf(" %s (%d, %d)", view.Header, view.TextCursor.Col+1, view.TextCursor.Row+1))
 	if len(view.Command) > 0 {
 		fromLeft = append(fromLeft, sep...)
 		fromLeft = append(fromLeft, []rune(view.Command)...)
