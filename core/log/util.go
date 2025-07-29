@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
+	"telescope/util/side_channel"
 )
 
 func uint64ToBytes(x uint64) []byte {
@@ -13,6 +14,10 @@ func uint64ToBytes(x uint64) []byte {
 }
 
 func bytesToUint64(b []byte) uint64 {
+	if len(b) != 8 {
+		side_channel.Panic("invalid length")
+		return 0
+	}
 	return binary.LittleEndian.Uint64(b)
 }
 
