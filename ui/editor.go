@@ -64,6 +64,14 @@ func draw(s tcell.Screen, view editor.View) {
 	s.Show()
 }
 
+type quitEvent struct {
+	when time.Time
+}
+
+func (e quitEvent) When() time.Time {
+	return e.when
+}
+
 func RunEditor(inputFilename string, logFilename string, commandMode bool) error {
 	s, err := tcell.NewScreen()
 	if err != nil {
@@ -79,7 +87,7 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 		cancel()
 		var err error
 		for i := 0; i < 5; i++ {
-			err = s.PostEvent(tcell.NewEventKey(tcell.KeyCtrlC, 0, tcell.ModNone))
+			err = s.PostEvent(quitEvent{when: time.Now()})
 			if err == nil {
 				break
 			}
@@ -132,6 +140,9 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 	for running {
 		event := s.PollEvent()
 		switch event := event.(type) {
+		case quitEvent:
+			// quit from editor
+			running = false
 		case *tcell.EventKey:
 			if event.Key() == tcell.KeyCtrlC {
 				// Ctrl+C to stop
