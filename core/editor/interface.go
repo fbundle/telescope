@@ -27,8 +27,8 @@ type Window struct {
 type View struct {
 	Window Window
 	Status Status
-	Cursor Cursor // absolute cursor
-	Text   text.Text
+	Cursor Cursor    // absolute cursor
+	Text   text.Text // raw data
 }
 
 type Move interface {
