@@ -68,7 +68,7 @@ type quitEvent struct {
 	when time.Time
 }
 
-func (e quitEvent) When() time.Time {
+func (e *quitEvent) When() time.Time {
 	return e.when
 }
 
@@ -87,7 +87,7 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 		cancel()
 		var err error
 		for i := 0; i < 5; i++ {
-			err = s.PostEvent(quitEvent{when: time.Now()})
+			err = s.PostEvent(&quitEvent{when: time.Now()})
 			if err == nil {
 				break
 			}
@@ -140,7 +140,7 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 	for running {
 		event := s.PollEvent()
 		switch event := event.(type) {
-		case quitEvent:
+		case *quitEvent:
 			// quit from editor
 			running = false
 		case *tcell.EventKey:
