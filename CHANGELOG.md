@@ -31,6 +31,7 @@
 - added default behavior when there is no input file specified
 - added regexp search
 - refactor - VISUAL/COMMAND/INSERT is now default
+- rename VISUAL -> NORMAL
 
 # TODO
 

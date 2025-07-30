@@ -22,7 +22,7 @@ type Mode = string
 const (
 	ModeInsert  Mode = "INSERT"
 	ModeCommand Mode = "COMMAND"
-	ModeVisual  Mode = "VISUAL"
+	ModeNormal  Mode = "NORMAL"
 )
 
 type commandEditor struct {
@@ -53,7 +53,7 @@ func (c *commandEditor) Resize(height int, width int) {
 func (c *commandEditor) Type(ch rune) {
 	c.lock(func() {
 		switch c.mode {
-		case ModeVisual:
+		case ModeNormal:
 			switch ch {
 			case 'i':
 				c.mode, c.command = ModeInsert, ""
@@ -96,7 +96,7 @@ func (c *commandEditor) applyCommandWithoutLock() {
 
 		re, err := regexp.Compile(cmd)
 		if err != nil {
-			c.mode, c.command = ModeVisual, ""
+			c.mode, c.command = ModeNormal, ""
 			c.writeWithoutLock(fmt.Sprintf("regexp compile error %s", err.Error()))
 			return
 		}
@@ -128,7 +128,7 @@ func (c *commandEditor) applyCommandWithoutLock() {
 			}
 		}
 
-		c.mode, c.command = ModeVisual, ""
+		c.mode, c.command = ModeNormal, ""
 		c.writeWithoutLock("end of file")
 		return
 	case strings.HasPrefix(cmd, ":g ") || strings.HasPrefix(cmd, ":goto "):
@@ -136,12 +136,12 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		cmd = strings.TrimPrefix(cmd, ":goto ")
 		lineNum, err := strconv.Atoi(cmd)
 		if err != nil {
-			c.mode, c.command = ModeVisual, ""
+			c.mode, c.command = ModeNormal, ""
 			c.writeWithoutLock("invalid line number " + cmd)
 			return
 		}
 		c.e.Goto(lineNum-1, 0)
-		c.mode, c.command = ModeVisual, ""
+		c.mode, c.command = ModeNormal, ""
 		c.writeWithoutLock("goto line " + cmd)
 		return
 	case strings.HasPrefix(cmd, ":w ") || strings.HasPrefix(cmd, ":writeWithoutLock "):
@@ -151,7 +151,7 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		filename := cmd
 		file, err := os.Create(filename)
 		if err != nil {
-			c.mode, c.command = ModeVisual, ""
+			c.mode, c.command = ModeNormal, ""
 			c.writeWithoutLock("error open file " + err.Error())
 			return
 		}
@@ -160,23 +160,23 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		for _, line := range c.e.Render().Text.Iter {
 			_, err = writer.WriteString(string(line) + "\n")
 			if err != nil {
-				c.mode, c.command = ModeVisual, ""
+				c.mode, c.command = ModeNormal, ""
 				c.writeWithoutLock("error writeWithoutLock file " + err.Error())
 				return
 			}
 		}
 		err = writer.Flush()
 		if err != nil {
-			c.mode, c.command = ModeVisual, ""
+			c.mode, c.command = ModeNormal, ""
 			c.writeWithoutLock("error flush file " + err.Error())
 			return
 		}
 
-		c.mode, c.command = ModeVisual, ""
+		c.mode, c.command = ModeNormal, ""
 		c.writeWithoutLock("file written into " + filename)
 		return
 	default:
-		c.mode, c.command = ModeVisual, ""
+		c.mode, c.command = ModeNormal, ""
 		c.writeWithoutLock("unknown command: " + cmd)
 	}
 }
@@ -184,7 +184,7 @@ func (c *commandEditor) applyCommandWithoutLock() {
 func (c *commandEditor) Enter() {
 	c.lock(func() {
 		switch c.mode {
-		case ModeVisual:
+		case ModeNormal:
 			// do nothing
 		case ModeInsert:
 			c.e.Enter()
@@ -199,14 +199,14 @@ func (c *commandEditor) Enter() {
 func (c *commandEditor) Escape() {
 	c.lock(func() {
 		switch c.mode {
-		case ModeVisual:
+		case ModeNormal:
 			// do nothing
 		case ModeInsert:
-			c.mode, c.command = ModeVisual, ""
-			c.writeWithoutLock("enter visual mode")
+			c.mode, c.command = ModeNormal, ""
+			c.writeWithoutLock("enter normal mode")
 		case ModeCommand:
-			c.mode, c.command = ModeVisual, ""
-			c.writeWithoutLock("enter visual mode")
+			c.mode, c.command = ModeNormal, ""
+			c.writeWithoutLock("enter normal mode")
 		default:
 			side_channel.Panic("unknown mode: ", c.mode)
 		}
@@ -216,7 +216,7 @@ func (c *commandEditor) Escape() {
 func (c *commandEditor) Backspace() {
 	c.lock(func() {
 		switch c.mode {
-		case ModeVisual:
+		case ModeNormal:
 			// do nothing
 		case ModeInsert:
 			c.e.Backspace()
@@ -234,7 +234,7 @@ func (c *commandEditor) Backspace() {
 func (c *commandEditor) Delete() {
 	c.lock(func() {
 		switch c.mode {
-		case ModeVisual:
+		case ModeNormal:
 			// do nothing
 		case ModeInsert:
 			c.e.Delete()
@@ -249,7 +249,7 @@ func (c *commandEditor) Delete() {
 func (c *commandEditor) Tabular() {
 	c.lock(func() {
 		switch c.mode {
-		case ModeVisual:
+		case ModeNormal:
 			// do nothing
 		case ModeInsert:
 			c.e.Tabular()
@@ -347,7 +347,7 @@ func NewCommandEditor(cancel func(), e editor.Editor) editor.Editor {
 	c := &commandEditor{
 		cancel:  cancel,
 		mu:      sync.Mutex{},
-		mode:    ModeVisual,
+		mode:    ModeNormal,
 		e:       e,
 		command: "",
 	}
