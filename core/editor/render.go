@@ -24,19 +24,14 @@ func (e *editor) makeView() View {
 	render := func() View {
 		c := e.cursor
 		t := e.text.Get()
-		data := make([][]rune, e.windowInfo.height)
-		for row := 0; row < e.windowInfo.height; row++ {
-			data[row] = getLineForView(t, row+e.windowInfo.tlRow, e.windowInfo.tlCol)
+		data := make([][]rune, e.window.Height)
+		for row := 0; row < e.window.Height; row++ {
+			data[row] = getLineForView(t, row+e.window.TopLeftRow, e.window.TopLeftCol)
 		}
+		e.window.Data = data
 
 		return View{
-			Window: Window{
-				Data: data,
-				Cursor: Cursor{
-					Row: e.cursor.Row - e.windowInfo.tlRow,
-					Col: e.cursor.Col - e.windowInfo.tlCol,
-				},
-			},
+			Window: e.window,
 			Status: e.status,
 			Cursor: c,
 			Text:   t,

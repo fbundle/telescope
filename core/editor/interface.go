@@ -19,21 +19,19 @@ type Status struct {
 	Background string
 }
 
-type Line struct {
-	Data      []rune
-	Highlight bool
-}
-
 type Window struct {
-	Data   [][]rune // TODO change to []Line
-	Cursor Cursor   // relative cursor to window
+	TopLeftRow int
+	TopLeftCol int
+	Height     int
+	Width      int
+	Data       [][]rune
 }
 
 type View struct {
+	Text   text.Text
+	Cursor Cursor
 	Window Window
 	Status Status
-	Cursor Cursor    // absolute cursor
-	Text   text.Text // raw data
 }
 
 type Move interface {

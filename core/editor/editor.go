@@ -14,22 +14,15 @@ import (
 	"time"
 )
 
-type windowInfo struct {
-	tlRow  int
-	tlCol  int
-	height int
-	width  int
-}
-
 type editor struct {
 	renderCh  chan View
 	logWriter log2.Writer
 
-	mu         sync.Mutex // the fields below are protected by mu
-	text       hist.Hist[text2.Text]
-	cursor     Cursor
-	windowInfo windowInfo
-	status     Status
+	mu     sync.Mutex // the fields below are protected by mu
+	text   hist.Hist[text2.Text]
+	cursor Cursor
+	window Window
+	status Status
 }
 
 func NewEditor(
@@ -46,9 +39,9 @@ func NewEditor(
 		cursor: Cursor{
 			Row: 0, Col: 0,
 		},
-		windowInfo: windowInfo{
-			tlRow: 0, tlCol: 0,
-			height: height, width: width,
+		window: Window{
+			TopLeftRow: 0, TopLeftCol: 0,
+			Height: height, Width: width,
 		},
 		status: Status{
 			Header:     "",
@@ -150,10 +143,10 @@ func (e *editor) writeLog(entry log2.Entry) {
 
 func (e *editor) Resize(height int, width int) {
 	e.lockRender(func() {
-		if e.windowInfo.height == height && e.windowInfo.width == width {
+		if e.window.Height == height && e.window.Width == width {
 			return
 		}
-		e.windowInfo.height, e.windowInfo.width = height, width
+		e.window.Height, e.window.Width = height, width
 		e.moveRelativeAndFixWithoutLock(0, 0)
 		e.setMessageWithoutLock("resize to %dx%d", height, width)
 	})
