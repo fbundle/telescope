@@ -55,6 +55,7 @@ func NewEditor(
 			Command:    "",
 			Message:    "",
 			Background: "",
+			Highlight:  nil,
 		},
 	}
 	return e, nil

@@ -17,6 +17,7 @@ type Status struct {
 	Command    string
 	Message    string
 	Background string
+	Highlight  []int
 }
 
 type Window struct {
