@@ -23,7 +23,7 @@ const (
 	ModeNormal  Mode = "NORMAL"
 	ModeCommand Mode = "COMMAND"
 	ModeInsert  Mode = "INSERT"
-	ModeSelect  Mode = "SELECT"
+	// ModeSelect  Mode = "SELECT"
 )
 
 type commandEditor struct {
