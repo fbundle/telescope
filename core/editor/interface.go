@@ -12,22 +12,21 @@ type Cursor struct {
 	Col int
 }
 
-type Highlight struct {
-	Beg int
-	End int
-}
-
 type Status struct {
 	Header     string
 	Command    string
 	Message    string
 	Background string
-	Highlight  Highlight
+}
+
+type Line struct {
+	Data      []rune
+	Highlight bool
 }
 
 type Window struct {
-	Data   [][]rune
-	Cursor Cursor // relative cursor to window
+	Data   [][]rune // TODO change to []Line
+	Cursor Cursor   // relative cursor to window
 }
 
 type View struct {

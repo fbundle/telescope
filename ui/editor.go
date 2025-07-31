@@ -26,17 +26,10 @@ func draw(s tcell.Screen, view editor.View) {
 
 	s.Clear()
 	screenWidth, screenHeight := s.Size()
-	highlightSet := make(map[int]struct{})
-	// get highlight lines
-	for row := view.Status.Highlight.Beg; row < view.Status.Highlight.End; row++ {
-		highlightSet[row] = struct{}{}
-	}
 	// Draw editor content from (0, 0)
 	for row, line := range view.Window.Data {
 		style := textStyle
-		if _, ok := highlightSet[row]; ok {
-			style = highlightStyle
-		}
+		// TODO if line.Highlight -> style = highlightStyle
 		for col, ch := range line {
 			s.SetContent(col, row, ch, nil, style)
 		}

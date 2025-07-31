@@ -26,18 +26,12 @@ const (
 	ModeSelect  Mode = "SELECT"
 )
 
-type selector struct {
-	beg int
-	end int
-}
-
 type commandEditor struct {
-	cancel   func()
-	mu       sync.Mutex
-	mode     Mode
-	e        editor.Editor
-	command  string
-	selected *selector
+	cancel  func()
+	mu      sync.Mutex
+	mode    Mode
+	e       editor.Editor
+	command string
 }
 
 func (c *commandEditor) Update() <-chan editor.View {
@@ -63,10 +57,10 @@ func (c *commandEditor) Type(ch rune) {
 		case ModeNormal:
 			switch ch {
 			case 'i':
-				c.mode, c.command, c.selected = ModeInsert, "", nil
+				c.mode, c.command = ModeInsert, ""
 				c.writeWithoutLock("enter insert mode")
 			case ':':
-				c.mode, c.command, c.selected = ModeCommand, string(ch), nil
+				c.mode, c.command = ModeCommand, string(ch)
 				c.writeWithoutLock("enter command mode")
 
 			default:
@@ -353,12 +347,11 @@ func (c *commandEditor) Status(update func(status editor.Status) editor.Status) 
 
 func NewCommandEditor(cancel func(), e editor.Editor) editor.Editor {
 	c := &commandEditor{
-		cancel:   cancel,
-		mu:       sync.Mutex{},
-		mode:     ModeNormal,
-		e:        e,
-		command:  "",
-		selected: nil,
+		cancel:  cancel,
+		mu:      sync.Mutex{},
+		mode:    ModeNormal,
+		e:       e,
+		command: "",
 	}
 	c.writeWithoutLock("")
 	return c
@@ -373,21 +366,8 @@ func (c *commandEditor) lock(f func()) {
 
 func (c *commandEditor) writeWithoutLock(message string) {
 	c.e.Status(func(status editor.Status) editor.Status {
-		var highlight editor.Highlight
-		if c.selected != nil {
-			beg, end := c.selected.beg, c.selected.end
-			if beg > end {
-				beg, end = end, beg
-			}
-			highlight = editor.Highlight{
-				Beg: beg,
-				End: end + 1,
-			}
-		}
-
 		status.Header = c.mode
 		status.Command = c.command
-		status.Highlight = highlight
 		status.Message = message
 		return status
 	})
