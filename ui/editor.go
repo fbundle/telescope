@@ -18,6 +18,11 @@ func draw(s tcell.Screen, view editor.View) {
 		Background(tcell.ColorLightGray).
 		Foreground(tcell.ColorBlack)
 	textStyle := tcell.StyleDefault
+	highlightStyle := tcell.StyleDefault.
+		Background(tcell.ColorLightGray).
+		Foreground(tcell.ColorBlack)
+
+	_ = highlightStyle
 
 	s.Clear()
 	screenWidth, screenHeight := s.Size()
