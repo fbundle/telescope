@@ -22,20 +22,21 @@ func (e *editor) makeView() View {
 		}
 	}
 	render := func() View {
-		c := e.cursor
-		t := e.text.Get()
-		data := make([][]rune, e.window.Height)
-		for row := 0; row < e.window.Height; row++ {
-			data[row] = getLineForView(t, row+e.window.TopLeftRow, e.window.TopLeftCol)
-		}
-		e.window.Data = data
-
-		return View{
+		view := View{
+			Cursor: e.cursor,
 			Window: e.window,
 			Status: e.status,
-			Cursor: c,
-			Text:   t,
 		}
+
+		t := e.text.Get()
+		data := make([][]rune, e.window.Dimension.Row)
+		for row := 0; row < e.window.Dimension.Row; row++ {
+			data[row] = getLineForView(t, row+e.window.TopLeft.Row, e.window.TopLeft.Col)
+		}
+
+		view.Text = t
+		view.Window.Data = data
+		return view
 
 	}
 	return render()

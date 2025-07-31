@@ -35,8 +35,8 @@ func draw(s tcell.Screen, view editor.View) {
 		}
 	}
 	// Draw cursor from (0, 0)
-	relRow := view.Cursor.Row - view.Window.TopLeftRow
-	relCol := view.Cursor.Col - view.Window.TopLeftCol
+	relRow := view.Cursor.Row - view.Window.TopLeft.Row
+	relCol := view.Cursor.Col - view.Window.TopLeft.Col
 	s.ShowCursor(relCol, relRow)
 
 	// Draw the status bar at the bottom

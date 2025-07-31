@@ -20,11 +20,9 @@ type Status struct {
 }
 
 type Window struct {
-	TopLeftRow int
-	TopLeftCol int
-	Height     int
-	Width      int
-	Data       [][]rune
+	TopLeft   Cursor
+	Dimension Cursor
+	Data      [][]rune
 }
 
 type View struct {

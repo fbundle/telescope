@@ -40,8 +40,8 @@ func NewEditor(
 			Row: 0, Col: 0,
 		},
 		window: Window{
-			TopLeftRow: 0, TopLeftCol: 0,
-			Height: height, Width: width,
+			TopLeft:   Cursor{Row: 0, Col: 0},
+			Dimension: Cursor{Row: height, Col: width},
 		},
 		status: Status{
 			Header:     "",
@@ -143,10 +143,10 @@ func (e *editor) writeLog(entry log.Entry) {
 
 func (e *editor) Resize(height int, width int) {
 	e.lockRender(func() {
-		if e.window.Height == height && e.window.Width == width {
+		if e.window.Dimension.Row == height && e.window.Dimension.Col == width {
 			return
 		}
-		e.window.Height, e.window.Width = height, width
+		e.window.Dimension.Row, e.window.Dimension.Col = height, width
 		e.moveRelativeAndFixWithoutLock(0, 0)
 		e.setMessageWithoutLock("resize to %dx%d", height, width)
 	})

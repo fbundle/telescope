@@ -19,17 +19,17 @@ func (e *editor) moveRelativeAndFixWithoutLock(moveRow int, moveCol int) {
 	}
 
 	// fix window
-	if e.cursor.Row < e.window.TopLeftRow {
-		e.window.TopLeftRow = e.cursor.Row
+	if e.cursor.Row < e.window.TopLeft.Row {
+		e.window.TopLeft.Row = e.cursor.Row
 	}
-	if e.cursor.Row >= e.window.TopLeftRow+e.window.Height {
-		e.window.TopLeftRow = e.cursor.Row - e.window.Height + 1
+	if e.cursor.Row >= e.window.TopLeft.Row+e.window.Dimension.Row {
+		e.window.TopLeft.Row = e.cursor.Row - e.window.Dimension.Row + 1
 	}
-	if e.cursor.Col < e.window.TopLeftCol {
-		e.window.TopLeftCol = e.cursor.Col
+	if e.cursor.Col < e.window.TopLeft.Col {
+		e.window.TopLeft.Col = e.cursor.Col
 	}
-	if e.cursor.Col >= e.window.TopLeftCol+e.window.Width {
-		e.window.TopLeftCol = e.cursor.Col - e.window.Width + 1
+	if e.cursor.Col >= e.window.TopLeft.Col+e.window.Dimension.Col {
+		e.window.TopLeft.Col = e.cursor.Col - e.window.Dimension.Col + 1
 	}
 }
 
@@ -75,13 +75,13 @@ func (e *editor) MoveEnd() {
 }
 func (e *editor) MovePageUp() {
 	e.lockRender(func() {
-		e.moveRelativeAndFixWithoutLock(-e.window.Height, 0)
+		e.moveRelativeAndFixWithoutLock(-e.window.Dimension.Row, 0)
 		e.setMessageWithoutLock("move page up")
 	})
 }
 func (e *editor) MovePageDown() {
 	e.lockRender(func() {
-		e.moveRelativeAndFixWithoutLock(e.window.Height, 0)
+		e.moveRelativeAndFixWithoutLock(e.window.Dimension.Row, 0)
 		e.setMessageWithoutLock("move page down")
 	})
 }
