@@ -7,8 +7,8 @@ import (
 	"sync"
 	"telescope/config"
 	"telescope/core/hist"
-	log2 "telescope/core/log"
-	text2 "telescope/core/text"
+	"telescope/core/log"
+	"telescope/core/text"
 	"telescope/util/bytes"
 	"telescope/util/side_channel"
 	"time"
@@ -16,10 +16,10 @@ import (
 
 type editor struct {
 	renderCh  chan View
-	logWriter log2.Writer
+	logWriter log.Writer
 
 	mu     sync.Mutex // the fields below are protected by mu
-	text   hist.Hist[text2.Text]
+	text   hist.Hist[text.Text]
 	cursor Cursor
 	window Window
 	status Status
@@ -27,7 +27,7 @@ type editor struct {
 
 func NewEditor(
 	height int, width int,
-	logWriter log2.Writer,
+	logWriter log.Writer,
 ) (Editor, error) {
 	e := &editor{
 		// buffered channel is necessary  for preventing deadlock
@@ -61,7 +61,7 @@ func (e *editor) Load(ctx context.Context, reader bytes.Array) (context.Context,
 			err = errors.New("load twice")
 			return
 		}
-		e.text = hist.New(text2.New(reader))
+		e.text = hist.New(text.New(reader))
 		e.status.Background = "loading started"
 		go func() { // load file asynchronously
 			defer loadDone()
@@ -71,9 +71,9 @@ func (e *editor) Load(ctx context.Context, reader bytes.Array) (context.Context,
 
 			t0 := time.Now()
 			l := newLoader(reader.Len())
-			err = text2.LoadFile(ctx, reader, func(line text2.Line) {
+			err = text.LoadFile(ctx, reader, func(line text.Line) {
 				e.lock(func() {
-					e.text.Update(func(t text2.Text) text2.Text {
+					e.text.Update(func(t text.Text) text.Text {
 						return t.Append(line)
 					})
 					if l.add(line.Size()) { // to makeView
@@ -130,7 +130,7 @@ func (e *editor) setMessageWithoutLock(format string, a ...any) {
 	e.status.Message = fmt.Sprintf(format, a...)
 }
 
-func (e *editor) writeLog(entry log2.Entry) {
+func (e *editor) writeLog(entry log.Entry) {
 	if e.logWriter == nil {
 		return
 	}
