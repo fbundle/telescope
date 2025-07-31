@@ -28,7 +28,7 @@ func draw(s tcell.Screen, view editor.View) {
 	screenWidth, screenHeight := s.Size()
 	highlightSet := make(map[int]struct{})
 	// get highlight lines
-	for _, row := range view.Status.Highlight {
+	for row := view.Status.Highlight.Beg; row < view.Status.Highlight.End; row++ {
 		highlightSet[row] = struct{}{}
 	}
 	// Draw editor content from (0, 0)

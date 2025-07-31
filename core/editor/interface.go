@@ -12,12 +12,17 @@ type Cursor struct {
 	Col int
 }
 
+type Highlight struct {
+	Beg int
+	End int
+}
+
 type Status struct {
 	Header     string
 	Command    string
 	Message    string
 	Background string
-	Highlight  []int
+	Highlight  Highlight
 }
 
 type Window struct {

@@ -20,17 +20,19 @@ import (
 type Mode = string
 
 const (
-	ModeInsert  Mode = "INSERT"
-	ModeCommand Mode = "COMMAND"
 	ModeNormal  Mode = "NORMAL"
+	ModeCommand Mode = "COMMAND"
+	ModeInsert  Mode = "INSERT"
+	ModeSelect  Mode = "SELECT"
 )
 
 type commandEditor struct {
-	cancel  func()
-	mu      sync.Mutex
-	mode    Mode
-	e       editor.Editor
-	command string
+	cancel   func()
+	mu       sync.Mutex
+	mode     Mode
+	e        editor.Editor
+	command  string
+	selected editor.Highlight
 }
 
 func (c *commandEditor) Update() <-chan editor.View {
@@ -56,11 +58,16 @@ func (c *commandEditor) Type(ch rune) {
 		case ModeNormal:
 			switch ch {
 			case 'i':
-				c.mode, c.command = ModeInsert, ""
+				c.mode, c.command, c.selected = ModeInsert, "", editor.Highlight{}
 				c.writeWithoutLock("enter insert mode")
 			case ':':
-				c.mode, c.command = ModeCommand, string(ch)
+				c.mode, c.command, c.selected = ModeCommand, string(ch), editor.Highlight{}
 				c.writeWithoutLock("enter command mode")
+			case 'V':
+				row := c.e.Render().Window.Cursor.Row
+				c.mode, c.command, c.selected = ModeSelect, "", editor.Highlight{Beg: row, End: row + 1}
+				c.writeWithoutLock("enter select mode")
+
 			default:
 			}
 		case ModeInsert:
@@ -345,11 +352,12 @@ func (c *commandEditor) Status(update func(status editor.Status) editor.Status) 
 
 func NewCommandEditor(cancel func(), e editor.Editor) editor.Editor {
 	c := &commandEditor{
-		cancel:  cancel,
-		mu:      sync.Mutex{},
-		mode:    ModeNormal,
-		e:       e,
-		command: "",
+		cancel:   cancel,
+		mu:       sync.Mutex{},
+		mode:     ModeNormal,
+		e:        e,
+		command:  "",
+		selected: editor.Highlight{},
 	}
 	c.writeWithoutLock("")
 	return c
@@ -366,6 +374,7 @@ func (c *commandEditor) writeWithoutLock(message string) {
 	c.e.Status(func(status editor.Status) editor.Status {
 		status.Header = c.mode
 		status.Command = c.command
+		status.Highlight = c.selected
 		status.Message = message
 		return status
 	})
