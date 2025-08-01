@@ -7,8 +7,7 @@ type OrderedMap[K constraints.Ordered, V any] interface {
 	Set(K, V) OrderedMap[K, V]
 	Del(K) OrderedMap[K, V]
 	Iter(func(K, V) bool)
-	Weight() int
-	Height() int
+	Len() int
 	Split(K) (OrderedMap[K, V], OrderedMap[K, V])
 	Max() (K, V)
 	Min() (K, V)
@@ -64,12 +63,8 @@ func (o orderedMap[K, V]) Iter(f func(K, V) bool) {
 	})
 }
 
-func (o orderedMap[K, V]) Weight() int {
+func (o orderedMap[K, V]) Len() int {
 	return int(o.comparableMap.Weight())
-}
-
-func (o orderedMap[K, V]) Height() int {
-	return int(o.comparableMap.Height())
 }
 
 func (o orderedMap[K, V]) Split(key K) (OrderedMap[K, V], OrderedMap[K, V]) {
