@@ -4,6 +4,8 @@ const (
 	delta = 3
 )
 
+// implement persistent vector using weight-balanced tree
+
 type node[T any] struct {
 	weight uint
 	height uint

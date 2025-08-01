@@ -8,7 +8,8 @@ type Comparable[T any] interface {
 	Cmp(T) int
 }
 
-// node - implementation of ordered map using weight balance tree
+// implement persistent ordered map using weight balanced tree
+
 type node[T Comparable[T]] struct {
 	weight uint
 	height uint
