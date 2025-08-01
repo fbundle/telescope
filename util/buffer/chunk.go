@@ -17,6 +17,7 @@ if raw >= 0, it is the byte offset in reader
 
 type Chunk[T any] struct {
 	raw int64 // 8 bytes
+	_   *bool
 }
 
 var pool = &sync.Map{} // map[uint64]any

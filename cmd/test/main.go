@@ -6,10 +6,12 @@ import (
 	"runtime"
 	"sync"
 	"sync/atomic"
+	"unsafe"
 )
 
 type Chunk[T any] struct {
 	raw int64 // 8 bytes
+	_   *bool
 }
 
 var pool = &sync.Map{} // map[uint64]any
@@ -32,6 +34,7 @@ func NewChunkFromData[T any](data T, cancel func()) *Chunk[T] {
 func test() context.Context {
 	ctx, cancel := context.WithCancel(context.Background())
 	x := NewChunkFromData[[]byte]([]byte{1, 2, 3}, cancel)
+	fmt.Println("size", unsafe.Sizeof(*x))
 	_ = x
 	return ctx
 }
@@ -39,8 +42,7 @@ func test() context.Context {
 func main() {
 	ctx := test()
 	runtime.GC()
-	runtime.GC()
-	runtime.Gosched()
+
 	fmt.Println("done")
 
 	<-ctx.Done()
