@@ -36,5 +36,5 @@
 
 # TODO
 
-
+- make binary serializer works with delete lines and insert lines
 - add compressed log: compress multiple `type` into a single `type` (`Text []rune` instead of `Rune rune`)
