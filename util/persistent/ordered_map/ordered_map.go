@@ -91,6 +91,7 @@ func (o orderedMap[K, V]) Repr() map[K]V {
 	m := make(map[K]V)
 	o.Iter(func(k K, v V) bool {
 		m[k] = v
+		return true
 	})
 	return m
 }
