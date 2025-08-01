@@ -205,3 +205,29 @@ func (e *editor) Apply(entry log.Entry) {
 		side_channel.Panic("command not found")
 	}
 }
+
+func (e *editor) InsertLine(offset int, lines [][]rune) {
+	e.lockRender(func() {
+		update := func(t text.Text) text.Text {
+			for i := len(lines) - 1; i >= 0; i-- {
+				t.Ins(offset, lines[i])
+			}
+			return t
+		}
+		e.text.Update(update)
+		e.setMessageWithoutLock("insert lines")
+	})
+}
+
+func (e *editor) DeleteLine(offset int, count int) {
+	e.lockRender(func() {
+		update := func(t text.Text) text.Text {
+			for i := 0; i < count; i++ {
+				t.Del(offset)
+			}
+			return t
+		}
+		e.text.Update(update)
+		e.setMessageWithoutLock("delete lines")
+	})
+}
