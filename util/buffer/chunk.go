@@ -25,14 +25,14 @@ var lastKey = int64(0)
 func NewChunkFromData[T any](data T, cancel func()) *Chunk[T] {
 	key := atomic.AddInt64(&lastKey, -1)
 	pool.Store(key, data)
-	line := &Chunk[T]{
+	line := Chunk[T]{
 		raw: key,
 	}
-	runtime.AddCleanup(line, func(key int64) {
+	runtime.AddCleanup(&line, func(key int64) {
 		defer cancel()
 		pool.Delete(key)
 	}, key)
-	return line
+	return &line
 }
 
 func NewChunkFromOffset[T any](offset int64) *Chunk[T] {
