@@ -13,10 +13,9 @@ type Cursor struct {
 }
 
 type Status struct {
-	Header     string
-	Command    string
 	Message    string
 	Background string
+	Other      map[string]any
 }
 
 type Window struct {

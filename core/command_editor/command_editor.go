@@ -366,8 +366,11 @@ func (c *commandEditor) lock(f func()) {
 
 func (c *commandEditor) writeWithoutLock(message string) {
 	c.e.Status(func(status editor.Status) editor.Status {
-		status.Header = c.mode
-		status.Command = c.command
+		if status.Other == nil {
+			status.Other = make(map[string]any)
+		}
+		status.Other["command"] = c.command
+		status.Other["mode"] = c.mode
 		status.Message = message
 		return status
 	})

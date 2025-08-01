@@ -44,10 +44,9 @@ func NewEditor(
 			Dimension: Cursor{Row: height, Col: width},
 		},
 		status: Status{
-			Header:     "",
-			Command:    "",
 			Message:    "",
 			Background: "",
+			Other:      nil,
 		},
 	}
 	return e, nil

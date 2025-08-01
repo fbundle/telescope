@@ -13,6 +13,24 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+func getModeAndCommand(m map[string]any) (string, string) {
+	side_channel.WriteLn(m)
+	if m == nil {
+		return "", ""
+	}
+	mode := ""
+	s, ok := m["mode"]
+	if ok {
+		mode = fmt.Sprintf("%v", s)
+	}
+	command := ""
+	s, ok = m["command"]
+	if ok {
+		command = fmt.Sprintf("%v", s)
+	}
+	return mode, command
+}
+
 func draw(s tcell.Screen, view editor.View) {
 	statusStyle := tcell.StyleDefault.
 		Background(tcell.ColorLightGray).
@@ -43,11 +61,13 @@ func draw(s tcell.Screen, view editor.View) {
 	for col := 0; col < screenWidth; col++ {
 		s.SetContent(col, screenHeight-1, ' ', nil, statusStyle)
 	}
+
+	header, command := getModeAndCommand(view.Status.Other)
 	sep := []rune(" > ")
-	fromLeft := []rune(fmt.Sprintf(" %s (%d, %d)", view.Status.Header, view.Cursor.Col+1, view.Cursor.Row+1))
-	if len(view.Status.Command) > 0 {
+	fromLeft := []rune(fmt.Sprintf(" %s (%d, %d)", header, view.Cursor.Col+1, view.Cursor.Row+1))
+	if len(command) > 0 {
 		fromLeft = append(fromLeft, sep...)
-		fromLeft = append(fromLeft, []rune(view.Status.Command)...)
+		fromLeft = append(fromLeft, []rune(command)...)
 	}
 	if len(view.Status.Message) > 0 {
 		fromLeft = append(fromLeft, sep...)
