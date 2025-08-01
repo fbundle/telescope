@@ -10,14 +10,14 @@ import (
 type Line struct {
 	offset int
 	size   int
-	data   []rune
+	data   *[]rune
 }
 
 func makeLineFromData(data []rune) Line {
 	return Line{
 		offset: -1,
 		size:   -1,
-		data:   data,
+		data:   &data,
 	}
 }
 
@@ -31,7 +31,7 @@ func makeLineFromFile(offset int, size int) Line {
 
 func (l Line) Size() int {
 	if l.offset < 0 {
-		return len(l.data)
+		return len(*l.data)
 	} else {
 		return l.size
 	}
@@ -40,7 +40,7 @@ func (l Line) Size() int {
 func (l Line) Repr(r buffer.Buffer) []rune {
 	if l.offset < 0 {
 		// in-memory
-		return l.data
+		return *l.data
 	} else {
 		// from file
 		buf := make([]byte, l.size)
