@@ -48,7 +48,7 @@ func (t *text) Append(line Line) Text {
 }
 
 func (t *text) Get(i int) []rune {
-	return t.vec.Get(i).repr(t.reader)
+	return t.vec.Get(i).Repr(t.reader)
 }
 
 func (t *text) Set(i int, val []rune) Text {
@@ -74,7 +74,7 @@ func (t *text) Del(i int) Text {
 
 func (t *text) Iter(f func(i int, val []rune) bool) {
 	t.vec.Iter(func(i int, l Line) bool {
-		return f(i, l.repr(t.reader))
+		return f(i, l.Repr(t.reader))
 	})
 }
 

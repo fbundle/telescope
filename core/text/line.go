@@ -37,7 +37,7 @@ func (l Line) Size() int {
 	}
 }
 
-func (l Line) repr(r bytes.Array) []rune {
+func (l Line) Repr(r bytes.Array) []rune {
 	if l.offset < 0 {
 		// in-memory
 		return l.data
