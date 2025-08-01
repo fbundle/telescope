@@ -32,7 +32,7 @@
 - added regexp search
 - refactor - VISUAL/COMMAND/INSERT is now default
 - rename VISUAL -> NORMAL
-- add using `V`, `d`, `y`, `p` to select, copy, cut, paste lines. probably need another mode `SELECT` and edit view to support arbitrary highlighting
+- added clipboard and selector, now has 4 modes: NORMAL COMMAND VISUAL INSERT
 
 # TODO
 
