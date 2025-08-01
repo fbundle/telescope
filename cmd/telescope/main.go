@@ -18,7 +18,7 @@ func printHelp() {
 }
 
 func printVersion() {
-	fmt.Println(config.Load().VERSION)
+	fmt.Printf("telescope version %s\n", config.Load().VERSION)
 }
 
 type programArgs struct {
