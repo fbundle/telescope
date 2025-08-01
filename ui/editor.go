@@ -73,7 +73,6 @@ func draw(s tcell.Screen, view editor.View) {
 				style = highlightStyle
 			}
 		}
-		// TODO if line.Highlight -> style = highlightStyle
 		for col, ch := range line {
 			s.SetContent(col, row, ch, nil, style)
 		}

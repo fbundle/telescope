@@ -23,6 +23,7 @@ const (
 	ModeNormal  Mode = "NORMAL"
 	ModeCommand Mode = "COMMAND"
 	ModeInsert  Mode = "INSERT"
+	ModeSelect  Mode = "SELECT"
 )
 
 type Selector struct {
@@ -30,10 +31,13 @@ type Selector struct {
 	End int
 }
 
+type clipboard [][]rune
+
 type state struct {
-	mode     Mode
-	command  string
-	selector *Selector
+	mode      Mode
+	command   string
+	selector  *Selector
+	clipboard clipboard
 }
 
 type commandEditor struct {
@@ -57,6 +61,14 @@ func (c *commandEditor) enterCommandModeWithoutLock(command string) {
 	c.state.mode = ModeCommand
 	c.state.command = command
 	c.state.selector = nil
+}
+func (c *commandEditor) enterSelectModeWithoutLock(beg int) {
+	c.state.mode = ModeSelect
+	c.state.command = ""
+	c.state.selector = &Selector{
+		Beg: beg,
+		End: beg,
+	}
 }
 
 func (c *commandEditor) Update() <-chan editor.View {
@@ -87,6 +99,18 @@ func (c *commandEditor) Type(ch rune) {
 			case ':':
 				c.enterCommandModeWithoutLock(":")
 				c.writeWithoutLock("enter command mode")
+			case 'V': // start selecting
+				row := c.e.Render().Cursor.Row
+				c.enterSelectModeWithoutLock(row)
+				c.writeWithoutLock("enter select mode")
+			case 'p': // paste
+				if c.state.clipboard == nil {
+					c.writeWithoutLock("clipboard is empty")
+					return
+				}
+				row := c.e.Render().Cursor.Row
+				c.e.InsertLine(row, c.state.clipboard)
+				c.writeWithoutLock("pasted")
 			default:
 			}
 		case ModeInsert:
@@ -94,6 +118,40 @@ func (c *commandEditor) Type(ch rune) {
 		case ModeCommand:
 			c.state.command += string(ch)
 			c.writeWithoutLock("")
+		case ModeSelect:
+			switch ch {
+			case 'd': // cut
+				beg, end := c.state.selector.Beg, c.state.selector.End
+				if beg > end {
+					beg, end = end, beg
+				}
+				t := c.e.Render().Text
+				clip := make([][]rune, 0)
+				for i := beg; i <= end; i++ {
+					clip = append(clip, t.Get(i))
+				}
+				c.state.clipboard = clip
+				// delete
+				c.e.DeleteLine(beg, len(c.state.clipboard))
+				c.e.Goto(beg, 0)
+
+				c.enterNormalModeWithoutLock()
+				c.writeWithoutLock("cut")
+
+			case 'y': //copy
+				beg, end := c.state.selector.Beg, c.state.selector.End
+				if beg > end {
+					beg, end = end, beg
+				}
+				t := c.e.Render().Text
+				clip := make([][]rune, 0)
+				for i := beg; i <= end; i++ {
+					clip = append(clip, t.Get(i))
+				}
+				c.state.clipboard = clip
+				c.enterNormalModeWithoutLock()
+				c.writeWithoutLock("copied")
+			}
 		default:
 			side_channel.Panic("unknown mode: ", c.state)
 		}
@@ -215,6 +273,8 @@ func (c *commandEditor) Enter() {
 			c.e.Enter()
 		case ModeCommand:
 			c.applyCommandWithoutLock()
+		case ModeSelect:
+			// do nothing
 		default:
 			side_channel.Panic("unknown mode: ", c.state)
 		}
@@ -223,18 +283,8 @@ func (c *commandEditor) Enter() {
 
 func (c *commandEditor) Escape() {
 	c.lock(func() {
-		switch c.state.mode {
-		case ModeNormal:
-			// do nothing
-		case ModeInsert:
-			c.enterNormalModeWithoutLock()
-			c.writeWithoutLock("enter normal mode")
-		case ModeCommand:
-			c.enterNormalModeWithoutLock()
-			c.writeWithoutLock("enter normal mode")
-		default:
-			side_channel.Panic("unknown mode: ", c.state)
-		}
+		c.enterNormalModeWithoutLock()
+		c.writeWithoutLock("enter normal mode")
 	})
 }
 
@@ -250,6 +300,8 @@ func (c *commandEditor) Backspace() {
 				c.state.command = c.state.command[:len(c.state.command)-1]
 			}
 			c.writeWithoutLock("")
+		case ModeSelect:
+			// do nothing
 		default:
 			side_channel.Panic("unknown mode: ", c.state)
 		}
@@ -264,6 +316,8 @@ func (c *commandEditor) Delete() {
 		case ModeInsert:
 			c.e.Delete()
 		case ModeCommand:
+		// do nothing
+		case ModeSelect:
 			// do nothing
 		default:
 			side_channel.Panic("unknown mode: ", c.state)
@@ -279,6 +333,8 @@ func (c *commandEditor) Tabular() {
 		case ModeInsert:
 			c.e.Tabular()
 		case ModeCommand:
+		// do nothing
+		case ModeSelect:
 			// do nothing
 		default:
 			side_channel.Panic("unknown mode: ", c.state)
@@ -307,12 +363,22 @@ func (c *commandEditor) MoveRight() {
 func (c *commandEditor) MoveUp() {
 	c.lock(func() {
 		c.e.MoveUp()
+		if c.state.mode == ModeSelect {
+			row := c.e.Render().Cursor.Row
+			c.state.selector.End = row
+			c.writeWithoutLock("select more")
+		}
 	})
 }
 
 func (c *commandEditor) MoveDown() {
 	c.lock(func() {
 		c.e.MoveDown()
+		if c.state.mode == ModeSelect {
+			row := c.e.Render().Cursor.Row
+			c.state.selector.End = row
+			c.writeWithoutLock("select more")
+		}
 	})
 }
 
@@ -331,6 +397,11 @@ func (c *commandEditor) MoveEnd() {
 func (c *commandEditor) MovePageUp() {
 	c.lock(func() {
 		c.e.MovePageUp()
+		if c.state.mode == ModeSelect {
+			row := c.e.Render().Cursor.Row
+			c.state.selector.End = row
+			c.writeWithoutLock("select more")
+		}
 	})
 }
 
@@ -365,6 +436,17 @@ func (c *commandEditor) Render() editor.View {
 func (c *commandEditor) Status(update func(status editor.Status) editor.Status) {
 	c.lock(func() {
 		c.e.Status(update)
+	})
+}
+func (c *commandEditor) InsertLine(offset int, lines [][]rune) {
+	c.lock(func() {
+		c.e.InsertLine(offset, lines)
+	})
+}
+
+func (c *commandEditor) DeleteLine(offset int, count int) {
+	c.lock(func() {
+		c.e.DeleteLine(offset, count)
 	})
 }
 

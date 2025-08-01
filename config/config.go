@@ -25,10 +25,11 @@ type Config struct {
 func Load() Config {
 	// TODO - export these into environment variables
 	return Config{
-		DEBUG_IO_DELAY:             100 * time.Millisecond,
-		LOG_AUTOFLUSH_INTERVAL:     60 * time.Second,
-		LOADING_PROGRESS_INTERVAL:  100 * time.Millisecond,
-		SERIALIZER_VERSION:         BINARY_SERIALIZER,
+		DEBUG_IO_DELAY:            100 * time.Millisecond,
+		LOG_AUTOFLUSH_INTERVAL:    60 * time.Second,
+		LOADING_PROGRESS_INTERVAL: 100 * time.Millisecond,
+		// SERIALIZER_VERSION:         BINARY_SERIALIZER,
+		SERIALIZER_VERSION:         HUMAN_READABLE_SERIALIZER, // TODO - update serializer and enable binary version
 		INITIAL_SERIALIZER_VERSION: HUMAN_READABLE_SERIALIZER,
 		MAXSIZE_HISTORY:            1024,
 		VIEW_CHANNEL_SIZE:          64,
