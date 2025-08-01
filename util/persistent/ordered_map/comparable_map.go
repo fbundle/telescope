@@ -1,19 +1,19 @@
 package ordered_map
 
-type ComparableMap[T Comparable[T]] interface {
+type Map[T Comparable[T]] interface {
 	Get(T) (Comparable[T], bool)
-	Set(T) ComparableMap[T]
-	Del(T) ComparableMap[T]
+	Set(T) Map[T]
+	Del(T) Map[T]
 	Iter(func(T) bool)
 	Weight() uint
 	Height() uint
-	Split(T) (ComparableMap[T], ComparableMap[T])
+	Split(T) (Map[T], Map[T])
 	Max() Comparable[T]
 	Min() Comparable[T]
 	Repr() []Comparable[T]
 }
 
-func NewComparableMap[T Comparable[T]]() ComparableMap[T] {
+func NewMap[T Comparable[T]]() Map[T] {
 	return comparableMap[T]{
 		node: nil,
 	}
@@ -28,13 +28,13 @@ func (o comparableMap[T]) Get(entryIn T) (Comparable[T], bool) {
 	return entryOut, ok
 }
 
-func (o comparableMap[T]) Set(entryIn T) ComparableMap[T] {
+func (o comparableMap[T]) Set(entryIn T) Map[T] {
 	return comparableMap[T]{
 		node: set(o.node, entryIn),
 	}
 }
 
-func (o comparableMap[T]) Del(entryIn T) ComparableMap[T] {
+func (o comparableMap[T]) Del(entryIn T) Map[T] {
 	return comparableMap[T]{
 		node: del(o.node, entryIn),
 	}
@@ -52,7 +52,7 @@ func (o comparableMap[T]) Height() uint {
 	return height(o.node)
 }
 
-func (o comparableMap[T]) Split(entryIn T) (ComparableMap[T], ComparableMap[T]) {
+func (o comparableMap[T]) Split(entryIn T) (Map[T], Map[T]) {
 	n1, n2 := split(o.node, entryIn)
 	return comparableMap[T]{node: n1}, comparableMap[T]{node: n2}
 }

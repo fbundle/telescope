@@ -17,7 +17,7 @@ type OrderedMap[K constraints.Ordered, V any] interface {
 
 func NewOrderedMap[K constraints.Ordered, V any]() OrderedMap[K, V] {
 	return orderedMap[K, V]{
-		comparableMap: NewComparableMap[entry[K, V]](),
+		comparableMap: NewMap[entry[K, V]](),
 	}
 }
 
@@ -38,7 +38,7 @@ func (e entry[K, V]) Cmp(o entry[K, V]) int {
 }
 
 type orderedMap[K constraints.Ordered, V any] struct {
-	comparableMap ComparableMap[entry[K, V]]
+	comparableMap Map[entry[K, V]]
 }
 
 func (o orderedMap[K, V]) Get(key K) (V, bool) {
