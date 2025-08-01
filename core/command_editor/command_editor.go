@@ -408,6 +408,11 @@ func (c *commandEditor) MovePageUp() {
 func (c *commandEditor) MovePageDown() {
 	c.lock(func() {
 		c.e.MovePageDown()
+		if c.state.mode == ModeSelect {
+			row := c.e.Render().Cursor.Row
+			c.state.selector.End = row
+			c.writeWithoutLock("select more")
+		}
 	})
 }
 
