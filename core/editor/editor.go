@@ -75,7 +75,7 @@ func (e *editor) Load(ctx context.Context, reader buffer.Buffer) (context.Contex
 					e.text.Update(func(t text.Text) text.Text {
 						return t.Append(line)
 					})
-					if l.add(line.Size()) { // to makeView
+					if l.add(line.Size(e.text.Get())) { // to makeView
 						e.status.Background = fmt.Sprintf(
 							"loading %d/%d (%d%%)",
 							l.loadedSize, l.totalSize, l.lastRenderPercentage,

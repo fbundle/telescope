@@ -30,6 +30,14 @@ func endOfLineSize(line []byte) int {
 	// linux/macos line ends with \n
 	return 1
 }
+func LoadFile(ctx context.Context, reader buffer.Buffer, update func(Line)) error {
+	return indexFile(ctx, reader, '\n', func(offset int, line []byte) {
+		line = padNewLine(line)
+		size := len(line) - endOfLineSize(line)
+		l := makeLineFromFile(offset, size)
+		update(l)
+	})
+}
 
 func indexFile(ctx context.Context, reader buffer.Buffer, delim byte, update func(offset int, line []byte)) error {
 	var offset int = 0

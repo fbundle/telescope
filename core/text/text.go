@@ -1,7 +1,6 @@
 package text
 
 import (
-	"context"
 	"telescope/util/buffer"
 	"telescope/util/persistent/vector"
 	"telescope/util/side_channel"
@@ -26,15 +25,6 @@ func New(reader buffer.Buffer) Text {
 	}
 }
 
-func LoadFile(ctx context.Context, reader buffer.Buffer, update func(Line)) error {
-	return indexFile(ctx, reader, '\n', func(offset int, line []byte) {
-		line = padNewLine(line)
-		size := len(line) - endOfLineSize(line)
-		l := makeLineFromFile(offset, size)
-		update(l)
-	})
-}
-
 type text struct {
 	reader buffer.Buffer
 	vec    vector.Vector[Line]
@@ -48,7 +38,7 @@ func (t *text) Append(line Line) Text {
 }
 
 func (t *text) Get(i int) []rune {
-	return t.vec.Get(i).Repr(t.reader)
+	return t.vec.Get(i).repr(t)
 }
 
 func (t *text) Set(i int, val []rune) Text {
@@ -74,7 +64,7 @@ func (t *text) Del(i int) Text {
 
 func (t *text) Iter(f func(i int, val []rune) bool) {
 	t.vec.Iter(func(i int, l Line) bool {
-		return f(i, l.Repr(t.reader))
+		return f(i, l.repr(t))
 	})
 }
 

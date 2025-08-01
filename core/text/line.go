@@ -1,22 +1,14 @@
 package text
 
-import (
-	"io"
-	"telescope/util/buffer"
-	"telescope/util/side_channel"
-)
-
 // Line - if offset >= 0, this is a file else this is a []rune buffer
 type Line struct {
 	offset int64   // 8 bytes
-	size   int64   // 8 bytes
 	data   *[]rune // 8 bytes on 64-bit system
 }
 
 func makeLineFromData(data []rune) Line {
 	return Line{
 		offset: -1,
-		size:   -1,
 		data:   &data,
 	}
 }
@@ -24,30 +16,29 @@ func makeLineFromData(data []rune) Line {
 func makeLineFromFile(offset int, size int) Line {
 	return Line{
 		offset: int64(offset),
-		size:   int64(size),
 		data:   nil,
 	}
 }
 
-func (l Line) Size() int {
-	if l.offset < 0 {
-		return len(*l.data)
-	} else {
-		return int(l.size)
-	}
+func (l Line) Size(t Text) int {
+	return len(l.repr(t))
 }
 
-func (l Line) Repr(r buffer.Buffer) []rune {
+func (l Line) repr(t Text) []rune {
+	reader := t.(*text).reader
+
 	if l.offset < 0 {
 		// in-memory
 		return *l.data
 	} else {
 		// from file
-		buf := make([]byte, l.size)
-		_, err := r.ReadAt(buf, int64(l.offset))
-		if err != nil && err != io.EOF {
-			side_channel.Panic(err)
-			return nil
+		buf := make([]byte, 0)
+		for i := int(l.offset); i < reader.Len(); i++ {
+			b := reader.At(i)
+			if b == '\n' {
+				break
+			}
+			buf = append(buf, b)
 		}
 		return []rune(string(buf))
 	}
