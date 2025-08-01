@@ -16,7 +16,9 @@ type OrderedMap[K constraints.Ordered, V any] interface {
 }
 
 func NewOrderedMap[K constraints.Ordered, V any]() OrderedMap[K, V] {
-	return &orderedMap[K, V]{node: nil}
+	return orderedMap[K, V]{
+		comparableMap: NewComparableMap[entry[K, V]](),
+	}
 }
 
 type entry[K constraints.Ordered, V any] struct {
@@ -36,54 +38,59 @@ func (e entry[K, V]) Cmp(o entry[K, V]) int {
 }
 
 type orderedMap[K constraints.Ordered, V any] struct {
-	node *node[entry[K, V]]
+	comparableMap ComparableMap[entry[K, V]]
 }
 
-func (o *orderedMap[K, V]) Get(k K) (V, bool) {
-	e, ok := get(o.node, entry[K, V]{key: k})
-	return e.val, ok
+func (o orderedMap[K, V]) Get(key K) (V, bool) {
+	entryOut, ok := o.comparableMap.Get(entry[K, V]{key: key})
+	return entryOut.(entry[K, V]).val, ok
 }
 
-func (o *orderedMap[K, V]) Set(key K, val V) OrderedMap[K, V] {
-	return &orderedMap[K, V]{node: set(o.node, entry[K, V]{key: key, val: val})}
+func (o orderedMap[K, V]) Set(key K, val V) OrderedMap[K, V] {
+	return orderedMap[K, V]{
+		comparableMap: o.comparableMap.Set(entry[K, V]{key: key, val: val}),
+	}
 }
 
-func (o *orderedMap[K, V]) Del(key K) OrderedMap[K, V] {
-	return &orderedMap[K, V]{node: del(o.node, entry[K, V]{key: key})}
+func (o orderedMap[K, V]) Del(key K) OrderedMap[K, V] {
+	return orderedMap[K, V]{
+		comparableMap: o.comparableMap.Del(entry[K, V]{key: key}),
+	}
 }
 
-func (o *orderedMap[K, V]) Iter(f func(K, V) bool) {
-	iter(o.node, func(e entry[K, V]) bool {
-		return f(e.key, e.val)
+func (o orderedMap[K, V]) Iter(f func(K, V) bool) {
+	o.comparableMap.Iter(func(entryOut entry[K, V]) bool {
+		return f(entryOut.key, entryOut.val)
 	})
 }
 
-func (o *orderedMap[K, V]) Weight() int {
-	return int(weight(o.node))
+func (o orderedMap[K, V]) Weight() int {
+	return int(o.comparableMap.Weight())
 }
 
-func (o *orderedMap[K, V]) Height() int {
-	return int(height(o.node))
-}
-func (o *orderedMap[K, V]) Split(k K) (OrderedMap[K, V], OrderedMap[K, V]) {
-	l, r := split(o.node, entry[K, V]{key: k})
-	return &orderedMap[K, V]{node: l}, &orderedMap[K, V]{node: r}
+func (o orderedMap[K, V]) Height() int {
+	return int(o.comparableMap.Height())
 }
 
-func (o *orderedMap[K, V]) Max() (K, V) {
-	e := getMaxEntry(o.node)
-	return e.key, e.val
-}
-func (o *orderedMap[K, V]) Min() (K, V) {
-	e := getMinEntry(o.node)
-	return e.key, e.val
+func (o orderedMap[K, V]) Split(key K) (OrderedMap[K, V], OrderedMap[K, V]) {
+	m1, m2 := o.comparableMap.Split(entry[K, V]{key: key})
+	return orderedMap[K, V]{comparableMap: m1}, orderedMap[K, V]{comparableMap: m2}
 }
 
-func (o *orderedMap[K, V]) Repr() map[K]V {
+func (o orderedMap[K, V]) Max() (K, V) {
+	entryOut := o.comparableMap.Max().(entry[K, V])
+	return entryOut.key, entryOut.val
+}
+
+func (o orderedMap[K, V]) Min() (K, V) {
+	entryOut := o.comparableMap.Min().(entry[K, V])
+	return entryOut.key, entryOut.val
+}
+
+func (o orderedMap[K, V]) Repr() map[K]V {
 	m := make(map[K]V)
 	o.Iter(func(k K, v V) bool {
 		m[k] = v
-		return true
 	})
 	return m
 }

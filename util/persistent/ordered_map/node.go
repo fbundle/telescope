@@ -56,15 +56,19 @@ func get[T Comparable[T]](n *node[T], entryIn T) (entryOut T, ok bool) {
 	}
 }
 
-func iter[T Comparable[T]](n *node[T], f func(k T) bool) {
+func iter[T Comparable[T]](n *node[T], f func(entryOut T) bool) bool {
 	if n == nil {
-		return
+		return true // continue
 	}
-	iter(n.left, f)
-	if !f(n.entry) {
-		return
+	ok := iter(n.left, f)
+	if !ok {
+		return false
 	}
-	iter(n.right, f)
+	ok = f(n.entry)
+	if !ok {
+		return false
+	}
+	return iter(n.right, f)
 }
 
 func balance[T Comparable[T]](n *node[T]) *node[T] {
