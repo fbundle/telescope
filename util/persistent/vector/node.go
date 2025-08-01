@@ -4,7 +4,7 @@ const (
 	delta = 3
 )
 
-// implement persistent WBT using weight-balanced tree
+// implement persistent vector using weight-balanced tree
 
 type node[T any] struct {
 	weight uint
