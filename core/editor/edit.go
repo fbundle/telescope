@@ -11,10 +11,10 @@ import (
 func (e *editor) Type(ch rune) {
 	e.lockRender(func() {
 		e.writeLog(log.Entry{
-			Command:   log.CommandType,
-			Rune:      ch,
-			CursorRow: uint64(e.cursor.Row),
-			CursorCol: uint64(e.cursor.Col),
+			Command: log.CommandType,
+			Rune:    ch,
+			Row:     uint64(e.cursor.Row),
+			Col:     uint64(e.cursor.Col),
 		})
 
 		updateText := func(t text.Text) text.Text {
@@ -40,9 +40,9 @@ func (e *editor) Type(ch rune) {
 func (e *editor) Backspace() {
 	e.lockRender(func() {
 		e.writeLog(log.Entry{
-			Command:   log.CommandBackspace,
-			CursorRow: uint64(e.cursor.Row),
-			CursorCol: uint64(e.cursor.Col),
+			Command: log.CommandBackspace,
+			Row:     uint64(e.cursor.Row),
+			Col:     uint64(e.cursor.Col),
 		})
 
 		moveRow, moveCol := 0, 0
@@ -82,9 +82,9 @@ func (e *editor) Backspace() {
 func (e *editor) Delete() {
 	e.lockRender(func() {
 		e.writeLog(log.Entry{
-			Command:   log.CommandDelete,
-			CursorRow: uint64(e.cursor.Row),
-			CursorCol: uint64(e.cursor.Col),
+			Command: log.CommandDelete,
+			Row:     uint64(e.cursor.Row),
+			Col:     uint64(e.cursor.Col),
 		})
 
 		updateText := func(t text.Text) text.Text {
@@ -119,9 +119,9 @@ func (e *editor) Delete() {
 func (e *editor) Enter() {
 	e.lockRender(func() {
 		e.writeLog(log.Entry{
-			Command:   log.CommandEnter,
-			CursorRow: uint64(e.cursor.Row),
-			CursorCol: uint64(e.cursor.Col),
+			Command: log.CommandEnter,
+			Row:     uint64(e.cursor.Row),
+			Col:     uint64(e.cursor.Col),
 		})
 
 		updateText := func(t text.Text) text.Text {
@@ -186,16 +186,16 @@ func (e *editor) Redo() {
 func (e *editor) Apply(entry log.Entry) {
 	switch entry.Command {
 	case log.CommandEnter:
-		e.Goto(int(entry.CursorRow), int(entry.CursorCol))
+		e.Goto(int(entry.Row), int(entry.Col))
 		e.Enter()
 	case log.CommandBackspace:
-		e.Goto(int(entry.CursorRow), int(entry.CursorCol))
+		e.Goto(int(entry.Row), int(entry.Col))
 		e.Backspace()
 	case log.CommandDelete:
-		e.Goto(int(entry.CursorRow), int(entry.CursorCol))
+		e.Goto(int(entry.Row), int(entry.Col))
 		e.Delete()
 	case log.CommandType:
-		e.Goto(int(entry.CursorRow), int(entry.CursorCol))
+		e.Goto(int(entry.Row), int(entry.Col))
 		e.Type(entry.Rune)
 	case log.CommandUndo:
 		e.Undo()
@@ -208,6 +208,10 @@ func (e *editor) Apply(entry log.Entry) {
 
 func (e *editor) InsertLine(offset int, lines [][]rune) {
 	e.lockRender(func() {
+		e.writeLog(log.Entry{
+			Command: log.CommandInsertLine,
+			Text:    lines,
+		})
 		update := func(t text.Text) text.Text {
 			for i := len(lines) - 1; i >= 0; i-- {
 				t = t.Ins(offset, lines[i])
@@ -221,6 +225,11 @@ func (e *editor) InsertLine(offset int, lines [][]rune) {
 
 func (e *editor) DeleteLine(offset int, count int) {
 	e.lockRender(func() {
+		e.writeLog(log.Entry{
+			Command: log.CommandDeleteLine,
+			Row:     uint64(offset),
+			Count:   uint64(count),
+		})
 		update := func(t text.Text) text.Text {
 			for i := 0; i < count; i++ {
 				t = t.Del(offset)

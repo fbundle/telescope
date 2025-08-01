@@ -86,13 +86,13 @@ func (binarySerializer) Marshal(e Entry) ([]byte, error) {
 		buffer = append(buffer, uint64ToBytes(e.Version)...)
 		return buffer, nil
 	case CommandType:
-		buffer = append(buffer, uint64ToBytes(e.CursorRow)...)
-		buffer = append(buffer, uint64ToBytes(e.CursorCol)...)
+		buffer = append(buffer, uint64ToBytes(e.Row)...)
+		buffer = append(buffer, uint64ToBytes(e.Col)...)
 		buffer = append(buffer, runeToBytes(e.Rune)...)
 		return buffer, nil
 	case CommandEnter, CommandBackspace, CommandDelete:
-		buffer = append(buffer, uint64ToBytes(e.CursorRow)...)
-		buffer = append(buffer, uint64ToBytes(e.CursorCol)...)
+		buffer = append(buffer, uint64ToBytes(e.Row)...)
+		buffer = append(buffer, uint64ToBytes(e.Col)...)
 		return buffer, nil
 	case CommandUndo, CommandRedo:
 		return buffer, nil
@@ -111,17 +111,17 @@ func (binarySerializer) Unmarshal(buffer []byte) (e Entry, err error) {
 		return e, nil
 	case CommandType:
 		buffer, b = consume(buffer, 8)
-		e.CursorRow = bytesToUint64(b)
+		e.Row = bytesToUint64(b)
 		buffer, b = consume(buffer, 8)
-		e.CursorCol = bytesToUint64(b)
+		e.Col = bytesToUint64(b)
 		buffer, b = consume(buffer, 4)
 		e.Rune = bytesToRune(b)
 		return e, nil
 	case CommandEnter, CommandBackspace, CommandDelete:
 		buffer, b = consume(buffer, 8)
-		e.CursorRow = bytesToUint64(b)
+		e.Row = bytesToUint64(b)
 		buffer, b = consume(buffer, 8)
-		e.CursorCol = bytesToUint64(b)
+		e.Col = bytesToUint64(b)
 		return e, nil
 	case CommandUndo, CommandRedo:
 		return e, nil
