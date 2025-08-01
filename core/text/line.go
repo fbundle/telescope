@@ -13,15 +13,11 @@ func makeLineFromData(data []rune) Line {
 	}
 }
 
-func makeLineFromFile(offset int, size int) Line {
+func makeLineFromFile(offset int) Line {
 	return Line{
 		offset: int64(offset),
 		data:   nil,
 	}
-}
-
-func (l Line) Size(t Text) int {
-	return len(l.repr(t))
 }
 
 func (l Line) repr(t Text) []rune {

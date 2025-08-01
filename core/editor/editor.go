@@ -70,12 +70,12 @@ func (e *editor) Load(ctx context.Context, reader buffer.Buffer) (context.Contex
 
 			t0 := time.Now()
 			l := newLoader(reader.Len())
-			err = text.LoadFile(ctx, reader, func(line text.Line) {
+			err = text.LoadFile(ctx, reader, func(line text.Line, size int) {
 				e.lock(func() {
 					e.text.Update(func(t text.Text) text.Text {
 						return t.Append(line)
 					})
-					if l.add(line.Size(e.text.Get())) { // to makeView
+					if l.add(size) { // to makeView
 						e.status.Background = fmt.Sprintf(
 							"loading %d/%d (%d%%)",
 							l.loadedSize, l.totalSize, l.lastRenderPercentage,

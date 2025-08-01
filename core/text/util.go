@@ -3,10 +3,8 @@ package text
 import (
 	"context"
 	"slices"
-	"telescope/config"
 	"telescope/util/buffer"
 	"telescope/util/side_channel"
-	"time"
 )
 
 func padNewLine(line []byte) []byte {
@@ -30,17 +28,17 @@ func endOfLineSize(line []byte) int {
 	// linux/macos line ends with \n
 	return 1
 }
-func LoadFile(ctx context.Context, reader buffer.Buffer, update func(Line)) error {
+func LoadFile(ctx context.Context, reader buffer.Buffer, update func(Line, int)) error {
 	return indexFile(ctx, reader, '\n', func(offset int, line []byte) {
-		line = padNewLine(line)
-		size := len(line) - endOfLineSize(line)
-		l := makeLineFromFile(offset, size)
-		update(l)
+		l := makeLineFromFile(offset)
+		update(l, len(line))
 	})
 }
 
 func indexFile(ctx context.Context, reader buffer.Buffer, delim byte, update func(offset int, line []byte)) error {
 	var offset int = 0
+
+	var line []byte
 
 	for i := 0; i < reader.Len(); i++ {
 		select {
@@ -49,25 +47,15 @@ func indexFile(ctx context.Context, reader buffer.Buffer, delim byte, update fun
 		default:
 		}
 
-		if reader.At(i) == delim {
-			line := make([]byte, i+1-offset)
-			_, _ = reader.ReadAt(line, int64(offset))
-			if config.Debug() {
-				time.Sleep(config.Load().DEBUG_IO_DELAY)
-			}
-			update(offset, line)
-			offset += len(line)
+		b := reader.At(i)
+		if b != delim {
+			line = append(line, b)
+			continue
 		}
+		update(offset, line)
+		offset, line = offset+len(line)+1, nil
 	}
-	if offset < reader.Len() { // file doesn't end with trailing new line
-		line := make([]byte, reader.Len()-offset)
-		_, err := reader.ReadAt(line, int64(offset))
-		if err != nil {
-			return err
-		}
-		if config.Debug() {
-			time.Sleep(config.Load().DEBUG_IO_DELAY)
-		}
+	if len(line) > 0 {
 		update(offset, line)
 	}
 	return nil
