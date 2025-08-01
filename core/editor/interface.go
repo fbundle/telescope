@@ -7,7 +7,7 @@ import (
 	"telescope/util/bytes"
 )
 
-type Cursor struct {
+type Position struct {
 	Row int
 	Col int
 }
@@ -19,14 +19,14 @@ type Status struct {
 }
 
 type Window struct {
-	TopLeft   Cursor
-	Dimension Cursor
+	TopLeft   Position
+	Dimension Position
 	Data      [][]rune
 }
 
 type View struct {
 	Text   text.Text
-	Cursor Cursor
+	Cursor Position
 	Window Window
 	Status Status
 }

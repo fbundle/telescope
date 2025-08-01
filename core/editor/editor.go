@@ -20,7 +20,7 @@ type editor struct {
 
 	mu     sync.Mutex // the fields below are protected by mu
 	text   hist.Hist[text.Text]
-	cursor Cursor
+	cursor Position
 	window Window
 	status Status
 }
@@ -36,12 +36,12 @@ func NewEditor(
 
 		mu:   sync.Mutex{},
 		text: nil,
-		cursor: Cursor{
+		cursor: Position{
 			Row: 0, Col: 0,
 		},
 		window: Window{
-			TopLeft:   Cursor{Row: 0, Col: 0},
-			Dimension: Cursor{Row: height, Col: width},
+			TopLeft:   Position{Row: 0, Col: 0},
+			Dimension: Position{Row: height, Col: width},
 		},
 		status: Status{
 			Message:    "",
