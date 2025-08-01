@@ -7,6 +7,8 @@ import (
 	"telescope/util/side_channel"
 )
 
+// TODO - experimental for core.text.Line
+
 /*
 Chunk contains a single int64
 if raw < 0, it is the key to a value of type T in pool
