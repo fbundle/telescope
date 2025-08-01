@@ -12,7 +12,7 @@ import (
 	"telescope/config"
 	"telescope/core/editor"
 	"telescope/core/log"
-	"telescope/util/bytes"
+	"telescope/util/buffer"
 	"telescope/util/side_channel"
 	"time"
 )
@@ -75,7 +75,7 @@ func (c *commandEditor) Update() <-chan editor.View {
 	return c.e.Update()
 }
 
-func (c *commandEditor) Load(ctx context.Context, reader bytes.Array) (loadCtx context.Context, err error) {
+func (c *commandEditor) Load(ctx context.Context, reader buffer.Buffer) (loadCtx context.Context, err error) {
 	c.lock(func() {
 		loadCtx, err = c.e.Load(ctx, reader)
 	})

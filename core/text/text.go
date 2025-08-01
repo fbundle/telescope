@@ -2,7 +2,7 @@ package text
 
 import (
 	"context"
-	"telescope/util/bytes"
+	"telescope/util/buffer"
 	"telescope/util/persistent/vector"
 	"telescope/util/side_channel"
 )
@@ -19,14 +19,14 @@ type Text interface {
 	Append(line Line) Text
 }
 
-func New(reader bytes.Array) Text {
+func New(reader buffer.Buffer) Text {
 	return &text{
 		reader: reader,
 		vec:    vector.New[Line](),
 	}
 }
 
-func LoadFile(ctx context.Context, reader bytes.Array, update func(Line)) error {
+func LoadFile(ctx context.Context, reader buffer.Buffer, update func(Line)) error {
 	return indexFile(ctx, reader, '\n', func(offset int, line []byte) {
 		line = padNewLine(line)
 		size := len(line) - endOfLineSize(line)
@@ -36,7 +36,7 @@ func LoadFile(ctx context.Context, reader bytes.Array, update func(Line)) error 
 }
 
 type text struct {
-	reader bytes.Array
+	reader buffer.Buffer
 	vec    vector.Vector[Line]
 }
 

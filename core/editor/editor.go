@@ -9,7 +9,7 @@ import (
 	"telescope/core/hist"
 	"telescope/core/log"
 	"telescope/core/text"
-	"telescope/util/bytes"
+	"telescope/util/buffer"
 	"telescope/util/side_channel"
 	"time"
 )
@@ -52,7 +52,7 @@ func NewEditor(
 	return e, nil
 }
 
-func (e *editor) Load(ctx context.Context, reader bytes.Array) (context.Context, error) {
+func (e *editor) Load(ctx context.Context, reader buffer.Buffer) (context.Context, error) {
 	loadCtx, loadDone := context.WithCancel(ctx) // if ctx is done then this editor will also stop loading
 	var err error = nil
 	e.lockRender(func() {

@@ -8,7 +8,7 @@ import (
 )
 
 func uint64ToBytes(x uint64) []byte {
-	b := make([]byte, 8) // 8 bytes
+	b := make([]byte, 8) // 8 buffer
 	binary.LittleEndian.PutUint64(b, x)
 	return b
 }
@@ -22,7 +22,7 @@ func bytesToUint64(b []byte) uint64 {
 }
 
 func runeToBytes(x rune) []byte {
-	b := make([]byte, 4)                        // 4 bytes
+	b := make([]byte, 4)                        // 4 buffer
 	binary.LittleEndian.PutUint32(b, uint32(x)) // reinterpret rune int32 as uint32
 	return b
 }

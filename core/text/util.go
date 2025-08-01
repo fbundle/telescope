@@ -4,7 +4,7 @@ import (
 	"context"
 	"slices"
 	"telescope/config"
-	"telescope/util/bytes"
+	"telescope/util/buffer"
 	"telescope/util/side_channel"
 	"time"
 )
@@ -31,7 +31,7 @@ func endOfLineSize(line []byte) int {
 	return 1
 }
 
-func indexFile(ctx context.Context, reader bytes.Array, delim byte, update func(offset int, line []byte)) error {
+func indexFile(ctx context.Context, reader buffer.Buffer, delim byte, update func(offset int, line []byte)) error {
 	var offset int = 0
 
 	for i := 0; i < reader.Len(); i++ {

@@ -2,7 +2,7 @@ package text
 
 import (
 	"io"
-	"telescope/util/bytes"
+	"telescope/util/buffer"
 	"telescope/util/side_channel"
 )
 
@@ -37,7 +37,7 @@ func (l Line) Size() int {
 	}
 }
 
-func (l Line) Repr(r bytes.Array) []rune {
+func (l Line) Repr(r buffer.Buffer) []rune {
 	if l.offset < 0 {
 		// in-memory
 		return l.data
