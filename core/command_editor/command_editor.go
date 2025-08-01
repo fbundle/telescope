@@ -31,10 +31,13 @@ type Selector struct {
 	End int
 }
 
+type clipboard [][]rune
+
 type state struct {
-	mode     Mode
-	command  string
-	selector *Selector
+	mode      Mode
+	command   string
+	selector  *Selector
+	clipboard clipboard
 }
 
 type commandEditor struct {
@@ -96,10 +99,18 @@ func (c *commandEditor) Type(ch rune) {
 			case ':':
 				c.enterCommandModeWithoutLock(":")
 				c.writeWithoutLock("enter command mode")
-			case 'V':
+			case 'V': // start selecting
 				row := c.e.Render().Cursor.Row
 				c.enterSelectModeWithoutLock(row)
 				c.writeWithoutLock("enter select mode")
+			case 'p': // paste
+				if c.state.clipboard == nil {
+					c.writeWithoutLock("clipboard is empty")
+					return
+				}
+				row := c.e.Render().Cursor.Row
+				c.e.InsertLine(row, c.state.clipboard)
+				c.writeWithoutLock("pasted")
 			default:
 			}
 		case ModeInsert:
@@ -107,6 +118,40 @@ func (c *commandEditor) Type(ch rune) {
 		case ModeCommand:
 			c.state.command += string(ch)
 			c.writeWithoutLock("")
+		case ModeSelect:
+			switch ch {
+			case 'd': // cut
+				beg, end := c.state.selector.Beg, c.state.selector.End
+				if beg > end {
+					beg, end = end, beg
+				}
+				t := c.e.Render().Text
+				clip := make([][]rune, 0)
+				for i := beg; i <= end; i++ {
+					clip = append(clip, t.Get(i))
+				}
+				c.state.clipboard = clip
+				// delete
+				c.e.DeleteLine(beg, len(c.state.clipboard))
+				c.e.Goto(beg, 0)
+
+				c.enterNormalModeWithoutLock()
+				c.writeWithoutLock("cut")
+
+			case 'y': //copy
+				beg, end := c.state.selector.Beg, c.state.selector.End
+				if beg > end {
+					beg, end = end, beg
+				}
+				t := c.e.Render().Text
+				clip := make([][]rune, 0)
+				for i := beg; i <= end; i++ {
+					clip = append(clip, t.Get(i))
+				}
+				c.state.clipboard = clip
+				c.enterNormalModeWithoutLock()
+				c.writeWithoutLock("copied")
+			}
 		default:
 			side_channel.Panic("unknown mode: ", c.state)
 		}
@@ -363,11 +408,6 @@ func (c *commandEditor) MovePageUp() {
 func (c *commandEditor) MovePageDown() {
 	c.lock(func() {
 		c.e.MovePageDown()
-		if c.state.mode == ModeSelect {
-			row := c.e.Render().Cursor.Row
-			c.state.selector.End = row
-			c.writeWithoutLock("select more")
-		}
 	})
 }
 
