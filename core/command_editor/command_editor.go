@@ -23,7 +23,6 @@ const (
 	ModeNormal  Mode = "NORMAL"
 	ModeCommand Mode = "COMMAND"
 	ModeInsert  Mode = "INSERT"
-	ModeSelect  Mode = "SELECT"
 )
 
 type Selector struct {
@@ -59,14 +58,6 @@ func (c *commandEditor) enterCommandModeWithoutLock(command string) {
 	c.state.command = command
 	c.state.selector = nil
 }
-func (c *commandEditor) enterSelectModeWithoutLock(row int) {
-	c.state.mode = ModeSelect
-	c.state.command = ""
-	c.state.selector = &Selector{
-		Beg: row,
-		End: row,
-	}
-}
 
 func (c *commandEditor) Update() <-chan editor.View {
 	return c.e.Update()
@@ -96,11 +87,6 @@ func (c *commandEditor) Type(ch rune) {
 			case ':':
 				c.enterCommandModeWithoutLock(":")
 				c.writeWithoutLock("enter command mode")
-			case 'V':
-				row := c.e.Render().Cursor.Row
-				c.enterSelectModeWithoutLock(row)
-				c.writeWithoutLock("enter select mode")
-
 			default:
 			}
 		case ModeInsert:
@@ -108,8 +94,6 @@ func (c *commandEditor) Type(ch rune) {
 		case ModeCommand:
 			c.state.command += string(ch)
 			c.writeWithoutLock("")
-		case ModeSelect:
-			// TODO
 		default:
 			side_channel.Panic("unknown mode: ", c.state)
 		}
@@ -248,9 +232,6 @@ func (c *commandEditor) Escape() {
 		case ModeCommand:
 			c.enterNormalModeWithoutLock()
 			c.writeWithoutLock("enter normal mode")
-		case ModeSelect:
-			c.enterNormalModeWithoutLock()
-			c.writeWithoutLock("enter normal mode")
 		default:
 			side_channel.Panic("unknown mode: ", c.state)
 		}
@@ -326,22 +307,12 @@ func (c *commandEditor) MoveRight() {
 func (c *commandEditor) MoveUp() {
 	c.lock(func() {
 		c.e.MoveUp()
-		if c.state.mode == ModeSelect {
-			row := c.e.Render().Cursor.Row
-			c.state.selector.End = row
-			c.writeWithoutLock("select more")
-		}
 	})
 }
 
 func (c *commandEditor) MoveDown() {
 	c.lock(func() {
 		c.e.MoveDown()
-		if c.state.mode == ModeSelect {
-			row := c.e.Render().Cursor.Row
-			c.state.selector.End = row
-			c.writeWithoutLock("select more")
-		}
 	})
 }
 
@@ -360,22 +331,12 @@ func (c *commandEditor) MoveEnd() {
 func (c *commandEditor) MovePageUp() {
 	c.lock(func() {
 		c.e.MovePageUp()
-		if c.state.mode == ModeSelect {
-			row := c.e.Render().Cursor.Row
-			c.state.selector.End = row
-			c.writeWithoutLock("select more")
-		}
 	})
 }
 
 func (c *commandEditor) MovePageDown() {
 	c.lock(func() {
 		c.e.MovePageDown()
-		if c.state.mode == ModeSelect {
-			row := c.e.Render().Cursor.Row
-			c.state.selector.End = row
-			c.writeWithoutLock("select more")
-		}
 	})
 }
 
