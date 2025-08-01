@@ -16,21 +16,22 @@ if raw >= 0, it is the byte offset in reader
 */
 
 type Chunk[T any] struct {
-	raw int64
+	raw int64 // 8 bytes
 }
 
 var pool = &sync.Map{} // map[uint64]any
 var lastKey = int64(0)
 
-func NewChunkFromData[T any](data T) *Chunk[T] {
+func NewChunkFromData[T any](data T, cancel func()) *Chunk[T] {
 	key := atomic.AddInt64(&lastKey, -1)
 	pool.Store(key, data)
 	line := &Chunk[T]{
 		raw: key,
 	}
-	runtime.AddCleanup(line, func(line *Chunk[T]) {
-		pool.Delete(line.raw)
-	}, line)
+	runtime.AddCleanup(line, func(key int64) {
+		defer cancel()
+		pool.Delete(key)
+	}, key)
 	return line
 }
 
