@@ -8,9 +8,9 @@ import (
 
 // Line - if offset >= 0, this is a file else this is a []rune buffer
 type Line struct {
-	offset int
-	size   int
-	data   *[]rune
+	offset int64   // 8 bytes
+	size   int64   // 8 bytes
+	data   *[]rune // 8 bytes on 64-bit system
 }
 
 func makeLineFromData(data []rune) Line {
@@ -23,8 +23,8 @@ func makeLineFromData(data []rune) Line {
 
 func makeLineFromFile(offset int, size int) Line {
 	return Line{
-		offset: offset,
-		size:   size,
+		offset: int64(offset),
+		size:   int64(size),
 		data:   nil,
 	}
 }
@@ -33,7 +33,7 @@ func (l Line) Size() int {
 	if l.offset < 0 {
 		return len(*l.data)
 	} else {
-		return l.size
+		return int(l.size)
 	}
 }
 
