@@ -32,7 +32,7 @@ an extremely fast text editor
 
 0. use `telescope -h` for help
 
-1. when user opens a file using `telescope inputfile`, the program will create a log file (journal file) stored at `<tmp>/<path>` where `<tmp>` is system default temporary folder
+1. when user opens a file using `telescope inputfile`, the program will create a log file (journal file) stored at `<tmp>/telescope_log/<path>` where `<tmp>` is system default temporary folder
 
 2. when user edit the file, every action will be written to log file.
 
