@@ -34,7 +34,7 @@
 - rename VISUAL -> NORMAL
 - added clipboard and selector, now has 4 modes: NORMAL COMMAND VISUAL INSERT
 - fixed bug pgdn doesn't register selector
-- optimize size of `core.text.Line` to a 24 bytes 
+- optimize size of `core.text.Line` to a 16 bytes
 
 # TODO
 
