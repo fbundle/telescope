@@ -20,11 +20,19 @@ an extremely fast text editor
 
 - vim-like command mode, search, goto line, etc.
 
+## RELEASE MODEL
+
+- initial release comes with no suffix, e.g. `0.1.7`
+
+- bug fix releases come with suffix, e.g. `0.1.7a, 0.1.7b`
+
+- the latest stable release should be one lower than latest releast with highest suffix. for example, if `0.1.7b` is the latest release, then `0.1.6z` is the stable release
+ 
 ## INTERACTION WITH FILE SYSTEM
 
 0. use `telescope -h` for help
 
-1. when user opens a file using `telescope inputfile`, the program will create a log file (journal file)
+1. when user opens a file using `telescope inputfile`, the program will create a log file (journal file) stored at `<tmp>/<path>` where `<tmp>` is system default temporary folder
 
 2. when user edit the file, every action will be written to log file.
 
