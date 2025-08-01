@@ -4,6 +4,7 @@ import (
 	"context"
 	"telescope/util/bytes"
 	"telescope/util/persistent/vector"
+	"telescope/util/side_channel"
 )
 
 type Text interface {
@@ -14,6 +15,7 @@ type Text interface {
 	Iter(f func(i int, val []rune) bool)
 	Len() int
 	Split(i int) (Text, Text)
+	Concat(t2 Text) Text
 	Append(line Line) Text
 }
 
@@ -89,4 +91,14 @@ func (t *text) Split(i int) (Text, Text) {
 			reader: t.reader,
 			vec:    v2,
 		}
+}
+
+func (t *text) Concat(t2 Text) Text {
+	if t.reader != t2.(*text).reader {
+		side_channel.Panic("different readers")
+	}
+	return &text{
+		reader: t.reader,
+		vec:    t.vec.Concat(t2.(*text).vec),
+	}
 }
