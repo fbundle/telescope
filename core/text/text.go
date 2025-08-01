@@ -18,77 +18,77 @@ type Text interface {
 	Append(line Line) Text
 }
 
-func New(reader buffer.Buffer) BufferedText {
-	return BufferedText{
+func New(reader buffer.Buffer) Text {
+	return text{
 		reader: reader,
 		vec:    vector.New[Line](),
 	}
 }
 
-type BufferedText struct {
+type text struct {
 	reader buffer.Buffer
 	vec    vector.Vector[Line]
 }
 
-func (t BufferedText) Append(line Line) Text {
-	return BufferedText{
+func (t text) Append(line Line) Text {
+	return text{
 		reader: t.reader,
 		vec:    t.vec.Ins(t.vec.Len(), line),
 	}
 }
 
-func (t BufferedText) Get(i int) []rune {
+func (t text) Get(i int) []rune {
 	return t.vec.Get(i).repr(t.reader)
 }
 
-func (t BufferedText) Set(i int, val []rune) Text {
-	return BufferedText{
+func (t text) Set(i int, val []rune) Text {
+	return text{
 		reader: t.reader,
 		vec:    t.vec.Set(i, makeLineFromData(val)),
 	}
 }
 
-func (t BufferedText) Ins(i int, val []rune) Text {
-	return BufferedText{
+func (t text) Ins(i int, val []rune) Text {
+	return text{
 		reader: t.reader,
 		vec:    t.vec.Ins(i, makeLineFromData(val)),
 	}
 }
 
-func (t BufferedText) Del(i int) Text {
-	return BufferedText{
+func (t text) Del(i int) Text {
+	return text{
 		reader: t.reader,
 		vec:    t.vec.Del(i),
 	}
 }
 
-func (t BufferedText) Iter(f func(i int, val []rune) bool) {
+func (t text) Iter(f func(i int, val []rune) bool) {
 	t.vec.Iter(func(i int, l Line) bool {
 		return f(i, l.repr(t.reader))
 	})
 }
 
-func (t BufferedText) Len() int {
+func (t text) Len() int {
 	return t.vec.Len()
 }
 
-func (t BufferedText) Split(i int) (Text, Text) {
+func (t text) Split(i int) (Text, Text) {
 	v1, v2 := t.vec.Split(i)
-	return BufferedText{
+	return text{
 			reader: t.reader,
 			vec:    v1,
-		}, BufferedText{
+		}, text{
 			reader: t.reader,
 			vec:    v2,
 		}
 }
 
-func (t BufferedText) Concat(t2 Text) Text {
-	if t.reader != t2.(*BufferedText).reader {
+func (t text) Concat(t2 Text) Text {
+	if t.reader != t2.(*text).reader {
 		side_channel.Panic("different readers")
 	}
-	return BufferedText{
+	return text{
 		reader: t.reader,
-		vec:    t.vec.Concat(t2.(*BufferedText).vec),
+		vec:    t.vec.Concat(t2.(*text).vec),
 	}
 }

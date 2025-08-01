@@ -60,7 +60,7 @@ func (e *editor) Load(ctx context.Context, reader buffer.Buffer) (context.Contex
 			err = errors.New("load twice")
 			return
 		}
-		e.text = hist.New[text.Text](text.New(reader))
+		e.text = hist.New(text.New(reader))
 		e.status.Background = "loading started"
 		go func() { // load file asynchronously
 			defer loadDone()

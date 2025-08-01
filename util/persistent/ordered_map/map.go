@@ -12,59 +12,59 @@ type Map[T Comparable[T]] interface {
 	Repr() []Comparable[T]
 }
 
-func NewMap[T Comparable[T]]() WBT[T] {
-	return WBT[T]{
+func NewMap[T Comparable[T]]() Map[T] {
+	return wbt[T]{
 		node: nil,
 	}
 }
 
-type WBT[T Comparable[T]] struct {
+type wbt[T Comparable[T]] struct {
 	node *node[T]
 }
 
-func (o WBT[T]) Get(entryIn T) (Comparable[T], bool) {
+func (o wbt[T]) Get(entryIn T) (Comparable[T], bool) {
 	entryOut, ok := get(o.node, entryIn)
 	return entryOut, ok
 }
 
-func (o WBT[T]) Set(entryIn T) Map[T] {
-	return WBT[T]{
+func (o wbt[T]) Set(entryIn T) Map[T] {
+	return wbt[T]{
 		node: set(o.node, entryIn),
 	}
 }
 
-func (o WBT[T]) Del(entryIn T) Map[T] {
-	return WBT[T]{
+func (o wbt[T]) Del(entryIn T) Map[T] {
+	return wbt[T]{
 		node: del(o.node, entryIn),
 	}
 }
 
-func (o WBT[T]) Iter(f func(entryOut T) bool) {
+func (o wbt[T]) Iter(f func(entryOut T) bool) {
 	iter(o.node, f)
 }
 
-func (o WBT[T]) Weight() uint {
+func (o wbt[T]) Weight() uint {
 	return weight(o.node)
 }
 
-func (o WBT[T]) Height() uint {
+func (o wbt[T]) Height() uint {
 	return height(o.node)
 }
 
-func (o WBT[T]) Split(entryIn T) (Map[T], Map[T]) {
+func (o wbt[T]) Split(entryIn T) (Map[T], Map[T]) {
 	n1, n2 := split(o.node, entryIn)
-	return WBT[T]{node: n1}, WBT[T]{node: n2}
+	return wbt[T]{node: n1}, wbt[T]{node: n2}
 }
 
-func (o WBT[T]) Max() Comparable[T] {
+func (o wbt[T]) Max() Comparable[T] {
 	return getMaxEntry(o.node)
 }
 
-func (o WBT[T]) Min() Comparable[T] {
+func (o wbt[T]) Min() Comparable[T] {
 	return getMinEntry(o.node)
 }
 
-func (o WBT[T]) Repr() []Comparable[T] {
+func (o wbt[T]) Repr() []Comparable[T] {
 	buf := make([]Comparable[T], 0, o.Weight())
 	for entryOut := range o.Iter {
 		buf = append(buf, entryOut)

@@ -14,7 +14,6 @@ import (
 )
 
 func getModeAndCommand(m map[string]any) (string, string) {
-	side_channel.WriteLn(m)
 	if m == nil {
 		return "", ""
 	}
