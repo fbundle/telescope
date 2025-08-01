@@ -5,14 +5,16 @@ import (
 	"telescope/util/buffer"
 )
 
+const delim byte = '\n'
+
 func LoadFile(ctx context.Context, reader buffer.Buffer, update func(Line, int)) error {
-	return indexFile(ctx, reader, '\n', func(offset int, line []byte) {
+	return indexFile(ctx, reader, func(offset int, line []byte) {
 		l := makeLineFromFile(offset)
 		update(l, len(line))
 	})
 }
 
-func indexFile(ctx context.Context, reader buffer.Buffer, delim byte, update func(offset int, line []byte)) error {
+func indexFile(ctx context.Context, reader buffer.Buffer, update func(offset int, line []byte)) error {
 	var offset int = 0
 
 	var line []byte

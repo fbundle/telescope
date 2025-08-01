@@ -32,7 +32,7 @@ func (l Line) repr(reader buffer.Buffer) []rune {
 		buf := make([]byte, 0)
 		for i := int(l.offset); i < reader.Len(); i++ {
 			b := reader.At(i)
-			if b == '\n' {
+			if b == delim {
 				break
 			}
 			buf = append(buf, b)
