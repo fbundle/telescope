@@ -1,5 +1,7 @@
 package text
 
+import "telescope/util/buffer"
+
 // Line - if offset >= 0, this is a file else this is a []rune buffer
 type Line struct {
 	offset int64   // 8 bytes
@@ -20,8 +22,7 @@ func makeLineFromFile(offset int) Line {
 	}
 }
 
-func (l Line) repr(t Text) []rune {
-	reader := t.(*text).reader
+func (l Line) repr(reader buffer.Buffer) []rune {
 
 	if l.offset < 0 {
 		// in-memory
