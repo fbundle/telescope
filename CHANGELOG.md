@@ -37,6 +37,8 @@
 
 # TODO
 
+- optimize size of rune slice
+
 - make clipboard just another persistent vector (`vector.Vector`) to save space and copying more efficient
 - make binary serializer works with delete lines and insert lines
 - add compressed log: compress multiple `type` into a single `type` (`Text []rune` instead of `Rune rune`)
