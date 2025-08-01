@@ -33,6 +33,7 @@
 - refactor - VISUAL/COMMAND/INSERT is now default
 - rename VISUAL -> NORMAL
 - added clipboard and selector, now has 4 modes: NORMAL COMMAND VISUAL INSERT
+- fixed bug pgdn doesn't register selector
 
 # TODO
 
