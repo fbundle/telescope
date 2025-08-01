@@ -34,11 +34,11 @@
 - rename VISUAL -> NORMAL
 - added clipboard and selector, now has 4 modes: NORMAL COMMAND VISUAL INSERT
 - fixed bug pgdn doesn't register selector
+- optimize size of `core.text.Line` to a 24 bytes 
 
 # TODO
 
-- optimize size of rune slice to a single int64
-
+- optimize size of `core.text.Line` to a single `int64`
 - make clipboard just another persistent vector (`vector.Vector`) to save space and copying more efficient
 - make binary serializer works with delete lines and insert lines
 - add compressed log: compress multiple `type` into a single `type` (`Text []rune` instead of `Rune rune`)
