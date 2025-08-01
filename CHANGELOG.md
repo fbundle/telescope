@@ -37,7 +37,7 @@
 
 # TODO
 
-- optimize size of rune slice to a single uint64
+- optimize size of rune slice to a single int64
 
 - make clipboard just another persistent vector (`vector.Vector`) to save space and copying more efficient
 - make binary serializer works with delete lines and insert lines
