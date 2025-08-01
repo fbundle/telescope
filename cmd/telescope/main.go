@@ -7,61 +7,18 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"telescope/config"
 	"telescope/ui"
 	"telescope/util/side_channel"
 )
 
-const VERSION = "0.1.7b"
-
-var HELP = `
-Usage: "telescope [option] file [logfile]"
-Options:
-  -h --help           show help
-  -v --version        get version
-  -r --replay         replay the edited file 
-  -l --log            print the human readable log format
-  -i --insert         open with INSERT mode
-  -c --command        open with NORMAL/COMMAND/VISUAL/INSERT mode
-
-Keyboard Shortcuts:
-  Ctrl+C              exit
-  Ctrl+S              flush log (autosave is always on, so this is not necessary)
-  Ctrl+U              undo
-  Ctrl+R              redo
-
-NORMAL/COMMAND/VISUAL/INSERT mode:
-  in NORMAL mode:
-    i                 enter INSERT mode
-    :                 enter COMMAND mode
-    V                 enter VISUAL mode
-    p                 paste from clipboard
-  in COMMAND mode:
-    ENTER             execute command
-    ESCAPE            delete command buffer and enter NORMAL mode
-  in INSERT mode:
-    ESCAPE            enter NORMAL mode
-  in VISUAL mode:
-    up,dn,pgup,pgdn   move cursor and selector
-    d                 cut into clipboard
-    y                 copy into clipboard
-    ESCAPE            enter NORMAL mode
-
-Commands:
-  :i :insert        enter INSERT mode
-  :s :search        search
-     :regex         search with regex
-  :g :goto          goto line
-  :w :write         write into file
-  :q :quit          quit
-`
-
 func printHelp() {
-	fmt.Printf("telescope version %s\n", VERSION)
-	fmt.Println(HELP)
+	fmt.Printf("telescope version %s\n", config.Load().VERSION)
+	fmt.Println(config.Load().HELP)
 }
 
 func printVersion() {
-	fmt.Println(VERSION)
+	fmt.Println(config.Load().VERSION)
 }
 
 type programArgs struct {
@@ -72,10 +29,6 @@ type programArgs struct {
 
 func main() {
 	args := getProgramArgs()
-	if len(args.firstFilename) == 0 {
-		printHelp()
-		return
-	}
 	switch args.option {
 	case "-h", "--help":
 		printHelp()
