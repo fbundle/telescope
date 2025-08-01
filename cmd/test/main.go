@@ -17,6 +17,8 @@ func test() context.Context {
 func main() {
 	ctx := test()
 	runtime.GC()
+	runtime.GC()
+	runtime.Gosched()
 	fmt.Println("done")
 
 	<-ctx.Done()
