@@ -31,6 +31,21 @@ func getModeAndCommand(m map[string]any) (string, string) {
 	return mode, command
 }
 
+func getSelector(m map[string]any) *command_editor.Selector {
+	if m == nil {
+		return nil
+	}
+	s, ok := m["selector"]
+	if !ok {
+		return nil
+	}
+	selector, ok := s.(*command_editor.Selector)
+	if !ok {
+		return nil
+	}
+	return selector
+}
+
 func draw(s tcell.Screen, view editor.View) {
 	statusStyle := tcell.StyleDefault.
 		Background(tcell.ColorLightGray).
@@ -44,9 +59,20 @@ func draw(s tcell.Screen, view editor.View) {
 
 	s.Clear()
 	screenWidth, screenHeight := s.Size()
+	selector := getSelector(view.Status.Other)
 	// Draw editor content from (0, 0)
 	for row, line := range view.Window.Data {
 		style := textStyle
+		if selector != nil {
+			beg, end := selector.Beg, selector.End
+			if beg > end {
+				beg, end = end, beg
+			}
+			textRow := view.Window.TopLeft.Row + row
+			if beg <= textRow && textRow <= end {
+				style = highlightStyle
+			}
+		}
 		// TODO if line.Highlight -> style = highlightStyle
 		for col, ch := range line {
 			s.SetContent(col, row, ch, nil, style)

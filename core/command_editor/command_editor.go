@@ -23,15 +23,49 @@ const (
 	ModeNormal  Mode = "NORMAL"
 	ModeCommand Mode = "COMMAND"
 	ModeInsert  Mode = "INSERT"
-	// ModeSelect  Mode = "SELECT"
+	ModeSelect  Mode = "SELECT"
 )
 
+type Selector struct {
+	Beg int
+	End int
+}
+
+type state struct {
+	mode     Mode
+	command  string
+	selector *Selector
+}
+
 type commandEditor struct {
-	cancel  func()
-	mu      sync.Mutex
-	mode    Mode
-	e       editor.Editor
-	command string
+	cancel func()
+	mu     sync.Mutex
+	e      editor.Editor
+	state  state
+}
+
+func (c *commandEditor) enterNormalModeWithoutLock() {
+	c.state.mode = ModeNormal
+	c.state.command = ""
+	c.state.selector = nil
+}
+func (c *commandEditor) enterInsertModeWithoutLock() {
+	c.state.mode = ModeInsert
+	c.state.command = ""
+	c.state.selector = nil
+}
+func (c *commandEditor) enterCommandModeWithoutLock(command string) {
+	c.state.mode = ModeCommand
+	c.state.command = command
+	c.state.selector = nil
+}
+func (c *commandEditor) enterSelectModeWithoutLock(row int) {
+	c.state.mode = ModeSelect
+	c.state.command = ""
+	c.state.selector = &Selector{
+		Beg: row,
+		End: row,
+	}
 }
 
 func (c *commandEditor) Update() <-chan editor.View {
@@ -53,35 +87,41 @@ func (c *commandEditor) Resize(height int, width int) {
 
 func (c *commandEditor) Type(ch rune) {
 	c.lock(func() {
-		switch c.mode {
+		switch c.state.mode {
 		case ModeNormal:
 			switch ch {
 			case 'i':
-				c.mode, c.command = ModeInsert, ""
+				c.enterInsertModeWithoutLock()
 				c.writeWithoutLock("enter insert mode")
 			case ':':
-				c.mode, c.command = ModeCommand, string(ch)
+				c.enterCommandModeWithoutLock(":")
 				c.writeWithoutLock("enter command mode")
+			case 'V':
+				row := c.e.Render().Cursor.Row
+				c.enterSelectModeWithoutLock(row)
+				c.writeWithoutLock("enter select mode")
 
 			default:
 			}
 		case ModeInsert:
 			c.e.Type(ch)
 		case ModeCommand:
-			c.command += string(ch)
+			c.state.command += string(ch)
 			c.writeWithoutLock("")
+		case ModeSelect:
+			// TODO
 		default:
-			side_channel.Panic("unknown mode: ", c.mode)
+			side_channel.Panic("unknown mode: ", c.state)
 		}
 	})
 }
 
 func (c *commandEditor) applyCommandWithoutLock() {
-	cmd := c.command
+	cmd := c.state.command
 
 	switch {
 	case cmd == ":i" || cmd == ":insert":
-		c.mode, c.command = ModeInsert, ""
+		c.enterInsertModeWithoutLock()
 		c.writeWithoutLock("enter insert mode")
 		return
 
@@ -98,7 +138,7 @@ func (c *commandEditor) applyCommandWithoutLock() {
 
 		re, err := regexp.Compile(cmd)
 		if err != nil {
-			c.mode, c.command = ModeNormal, ""
+			c.enterNormalModeWithoutLock()
 			c.writeWithoutLock(fmt.Sprintf("regexp compile error %s", err.Error()))
 			return
 		}
@@ -129,21 +169,20 @@ func (c *commandEditor) applyCommandWithoutLock() {
 				return
 			}
 		}
-
-		c.mode, c.command = ModeNormal, ""
-		c.writeWithoutLock("end of file")
+		c.enterNormalModeWithoutLock()
+		c.writeWithoutLock("End of file")
 		return
 	case strings.HasPrefix(cmd, ":g ") || strings.HasPrefix(cmd, ":goto "):
 		cmd = strings.TrimPrefix(cmd, ":g ")
 		cmd = strings.TrimPrefix(cmd, ":goto ")
 		lineNum, err := strconv.Atoi(cmd)
 		if err != nil {
-			c.mode, c.command = ModeNormal, ""
+			c.enterNormalModeWithoutLock()
 			c.writeWithoutLock("invalid line number " + cmd)
 			return
 		}
 		c.e.Goto(lineNum-1, 0)
-		c.mode, c.command = ModeNormal, ""
+		c.enterNormalModeWithoutLock()
 		c.writeWithoutLock("goto line " + cmd)
 		return
 	case strings.HasPrefix(cmd, ":w ") || strings.HasPrefix(cmd, ":writeWithoutLock "):
@@ -153,7 +192,7 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		filename := cmd
 		file, err := os.Create(filename)
 		if err != nil {
-			c.mode, c.command = ModeNormal, ""
+			c.enterNormalModeWithoutLock()
 			c.writeWithoutLock("error open file " + err.Error())
 			return
 		}
@@ -162,30 +201,30 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		for _, line := range c.e.Render().Text.Iter {
 			_, err = writer.WriteString(string(line) + "\n")
 			if err != nil {
-				c.mode, c.command = ModeNormal, ""
+				c.enterNormalModeWithoutLock()
 				c.writeWithoutLock("error writeWithoutLock file " + err.Error())
 				return
 			}
 		}
 		err = writer.Flush()
 		if err != nil {
-			c.mode, c.command = ModeNormal, ""
+			c.enterNormalModeWithoutLock()
 			c.writeWithoutLock("error flush file " + err.Error())
 			return
 		}
 
-		c.mode, c.command = ModeNormal, ""
+		c.enterNormalModeWithoutLock()
 		c.writeWithoutLock("file written into " + filename)
 		return
 	default:
-		c.mode, c.command = ModeNormal, ""
+		c.enterNormalModeWithoutLock()
 		c.writeWithoutLock("unknown command: " + cmd)
 	}
 }
 
 func (c *commandEditor) Enter() {
 	c.lock(func() {
-		switch c.mode {
+		switch c.state.mode {
 		case ModeNormal:
 			// do nothing
 		case ModeInsert:
@@ -193,49 +232,52 @@ func (c *commandEditor) Enter() {
 		case ModeCommand:
 			c.applyCommandWithoutLock()
 		default:
-			side_channel.Panic("unknown mode: ", c.mode)
+			side_channel.Panic("unknown mode: ", c.state)
 		}
 	})
 }
 
 func (c *commandEditor) Escape() {
 	c.lock(func() {
-		switch c.mode {
+		switch c.state.mode {
 		case ModeNormal:
 			// do nothing
 		case ModeInsert:
-			c.mode, c.command = ModeNormal, ""
+			c.enterNormalModeWithoutLock()
 			c.writeWithoutLock("enter normal mode")
 		case ModeCommand:
-			c.mode, c.command = ModeNormal, ""
+			c.enterNormalModeWithoutLock()
+			c.writeWithoutLock("enter normal mode")
+		case ModeSelect:
+			c.enterNormalModeWithoutLock()
 			c.writeWithoutLock("enter normal mode")
 		default:
-			side_channel.Panic("unknown mode: ", c.mode)
+			side_channel.Panic("unknown mode: ", c.state)
 		}
 	})
 }
 
 func (c *commandEditor) Backspace() {
 	c.lock(func() {
-		switch c.mode {
+		switch c.state.mode {
 		case ModeNormal:
 			// do nothing
 		case ModeInsert:
 			c.e.Backspace()
 		case ModeCommand:
-			if len(c.command) > 0 {
-				c.command = c.command[:len(c.command)-1]
+			if len(c.state.command) > 0 {
+				c.state.command = c.state.command[:len(c.state.command)-1]
 			}
 			c.writeWithoutLock("")
 		default:
-			side_channel.Panic("unknown mode: ", c.mode)
+			side_channel.Panic("unknown mode: ", c.state)
 		}
 	})
 }
 
 func (c *commandEditor) Delete() {
 	c.lock(func() {
-		switch c.mode {
+		switch c.state.mode {
 		case ModeNormal:
 			// do nothing
 		case ModeInsert:
@@ -243,14 +285,14 @@ func (c *commandEditor) Delete() {
 		case ModeCommand:
 			// do nothing
 		default:
-			side_channel.Panic("unknown mode: ", c.mode)
+			side_channel.Panic("unknown mode: ", c.state)
 		}
 	})
 }
 
 func (c *commandEditor) Tabular() {
 	c.lock(func() {
-		switch c.mode {
+		switch c.state.mode {
 		case ModeNormal:
 			// do nothing
 		case ModeInsert:
@@ -258,7 +300,7 @@ func (c *commandEditor) Tabular() {
 		case ModeCommand:
 			// do nothing
 		default:
-			side_channel.Panic("unknown mode: ", c.mode)
+			side_channel.Panic("unknown mode: ", c.state)
 		}
 	})
 }
@@ -284,12 +326,22 @@ func (c *commandEditor) MoveRight() {
 func (c *commandEditor) MoveUp() {
 	c.lock(func() {
 		c.e.MoveUp()
+		if c.state.mode == ModeSelect {
+			row := c.e.Render().Cursor.Row
+			c.state.selector.End = row
+			c.writeWithoutLock("select more")
+		}
 	})
 }
 
 func (c *commandEditor) MoveDown() {
 	c.lock(func() {
 		c.e.MoveDown()
+		if c.state.mode == ModeSelect {
+			row := c.e.Render().Cursor.Row
+			c.state.selector.End = row
+			c.writeWithoutLock("select more")
+		}
 	})
 }
 
@@ -308,12 +360,22 @@ func (c *commandEditor) MoveEnd() {
 func (c *commandEditor) MovePageUp() {
 	c.lock(func() {
 		c.e.MovePageUp()
+		if c.state.mode == ModeSelect {
+			row := c.e.Render().Cursor.Row
+			c.state.selector.End = row
+			c.writeWithoutLock("select more")
+		}
 	})
 }
 
 func (c *commandEditor) MovePageDown() {
 	c.lock(func() {
 		c.e.MovePageDown()
+		if c.state.mode == ModeSelect {
+			row := c.e.Render().Cursor.Row
+			c.state.selector.End = row
+			c.writeWithoutLock("select more")
+		}
 	})
 }
 
@@ -347,11 +409,14 @@ func (c *commandEditor) Status(update func(status editor.Status) editor.Status) 
 
 func NewCommandEditor(cancel func(), e editor.Editor) editor.Editor {
 	c := &commandEditor{
-		cancel:  cancel,
-		mu:      sync.Mutex{},
-		mode:    ModeNormal,
-		e:       e,
-		command: "",
+		cancel: cancel,
+		mu:     sync.Mutex{},
+		e:      e,
+		state: state{
+			mode:     ModeNormal,
+			command:  "",
+			selector: nil,
+		},
 	}
 	c.writeWithoutLock("")
 	return c
@@ -369,8 +434,9 @@ func (c *commandEditor) writeWithoutLock(message string) {
 		if status.Other == nil {
 			status.Other = make(map[string]any)
 		}
-		status.Other["command"] = c.command
-		status.Other["mode"] = c.mode
+		status.Other["command"] = c.state.command
+		status.Other["mode"] = c.state.mode
+		status.Other["selector"] = c.state.selector
 		status.Message = message
 		return status
 	})
