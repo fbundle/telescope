@@ -2,17 +2,17 @@ package text
 
 import (
 	"telescope/util/buffer"
-	"telescope/util/persistent/vector"
+	"telescope/util/persistent/sequence"
 )
 
 type Text2 struct {
 	Reader buffer.Buffer
-	Lines  vector.Vector[Line]
+	Lines  sequence.Seq[Line]
 }
 
 func New2(reader buffer.Buffer) Text2 {
 	return Text2{
 		Reader: reader,
-		Lines:  vector.New[Line](),
+		Lines:  sequence.New[Line](),
 	}
 }

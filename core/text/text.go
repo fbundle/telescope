@@ -2,7 +2,7 @@ package text
 
 import (
 	"telescope/util/buffer"
-	"telescope/util/persistent/vector"
+	"telescope/util/persistent/sequence"
 	"telescope/util/side_channel"
 )
 
@@ -21,13 +21,13 @@ type Text interface {
 func New(reader buffer.Buffer) Text {
 	return text{
 		reader: reader,
-		vec:    vector.New[Line](),
+		vec:    sequence.New[Line](),
 	}
 }
 
 type text struct {
 	reader buffer.Buffer
-	vec    vector.Vector[Line]
+	vec    sequence.Seq[Line]
 }
 
 func (t text) Append(line Line) Text {

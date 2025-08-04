@@ -108,8 +108,7 @@ func (c *commandEditor) Type(ch rune) {
 					c.writeWithoutLock("clipboard is empty")
 					return
 				}
-				row := c.e.Render().Cursor.Row
-				c.e.InsertLine(row, c.state.clipboard)
+				c.e.InsertLine(c.state.clipboard)
 				c.writeWithoutLock("pasted")
 			default:
 			}
@@ -132,8 +131,8 @@ func (c *commandEditor) Type(ch rune) {
 				}
 				c.state.clipboard = clip
 				// delete
-				c.e.DeleteLine(beg, len(c.state.clipboard))
 				c.e.Goto(beg, 0)
+				c.e.DeleteLine(len(c.state.clipboard))
 
 				c.enterNormalModeWithoutLock()
 				c.writeWithoutLock("cut")
@@ -443,15 +442,15 @@ func (c *commandEditor) Status(update func(status editor.Status) editor.Status) 
 		c.e.Status(update)
 	})
 }
-func (c *commandEditor) InsertLine(offset int, lines [][]rune) {
+func (c *commandEditor) InsertLine(lines [][]rune) {
 	c.lock(func() {
-		c.e.InsertLine(offset, lines)
+		c.e.InsertLine(lines)
 	})
 }
 
-func (c *commandEditor) DeleteLine(offset int, count int) {
+func (c *commandEditor) DeleteLine(count int) {
 	c.lock(func() {
-		c.e.DeleteLine(offset, count)
+		c.e.DeleteLine(count)
 	})
 }
 

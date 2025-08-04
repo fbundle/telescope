@@ -206,33 +206,36 @@ func (e *editor) Apply(entry log.Entry) {
 	}
 }
 
-func (e *editor) InsertLine(offset int, lines [][]rune) {
+func (e *editor) InsertLine(lines [][]rune) {
 	e.lockRender(func() {
 		e.writeLog(log.Entry{
 			Command: log.CommandInsertLine,
 			Text:    lines,
 		})
+		row := e.cursor.Row
 		update := func(t text.Text) text.Text {
 			for i := len(lines) - 1; i >= 0; i-- {
-				t = t.Ins(offset, lines[i])
+				t = t.Ins(row, lines[i])
 			}
 			return t
 		}
 		e.text.Update(update)
+		e.moveRelativeAndFixWithoutLock(len(lines), 0)
 		e.setMessageWithoutLock("insert lines")
 	})
 }
 
-func (e *editor) DeleteLine(offset int, count int) {
+func (e *editor) DeleteLine(count int) {
 	e.lockRender(func() {
+		row := e.cursor.Row
 		e.writeLog(log.Entry{
 			Command: log.CommandDeleteLine,
-			Row:     uint64(offset),
+			Row:     uint64(row),
 			Count:   uint64(count),
 		})
 		update := func(t text.Text) text.Text {
 			for i := 0; i < count; i++ {
-				t = t.Del(offset)
+				t = t.Del(row)
 			}
 			return t
 		}

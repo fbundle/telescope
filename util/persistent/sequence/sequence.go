@@ -1,18 +1,18 @@
-package vector
+package sequence
 
-type Vector[T any] interface {
+type Seq[T any] interface {
 	Get(i int) T
-	Set(i int, val T) Vector[T]
-	Ins(i int, val T) Vector[T]
-	Del(i int) Vector[T]
+	Set(i int, val T) Seq[T]
+	Ins(i int, val T) Seq[T]
+	Del(i int) Seq[T]
 	Iter(func(i int, val T) bool)
 	Len() int
-	Split(i int) (Vector[T], Vector[T])
-	Concat(other Vector[T]) Vector[T]
+	Split(i int) (Seq[T], Seq[T])
+	Concat(other Seq[T]) Seq[T]
 	Repr() []T
 }
 
-func New[T any]() Vector[T] {
+func New[T any]() Seq[T] {
 	return wbt[T]{node: nil}
 }
 
@@ -24,15 +24,15 @@ func (t wbt[T]) Get(i int) T {
 	return get(t.node, uint(i))
 }
 
-func (t wbt[T]) Set(i int, val T) Vector[T] {
+func (t wbt[T]) Set(i int, val T) Seq[T] {
 	return wbt[T]{node: set(t.node, uint(i), val)}
 }
 
-func (t wbt[T]) Ins(i int, val T) Vector[T] {
+func (t wbt[T]) Ins(i int, val T) Seq[T] {
 	return wbt[T]{node: ins(t.node, uint(i), val)}
 }
 
-func (t wbt[T]) Del(i int) Vector[T] {
+func (t wbt[T]) Del(i int) Seq[T] {
 	return wbt[T]{node: del(t.node, uint(i))}
 }
 
@@ -51,12 +51,12 @@ func (t wbt[T]) Len() int {
 func (t wbt[T]) Height() int {
 	return int(height(t.node))
 }
-func (t wbt[T]) Split(i int) (Vector[T], Vector[T]) {
+func (t wbt[T]) Split(i int) (Seq[T], Seq[T]) {
 	n1, n2 := split(t.node, uint(i))
 	return wbt[T]{node: n1}, wbt[T]{node: n2}
 }
 
-func (t wbt[T]) Concat(other Vector[T]) Vector[T] {
+func (t wbt[T]) Concat(other Seq[T]) Seq[T] {
 	n1, n2 := t.node, other.(*wbt[T]).node
 	n3 := merge(n1, n2)
 	return wbt[T]{node: n3}

@@ -53,8 +53,8 @@ type Edit interface {
 	Redo()
 	Apply(entry log.Entry)
 
-	InsertLine(offset int, lines [][]rune)
-	DeleteLine(offset int, count int)
+	InsertLine(lines [][]rune)
+	DeleteLine(count int)
 }
 
 type Render interface {

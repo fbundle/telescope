@@ -1,10 +1,10 @@
-package vector
+package sequence
 
 const (
 	delta = 3
 )
 
-// implement persistent vector using weight-balanced tree
+// implement persistent sequence using weight-balanced tree
 
 type node[T any] struct {
 	weight uint
