@@ -22,8 +22,7 @@ func makeLineFromFile(offset int) Line {
 	}
 }
 
-func (l Line) repr(reader buffer.Buffer) []rune {
-
+func (l Line) Repr(reader buffer.Buffer) []rune {
 	if l.offset < 0 {
 		// in-memory
 		return *l.data
