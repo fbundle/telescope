@@ -84,11 +84,11 @@ func (t text) Split(i int) (Text, Text) {
 }
 
 func (t text) Concat(t2 Text) Text {
-	if t.Reader != t2.(*text).Reader {
+	if t.Reader != t2.(text).Reader {
 		side_channel.Panic("different readers")
 	}
 	return text{
 		Reader: t.Reader,
-		Lines:  t.Lines.Concat(t2.(*text).Lines),
+		Lines:  t.Lines.Concat(t2.(text).Lines),
 	}
 }
