@@ -36,6 +36,7 @@
 - fixed bug pgdn doesn't register selector
 - optimize size of `core.text.Line` to a 16 bytes
 - make clipboard just another persistent vector (`vector.Vector`) to save space and copying more efficient (but log still contains the whole text)
+- `vector.Vector` -> `seq.Seq`
 
 # TODO
 
