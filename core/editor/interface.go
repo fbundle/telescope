@@ -5,6 +5,7 @@ import (
 	"telescope/core/log"
 	"telescope/core/text"
 	"telescope/util/buffer"
+	seq "telescope/util/persistent/sequence"
 )
 
 type Position struct {
@@ -53,7 +54,7 @@ type Edit interface {
 	Redo()
 	Apply(entry log.Entry)
 
-	InsertLine(beg int, end int)
+	InsertLine(lines seq.Seq[text.Line])
 	DeleteLine(count int)
 }
 

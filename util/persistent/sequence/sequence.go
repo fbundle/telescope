@@ -1,5 +1,7 @@
 package sequence
 
+import "telescope/util/side_channel"
+
 type Seq[T any] interface {
 	Get(i int) T
 	Set(i int, val T) Seq[T]
@@ -69,4 +71,25 @@ func (t wbt[T]) Repr() []T {
 		return true
 	})
 	return buffer
+}
+
+func Slice[T any](s Seq[T], beg int, end int) Seq[T] {
+	if beg > end {
+		side_channel.Panic("slice out of range")
+		return nil
+	}
+	s, _ = s.Split(end)
+	_, s = s.Split(beg)
+	return s
+}
+
+func Concat[T any](ss ...Seq[T]) Seq[T] {
+	if len(ss) == 0 {
+		return nil
+	}
+	s := ss[0]
+	for i := 1; i < len(ss); i++ {
+		s = s.Concat(ss[i])
+	}
+	return s
 }

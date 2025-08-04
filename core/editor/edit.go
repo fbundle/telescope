@@ -5,6 +5,7 @@ import (
 	"telescope/config"
 	"telescope/core/log"
 	"telescope/core/text"
+	seq "telescope/util/persistent/sequence"
 	"telescope/util/side_channel"
 )
 
@@ -206,27 +207,26 @@ func (e *editor) Apply(entry log.Entry) {
 	}
 }
 
-func (e *editor) InsertLine(beg int, end int) {
+func (e *editor) InsertLine(lines seq.Seq[text.Line]) {
 	e.lockRender(func() {
+		t := e.text.Get()
 		e.writeLog(log.Entry{
 			Command: log.CommandInsertLine,
-			Beg:     uint64(beg),
-			End:     uint64(end),
+			Text:    text.GetLines(t.Reader, lines),
 		})
 		row := e.cursor.Row
 		update := func(t text.Text) text.Text {
-			l := t.Lines
-			l, _ = l.Split(end)
-			_, l = l.Split(beg)
-			l1, l2 := t.Lines.Split(row)
-			l = l1.Concat(l).Concat(l2)
 			return text.Text{
 				Reader: t.Reader,
-				Lines:  l,
+				Lines: seq.Concat(
+					seq.Slice(t.Lines, 0, row),
+					lines,
+					seq.Slice(t.Lines, row, t.Lines.Len()),
+				),
 			}
 		}
 		e.text.Update(update)
-		e.moveRelativeAndFixWithoutLock(end-beg, 0)
+		e.moveRelativeAndFixWithoutLock(lines.Len(), 0)
 		e.setMessageWithoutLock("insert lines")
 	})
 }
@@ -240,12 +240,12 @@ func (e *editor) DeleteLine(count int) {
 			Count:   uint64(count),
 		})
 		update := func(t text.Text) text.Text {
-			l1, l2 := t.Lines.Split(row)
-			_, l2 = l2.Split(count)
-			l := l1.Concat(l2)
 			return text.Text{
 				Reader: t.Reader,
-				Lines:  l,
+				Lines: seq.Concat(
+					seq.Slice(t.Lines, 0, row),
+					seq.Slice(t.Lines, row+count, t.Lines.Len()),
+				),
 			}
 		}
 		e.text.Update(update)

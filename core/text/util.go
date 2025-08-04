@@ -3,6 +3,7 @@ package text
 import (
 	"context"
 	"telescope/util/buffer"
+	seq "telescope/util/persistent/sequence"
 )
 
 const delim byte = '\n'
@@ -38,4 +39,12 @@ func indexFile(ctx context.Context, reader buffer.Buffer, update func(offset int
 		update(offset, line)
 	}
 	return nil
+}
+
+func GetLines(reader buffer.Buffer, lines seq.Seq[Line]) [][]rune {
+	out := make([][]rune, 0, lines.Len())
+	for _, line := range lines.Iter {
+		out = append(out, line.Repr(reader))
+	}
+	return out
 }
