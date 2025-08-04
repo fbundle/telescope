@@ -38,6 +38,7 @@
 
 # TODO
 
+- change `Vector` to `Sequence` or `Seq`
 - optimize size of `core.text.Line` to a single `int64`
 - make clipboard just another persistent vector (`vector.Vector`) to save space and copying more efficient
 - make binary serializer works with delete lines and insert lines
