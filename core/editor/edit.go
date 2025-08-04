@@ -202,6 +202,12 @@ func (e *editor) Apply(entry log.Entry) {
 		e.Undo()
 	case log.CommandRedo:
 		e.Redo()
+	case log.CommandInsertLine:
+		e.Goto(int(entry.Row), 0)
+		e.InsertLine(text.GetSeqFromLines(entry.Text))
+	case log.CommandDeleteLine:
+		e.Goto(int(entry.Row), 0)
+		e.DeleteLine(int(entry.Count))
 	default:
 		side_channel.Panic("command not found")
 	}
@@ -212,6 +218,7 @@ func (e *editor) InsertLine(lines seq.Seq[text.Line]) {
 		t := e.text.Get()
 		e.writeLog(log.Entry{
 			Command: log.CommandInsertLine,
+			Row:     uint64(e.cursor.Row),
 			Text:    text.GetLinesFromSeq(t.Reader, lines),
 		})
 		row := e.cursor.Row
