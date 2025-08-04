@@ -20,75 +20,75 @@ type Text interface {
 
 func New(reader buffer.Buffer) Text {
 	return text{
-		reader: reader,
-		vec:    sequence.New[Line](),
+		Reader: reader,
+		Lines:  sequence.New[Line](),
 	}
 }
 
 type text struct {
-	reader buffer.Buffer
-	vec    sequence.Seq[Line]
+	Reader buffer.Buffer
+	Lines  sequence.Seq[Line]
 }
 
 func (t text) Append(line Line) Text {
 	return text{
-		reader: t.reader,
-		vec:    t.vec.Ins(t.vec.Len(), line),
+		Reader: t.Reader,
+		Lines:  t.Lines.Ins(t.Lines.Len(), line),
 	}
 }
 
 func (t text) Get(i int) []rune {
-	return t.vec.Get(i).Repr(t.reader)
+	return t.Lines.Get(i).Repr(t.Reader)
 }
 
 func (t text) Set(i int, val []rune) Text {
 	return text{
-		reader: t.reader,
-		vec:    t.vec.Set(i, makeLineFromData(val)),
+		Reader: t.Reader,
+		Lines:  t.Lines.Set(i, makeLineFromData(val)),
 	}
 }
 
 func (t text) Ins(i int, val []rune) Text {
 	return text{
-		reader: t.reader,
-		vec:    t.vec.Ins(i, makeLineFromData(val)),
+		Reader: t.Reader,
+		Lines:  t.Lines.Ins(i, makeLineFromData(val)),
 	}
 }
 
 func (t text) Del(i int) Text {
 	return text{
-		reader: t.reader,
-		vec:    t.vec.Del(i),
+		Reader: t.Reader,
+		Lines:  t.Lines.Del(i),
 	}
 }
 
 func (t text) Iter(f func(i int, val []rune) bool) {
-	t.vec.Iter(func(i int, l Line) bool {
-		return f(i, l.Repr(t.reader))
+	t.Lines.Iter(func(i int, l Line) bool {
+		return f(i, l.Repr(t.Reader))
 	})
 }
 
 func (t text) Len() int {
-	return t.vec.Len()
+	return t.Lines.Len()
 }
 
 func (t text) Split(i int) (Text, Text) {
-	v1, v2 := t.vec.Split(i)
+	v1, v2 := t.Lines.Split(i)
 	return text{
-			reader: t.reader,
-			vec:    v1,
+			Reader: t.Reader,
+			Lines:  v1,
 		}, text{
-			reader: t.reader,
-			vec:    v2,
+			Reader: t.Reader,
+			Lines:  v2,
 		}
 }
 
 func (t text) Concat(t2 Text) Text {
-	if t.reader != t2.(*text).reader {
+	if t.Reader != t2.(*text).Reader {
 		side_channel.Panic("different readers")
 	}
 	return text{
-		reader: t.reader,
-		vec:    t.vec.Concat(t2.(*text).vec),
+		Reader: t.Reader,
+		Lines:  t.Lines.Concat(t2.(*text).Lines),
 	}
 }
