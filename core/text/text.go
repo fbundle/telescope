@@ -2,20 +2,20 @@ package text
 
 import (
 	"telescope/util/buffer"
-	"telescope/util/persistent/sequence"
+	seq "telescope/util/persistent/sequence"
 	"telescope/util/side_channel"
 )
 
 func New(reader buffer.Buffer) Text {
 	return Text{
 		Reader: reader,
-		Lines:  sequence.New[Line](),
+		Lines:  seq.New[Line](),
 	}
 }
 
 type Text struct {
 	Reader buffer.Buffer
-	Lines  sequence.Seq[Line]
+	Lines  seq.Seq[Line]
 }
 
 func (t Text) Append(line Line) Text {
