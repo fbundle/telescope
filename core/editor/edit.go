@@ -212,7 +212,7 @@ func (e *editor) InsertLine(lines seq.Seq[text.Line]) {
 		t := e.text.Get()
 		e.writeLog(log.Entry{
 			Command: log.CommandInsertLine,
-			Text:    text.GetLines(t.Reader, lines),
+			Text:    text.GetLinesFromSeq(t.Reader, lines),
 		})
 		row := e.cursor.Row
 		update := func(t text.Text) text.Text {

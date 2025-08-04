@@ -41,10 +41,18 @@ func indexFile(ctx context.Context, reader buffer.Buffer, update func(offset int
 	return nil
 }
 
-func GetLines(reader buffer.Buffer, lines seq.Seq[Line]) [][]rune {
+func GetLinesFromSeq(reader buffer.Buffer, lines seq.Seq[Line]) [][]rune {
 	out := make([][]rune, 0, lines.Len())
 	for _, line := range lines.Iter {
 		out = append(out, line.Repr(reader))
 	}
 	return out
+}
+
+func GetSeqFromLines(lines [][]rune) seq.Seq[Line] {
+	s := seq.New[Line]()
+	for _, line := range lines {
+		s = s.Ins(s.Len(), MakeLineFromData(line))
+	}
+	return s
 }
