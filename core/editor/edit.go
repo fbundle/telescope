@@ -206,21 +206,27 @@ func (e *editor) Apply(entry log.Entry) {
 	}
 }
 
-func (e *editor) InsertLine(lines [][]rune) {
+func (e *editor) InsertLine(beg int, end int) {
 	e.lockRender(func() {
 		e.writeLog(log.Entry{
 			Command: log.CommandInsertLine,
-			Text:    lines,
+			Beg:     uint64(beg),
+			End:     uint64(end),
 		})
 		row := e.cursor.Row
 		update := func(t text.Text) text.Text {
-			for i := len(lines) - 1; i >= 0; i-- {
-				t = t.Ins(row, lines[i])
+			l := t.Lines
+			l, _ = l.Split(end)
+			_, l = l.Split(beg)
+			l1, l2 := t.Lines.Split(row)
+			l = l1.Concat(l).Concat(l2)
+			return text.Text{
+				Reader: t.Reader,
+				Lines:  l,
 			}
-			return t
 		}
 		e.text.Update(update)
-		e.moveRelativeAndFixWithoutLock(len(lines), 0)
+		e.moveRelativeAndFixWithoutLock(end-beg, 0)
 		e.setMessageWithoutLock("insert lines")
 	})
 }
@@ -234,10 +240,13 @@ func (e *editor) DeleteLine(count int) {
 			Count:   uint64(count),
 		})
 		update := func(t text.Text) text.Text {
-			for i := 0; i < count; i++ {
-				t = t.Del(row)
+			l1, l2 := t.Lines.Split(row)
+			_, l2 = l2.Split(count)
+			l := l1.Concat(l2)
+			return text.Text{
+				Reader: t.Reader,
+				Lines:  l,
 			}
-			return t
 		}
 		e.text.Update(update)
 		e.setMessageWithoutLock("delete lines")

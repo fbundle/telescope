@@ -57,7 +57,7 @@ func (t wbt[T]) Split(i int) (Seq[T], Seq[T]) {
 }
 
 func (t wbt[T]) Concat(other Seq[T]) Seq[T] {
-	n1, n2 := t.node, other.(*wbt[T]).node
+	n1, n2 := t.node, other.(wbt[T]).node
 	n3 := merge(n1, n2)
 	return wbt[T]{node: n3}
 }

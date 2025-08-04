@@ -53,7 +53,7 @@ type Edit interface {
 	Redo()
 	Apply(entry log.Entry)
 
-	InsertLine(lines [][]rune)
+	InsertLine(beg int, end int)
 	DeleteLine(count int)
 }
 

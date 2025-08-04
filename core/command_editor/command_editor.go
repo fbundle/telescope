@@ -31,13 +31,13 @@ type Selector struct {
 	End int
 }
 
-type clipboard [][]rune
+type clipboard Selector
 
 type state struct {
 	mode      Mode
 	command   string
 	selector  *Selector
-	clipboard clipboard
+	clipboard *clipboard
 }
 
 type commandEditor struct {
@@ -108,7 +108,7 @@ func (c *commandEditor) Type(ch rune) {
 					c.writeWithoutLock("clipboard is empty")
 					return
 				}
-				c.e.InsertLine(c.state.clipboard)
+				c.e.InsertLine(c.state.clipboard.Beg, c.state.clipboard.End+1)
 				c.writeWithoutLock("pasted")
 			default:
 			}
@@ -124,15 +124,13 @@ func (c *commandEditor) Type(ch rune) {
 				if beg > end {
 					beg, end = end, beg
 				}
-				t := c.e.Render().Text
-				clip := make([][]rune, 0)
-				for i := beg; i <= end; i++ {
-					clip = append(clip, t.Get(i))
+				c.state.clipboard = &clipboard{
+					Beg: beg,
+					End: end,
 				}
-				c.state.clipboard = clip
 				// delete
 				c.e.Goto(beg, 0)
-				c.e.DeleteLine(len(c.state.clipboard))
+				c.e.DeleteLine(c.state.clipboard.End - c.state.clipboard.Beg + 1)
 
 				c.enterNormalModeWithoutLock()
 				c.writeWithoutLock("cut")
@@ -142,12 +140,10 @@ func (c *commandEditor) Type(ch rune) {
 				if beg > end {
 					beg, end = end, beg
 				}
-				t := c.e.Render().Text
-				clip := make([][]rune, 0)
-				for i := beg; i <= end; i++ {
-					clip = append(clip, t.Get(i))
+				c.state.clipboard = &clipboard{
+					Beg: beg,
+					End: end,
 				}
-				c.state.clipboard = clip
 				c.enterNormalModeWithoutLock()
 				c.writeWithoutLock("copied")
 			}
@@ -442,9 +438,9 @@ func (c *commandEditor) Status(update func(status editor.Status) editor.Status) 
 		c.e.Status(update)
 	})
 }
-func (c *commandEditor) InsertLine(lines [][]rune) {
+func (c *commandEditor) InsertLine(beg int, end int) {
 	c.lock(func() {
-		c.e.InsertLine(lines)
+		c.e.InsertLine(beg, end)
 	})
 }
 

@@ -22,4 +22,6 @@ type Entry struct {
 	Rune    rune     `json:"rune,omitempty"`
 	Text    [][]rune `json:"text,omitempty"`
 	Count   uint64   `json:"count,omitempty"`
+	Beg     uint64   `json:"beg,omitempty"`
+	End     uint64   `json:"end,omitempty"`
 }
