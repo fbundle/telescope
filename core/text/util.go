@@ -9,7 +9,7 @@ const delim byte = '\n'
 
 func LoadFile(ctx context.Context, reader buffer.Buffer, update func(Line, int)) error {
 	return indexFile(ctx, reader, func(offset int, line []byte) {
-		l := makeLineFromFile(offset)
+		l := MakeLineFromOffset(offset)
 		update(l, len(line))
 	})
 }
