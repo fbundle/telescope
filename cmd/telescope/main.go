@@ -28,6 +28,12 @@ type programArgs struct {
 }
 
 func main() {
+	defer func() {
+		if err := recover(); err != nil {
+			side_channel.Panic(err)
+		}
+	}()
+
 	args := getProgramArgs()
 	switch args.option {
 	case "-h", "--help":
