@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"telescope/core/editor"
 	"telescope/core/log"
 )
 
@@ -39,7 +40,7 @@ func RunReplay(inputFilename string, logFilename string) error {
 
 	_, _ = fmt.Fprintf(os.Stderr, "loading log file %s\n", logFilename)
 
-	err = log.Read(logFilename, func(entry log.Entry) bool {
+	err = log.Read(logFilename, func(entry editor.Entry) bool {
 		e.Apply(entry)
 		return true
 	})

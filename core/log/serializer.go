@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"telescope/config"
+	"telescope/core/editor"
 	"telescope/util/side_channel"
 )
 
 type Serializer interface {
-	Marshal(Entry) ([]byte, error)
-	Unmarshal([]byte) (Entry, error)
+	Marshal(editor.Entry) ([]byte, error)
+	Unmarshal([]byte) (editor.Entry, error)
 	Version() uint64
 }
 
@@ -27,7 +28,7 @@ func GetSerializer(version uint64) (Serializer, error) {
 
 type humanReadableSerializer struct{}
 
-func (humanReadableSerializer) Marshal(e Entry) ([]byte, error) {
+func (humanReadableSerializer) Marshal(e editor.Entry) ([]byte, error) {
 	b, err := json.Marshal(e)
 	// padding for human readability
 	b1 := []byte{' '}
@@ -37,7 +38,7 @@ func (humanReadableSerializer) Marshal(e Entry) ([]byte, error) {
 	return b1, err
 }
 
-func (humanReadableSerializer) Unmarshal(b []byte) (e Entry, err error) {
+func (humanReadableSerializer) Unmarshal(b []byte) (e editor.Entry, err error) {
 	err = json.Unmarshal(b, &e)
 	return e, err
 }
@@ -48,20 +49,20 @@ func (humanReadableSerializer) Version() uint64 {
 
 type binarySerializer struct{}
 
-var commandList = []Command{
-	CommandSetVersion,
-	CommandType,
-	CommandEnter,
-	CommandBackspace,
-	CommandDelete,
-	CommandUndo,
-	CommandRedo,
+var commandList = []editor.Command{
+	editor.CommandSetVersion,
+	editor.CommandType,
+	editor.CommandEnter,
+	editor.CommandBackspace,
+	editor.CommandDelete,
+	editor.CommandUndo,
+	editor.CommandRedo,
 }
-var commandToByteMap map[Command]byte = nil
+var commandToByteMap map[editor.Command]byte = nil
 
-func commandToByte(c Command) byte {
+func commandToByte(c editor.Command) byte {
 	if commandToByteMap == nil {
-		commandToByteMap = make(map[Command]byte)
+		commandToByteMap = make(map[editor.Command]byte)
 		for i, cmd := range commandList {
 			commandToByteMap[cmd] = byte(i)
 		}
@@ -69,7 +70,7 @@ func commandToByte(c Command) byte {
 	return commandToByteMap[c]
 }
 
-func byteToCommand(b byte) Command {
+func byteToCommand(b byte) editor.Command {
 	return commandList[b]
 }
 
@@ -80,38 +81,38 @@ func consume(buffer []byte, n int) ([]byte, []byte) {
 	return buffer[n:], buffer[:n]
 }
 
-func (binarySerializer) Marshal(e Entry) ([]byte, error) {
+func (binarySerializer) Marshal(e editor.Entry) ([]byte, error) {
 	var buffer []byte
 	buffer = append(buffer, commandToByte(e.Command))
 	switch e.Command {
-	case CommandSetVersion:
+	case editor.CommandSetVersion:
 		buffer = append(buffer, uint64ToBytes(e.Version)...)
 		return buffer, nil
-	case CommandType:
+	case editor.CommandType:
 		buffer = append(buffer, uint64ToBytes(e.Row)...)
 		buffer = append(buffer, uint64ToBytes(e.Col)...)
 		buffer = append(buffer, runeToBytes(e.Rune)...)
 		return buffer, nil
-	case CommandEnter, CommandBackspace, CommandDelete:
+	case editor.CommandEnter, editor.CommandBackspace, editor.CommandDelete:
 		buffer = append(buffer, uint64ToBytes(e.Row)...)
 		buffer = append(buffer, uint64ToBytes(e.Col)...)
 		return buffer, nil
-	case CommandUndo, CommandRedo:
+	case editor.CommandUndo, editor.CommandRedo:
 		return buffer, nil
 	default:
 		return nil, errors.New("command not found")
 	}
 }
 
-func (binarySerializer) Unmarshal(buffer []byte) (e Entry, err error) {
+func (binarySerializer) Unmarshal(buffer []byte) (e editor.Entry, err error) {
 	buffer, b := consume(buffer, 1)
 	e.Command = byteToCommand(b[0])
 	switch e.Command {
-	case CommandSetVersion:
+	case editor.CommandSetVersion:
 		buffer, b = consume(buffer, 8)
 		e.Version = bytesToUint64(b)
 		return e, nil
-	case CommandType:
+	case editor.CommandType:
 		buffer, b = consume(buffer, 8)
 		e.Row = bytesToUint64(b)
 		buffer, b = consume(buffer, 8)
@@ -119,13 +120,13 @@ func (binarySerializer) Unmarshal(buffer []byte) (e Entry, err error) {
 		buffer, b = consume(buffer, 4)
 		e.Rune = bytesToRune(b)
 		return e, nil
-	case CommandEnter, CommandBackspace, CommandDelete:
+	case editor.CommandEnter, editor.CommandBackspace, editor.CommandDelete:
 		buffer, b = consume(buffer, 8)
 		e.Row = bytesToUint64(b)
 		buffer, b = consume(buffer, 8)
 		e.Col = bytesToUint64(b)
 		return e, nil
-	case CommandUndo, CommandRedo:
+	case editor.CommandUndo, editor.CommandRedo:
 		return e, nil
 	}
 	return e, errors.New("parse error")

@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	"telescope/config"
+	"telescope/core/editor"
 	"telescope/core/log"
 )
 
@@ -15,7 +16,7 @@ func RunLog(logFilename string) error {
 		return err
 	}
 
-	err = log.Read(logFilename, func(e log.Entry) bool {
+	err = log.Read(logFilename, func(e editor.Entry) bool {
 		var b []byte
 		b, err = s.Marshal(e)
 		if err != nil {

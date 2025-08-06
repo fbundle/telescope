@@ -4,10 +4,11 @@ import (
 	"io"
 	"os"
 	"telescope/config"
+	"telescope/core/editor"
 	"time"
 )
 
-func Read(filename string, apply func(e Entry) bool) error {
+func Read(filename string, apply func(e editor.Entry) bool) error {
 	f, err := os.Open(filename)
 	if err != nil {
 		return err
@@ -33,7 +34,7 @@ func Read(filename string, apply func(e Entry) bool) error {
 				return nil, true, err
 			}
 			switch e.Command {
-			case CommandSetVersion:
+			case editor.CommandSetVersion:
 				s1, err := GetSerializer(e.Version)
 				return s1, true, err
 			default:

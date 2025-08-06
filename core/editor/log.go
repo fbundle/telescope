@@ -1,4 +1,4 @@
-package log
+package editor
 
 type Command string
 

@@ -3,7 +3,7 @@ package insert_editor
 import (
 	"slices"
 	"telescope/config"
-	"telescope/core/log"
+	"telescope/core/editor"
 	"telescope/core/text"
 	seq "telescope/util/persistent/sequence"
 	"telescope/util/side_channel"
@@ -11,8 +11,8 @@ import (
 
 func (e *Editor) Type(ch rune) {
 	e.lockRender(func() {
-		e.writeLog(log.Entry{
-			Command: log.CommandType,
+		e.writeLog(editor.Entry{
+			Command: editor.CommandType,
 			Rune:    ch,
 			Row:     uint64(e.cursor.Row),
 			Col:     uint64(e.cursor.Col),
@@ -40,8 +40,8 @@ func (e *Editor) Type(ch rune) {
 
 func (e *Editor) Backspace() {
 	e.lockRender(func() {
-		e.writeLog(log.Entry{
-			Command: log.CommandBackspace,
+		e.writeLog(editor.Entry{
+			Command: editor.CommandBackspace,
 			Row:     uint64(e.cursor.Row),
 			Col:     uint64(e.cursor.Col),
 		})
@@ -82,8 +82,8 @@ func (e *Editor) Backspace() {
 
 func (e *Editor) Delete() {
 	e.lockRender(func() {
-		e.writeLog(log.Entry{
-			Command: log.CommandDelete,
+		e.writeLog(editor.Entry{
+			Command: editor.CommandDelete,
 			Row:     uint64(e.cursor.Row),
 			Col:     uint64(e.cursor.Col),
 		})
@@ -119,8 +119,8 @@ func (e *Editor) Delete() {
 
 func (e *Editor) Enter() {
 	e.lockRender(func() {
-		e.writeLog(log.Entry{
-			Command: log.CommandEnter,
+		e.writeLog(editor.Entry{
+			Command: editor.CommandEnter,
 			Row:     uint64(e.cursor.Row),
 			Col:     uint64(e.cursor.Col),
 		})
@@ -166,8 +166,8 @@ func (e *Editor) Tabular() {
 
 func (e *Editor) Undo() {
 	e.lockRender(func() {
-		e.writeLog(log.Entry{
-			Command: log.CommandUndo,
+		e.writeLog(editor.Entry{
+			Command: editor.CommandUndo,
 		})
 		e.text.Undo()
 		e.setMessageWithoutLock("undo")
@@ -176,36 +176,36 @@ func (e *Editor) Undo() {
 
 func (e *Editor) Redo() {
 	e.lockRender(func() {
-		e.writeLog(log.Entry{
-			Command: log.CommandRedo,
+		e.writeLog(editor.Entry{
+			Command: editor.CommandRedo,
 		})
 		e.text.Redo()
 		e.setMessageWithoutLock("redo")
 	})
 }
 
-func (e *Editor) Apply(entry log.Entry) {
+func (e *Editor) Apply(entry editor.Entry) {
 	switch entry.Command {
-	case log.CommandEnter:
+	case editor.CommandEnter:
 		e.Goto(int(entry.Row), int(entry.Col))
 		e.Enter()
-	case log.CommandBackspace:
+	case editor.CommandBackspace:
 		e.Goto(int(entry.Row), int(entry.Col))
 		e.Backspace()
-	case log.CommandDelete:
+	case editor.CommandDelete:
 		e.Goto(int(entry.Row), int(entry.Col))
 		e.Delete()
-	case log.CommandType:
+	case editor.CommandType:
 		e.Goto(int(entry.Row), int(entry.Col))
 		e.Type(entry.Rune)
-	case log.CommandUndo:
+	case editor.CommandUndo:
 		e.Undo()
-	case log.CommandRedo:
+	case editor.CommandRedo:
 		e.Redo()
-	case log.CommandInsertLine:
+	case editor.CommandInsertLine:
 		e.Goto(int(entry.Row), 0)
 		e.InsertLine(text.GetSeqFromLines(entry.Text))
-	case log.CommandDeleteLine:
+	case editor.CommandDeleteLine:
 		e.Goto(int(entry.Row), 0)
 		e.DeleteLine(int(entry.Count))
 	default:
@@ -216,8 +216,8 @@ func (e *Editor) Apply(entry log.Entry) {
 func (e *Editor) InsertLine(lines seq.Seq[text.Line]) {
 	e.lockRender(func() {
 		t := e.text.Get()
-		e.writeLog(log.Entry{
-			Command: log.CommandInsertLine,
+		e.writeLog(editor.Entry{
+			Command: editor.CommandInsertLine,
 			Row:     uint64(e.cursor.Row),
 			Text:    text.GetLinesFromSeq(t.Reader, lines),
 		})
@@ -241,8 +241,8 @@ func (e *Editor) InsertLine(lines seq.Seq[text.Line]) {
 func (e *Editor) DeleteLine(count int) {
 	e.lockRender(func() {
 		row := e.cursor.Row
-		e.writeLog(log.Entry{
-			Command: log.CommandDeleteLine,
+		e.writeLog(editor.Entry{
+			Command: editor.CommandDeleteLine,
 			Row:     uint64(row),
 			Count:   uint64(count),
 		})

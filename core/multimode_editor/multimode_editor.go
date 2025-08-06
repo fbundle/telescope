@@ -6,7 +6,6 @@ import (
 	"telescope/config"
 	"telescope/core/editor"
 	"telescope/core/insert_editor"
-	"telescope/core/log"
 	"telescope/core/text"
 	"telescope/util/buffer"
 	seq "telescope/util/persistent/sequence"
@@ -225,7 +224,7 @@ func (c *Editor) Redo() {
 	})
 }
 
-func (c *Editor) Apply(entry log.Entry) {
+func (c *Editor) Apply(entry editor.Entry) {
 	c.lock(func() {
 		c.e.Apply(entry)
 	})
@@ -310,7 +309,7 @@ func (c *Editor) Action(action map[string]any) {
 	}
 }
 
-func (c *Editor) Subscribe(consume func(log.Entry)) uint64 {
+func (c *Editor) Subscribe(consume func(editor.Entry)) uint64 {
 	return c.e.Subscribe(consume)
 }
 func (c *Editor) Unsubscribe(key uint64) {

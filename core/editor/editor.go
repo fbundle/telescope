@@ -2,7 +2,6 @@ package editor
 
 import (
 	"context"
-	"telescope/core/log"
 	"telescope/core/text"
 	"telescope/util/buffer"
 	seq "telescope/util/persistent/sequence"
@@ -52,7 +51,7 @@ type Edit interface {
 	Tabular()
 	Undo()
 	Redo()
-	Apply(entry log.Entry)
+	Apply(entry Entry)
 
 	InsertLine(lines seq.Seq[text.Line])
 	DeleteLine(count int)
@@ -69,7 +68,7 @@ type Editor interface {
 	Resize(height int, width int)
 	Status(update func(status Status) Status)
 	Action(map[string]any) // arbitrary action
-	Subscribe(func(log.Entry)) uint64
+	Subscribe(func(Entry)) uint64
 	Unsubscribe(key uint64)
 	Render
 	Edit

@@ -4,10 +4,11 @@ import (
 	"io"
 	"sync"
 	"telescope/config"
+	"telescope/core/editor"
 )
 
 type Writer interface {
-	Write(e Entry) error
+	Write(e editor.Entry) error
 }
 
 func NewWriter(iowriter io.Writer) (Writer, error) {
@@ -25,8 +26,8 @@ func NewWriter(iowriter io.Writer) (Writer, error) {
 
 	// write set_version using INITIAL_SERIALIZER_VERSION
 	// tell reader to use SERIALIZER_VERSION
-	err = w.Write(Entry{
-		Command: CommandSetVersion,
+	err = w.Write(editor.Entry{
+		Command: editor.CommandSetVersion,
 		Version: config.Load().SERIALIZER_VERSION,
 	})
 	if err != nil {
@@ -44,10 +45,10 @@ func NewWriter(iowriter io.Writer) (Writer, error) {
 type writer struct {
 	mu      sync.Mutex
 	writer  io.Writer
-	marshal func(Entry) ([]byte, error)
+	marshal func(editor.Entry) ([]byte, error)
 }
 
-func (w *writer) Write(e Entry) error {
+func (w *writer) Write(e editor.Entry) error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
