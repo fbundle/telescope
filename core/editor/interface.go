@@ -16,7 +16,7 @@ type Position struct {
 type Status struct {
 	Message    string
 	Background string
-	Other      map[string]any
+	Other      map[string]any // arbitrary view
 }
 
 type Window struct {
@@ -68,7 +68,7 @@ type Editor interface {
 	Escape()
 	Resize(height int, width int)
 	Status(update func(status Status) Status)
-	Action(map[string]any)
+	Action(map[string]any) // arbitrary action
 	Render
 	Edit
 	Move
