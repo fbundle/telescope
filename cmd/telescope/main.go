@@ -173,7 +173,8 @@ func getProgramArgs() programArgs {
 	args, pargs.secondFilename = consume(args)
 	if len(pargs.secondFilename) == 0 {
 		pargs.firstFilename, pargs.secondFilename = getDefaultLogFilename(pargs.firstFilename)
-
+	} else {
+		pargs.firstFilename, _ = getDefaultLogFilename(pargs.firstFilename)
 	}
 	return pargs
 }
