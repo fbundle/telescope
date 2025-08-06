@@ -56,9 +56,9 @@ const (
 )
 
 type Config struct {
+	DEBUG                      bool
 	VERSION                    string
 	HELP                       string
-	DEBUG_IO_DELAY             time.Duration
 	LOG_AUTOFLUSH_INTERVAL     time.Duration
 	LOADING_PROGRESS_INTERVAL  time.Duration
 	SERIALIZER_VERSION         uint64
@@ -75,12 +75,12 @@ type Config struct {
 
 func Load() Config {
 	tempDir := os.TempDir()
-
+	debug := len(os.Getenv("DEBUG")) > 0
 	// TODO - export these into environment variables
 	return Config{
+		DEBUG:                     debug,
 		VERSION:                   VERSION,
 		HELP:                      HELP,
-		DEBUG_IO_DELAY:            100 * time.Millisecond,
 		LOG_AUTOFLUSH_INTERVAL:    60 * time.Second,
 		LOADING_PROGRESS_INTERVAL: 100 * time.Millisecond,
 		// SERIALIZER_VERSION:         BINARY_SERIALIZER,
@@ -95,8 +95,4 @@ func Load() Config {
 		SIDE_CHANNEL_PATH:          filepath.Join(tempDir, "telescope", "tmp", "side_channel.txt"),
 		SCROLL_SPEED:               3,
 	}
-}
-
-func Debug() bool {
-	return len(os.Getenv("DEBUG")) > 0
 }

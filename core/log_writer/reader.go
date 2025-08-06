@@ -5,7 +5,6 @@ import (
 	"os"
 	"telescope/config"
 	"telescope/core/editor"
-	"time"
 )
 
 func Read(filename string, apply func(e editor.LogEntry) bool) error {
@@ -38,9 +37,6 @@ func Read(filename string, apply func(e editor.LogEntry) bool) error {
 				s1, err := GetSerializer(e.Version)
 				return s1, true, err
 			default:
-				if config.Debug() {
-					time.Sleep(config.Load().DEBUG_IO_DELAY)
-				}
 				return s, apply(e), nil
 			}
 		}(s, b)
