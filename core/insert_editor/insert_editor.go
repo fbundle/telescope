@@ -111,10 +111,11 @@ func (e *Editor) Status(update func(status editor.Status) editor.Status) {
 }
 
 func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Context, error) {
-	loadCtx, loadDone := context.WithCancel(ctx) // if ctx is done then this insert_editor will also stop loading
+	loadCtx, loadDone := context.WithCancel(context.Background())
 	var err error = nil
 	e.lockRender(func() {
 		if e.text != nil {
+			loadDone()
 			err = errors.New("load twice")
 			return
 		}
