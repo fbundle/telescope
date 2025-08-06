@@ -166,7 +166,7 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		c.enterNormalModeWithoutLock()
 		c.writeWithoutLock("goto line " + cmd)
 		return
-	case strings.HasPrefix(cmd, ":w") || strings.HasPrefix(cmd, ":write"):
+	case cmd == ":w" || cmd == ":write" || cmd == ":wq":
 		filename := c.defaultOutputFile
 
 		// write file
