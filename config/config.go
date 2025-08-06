@@ -75,6 +75,7 @@ type Config struct {
 
 func Load() Config {
 	tempDir := os.TempDir()
+	tempDir = "/tmp/"
 
 	// TODO - export these into environment variables
 	return Config{

@@ -69,6 +69,8 @@ type Editor interface {
 	Resize(height int, width int)
 	Status(update func(status Status) Status)
 	Action(map[string]any) // arbitrary action
+	Subscribe(func(log.Entry)) uint64
+	Unsubscribe(key uint64)
 	Render
 	Edit
 	Move

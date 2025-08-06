@@ -62,12 +62,14 @@ func makeInsertEditor(ctx context.Context, inputFilename string, logFilename str
 	// insert_editor
 	e, err := insert_editor.New(
 		height-1, width,
-		logWriter,
 	)
 	if err != nil {
 		closer()
 		return nil, nil, nil, nil, err
 	}
+	e.Subscribe(func(entry log.Entry) {
+		_ = logWriter.Write(entry)
+	})
 
 	// load input file
 	loadCtx, err := e.Load(ctx, inputBuffer)

@@ -9,6 +9,7 @@ import (
 	"telescope/core/editor"
 	"telescope/core/hist"
 	"telescope/core/log"
+	"telescope/core/subsciber_pool"
 	"telescope/core/text"
 	"telescope/util/buffer"
 	"telescope/util/side_channel"
@@ -16,24 +17,22 @@ import (
 )
 
 type Editor struct {
-	renderCh  chan editor.View
-	logWriter log.Writer
+	renderCh chan editor.View
 
 	mu     sync.Mutex // the fields below are protected by mu
 	text   hist.Hist[text.Text]
 	cursor editor.Position
 	window editor.Window
 	status editor.Status
+	pool   *subsciber_pool.Pool[func(log.Entry)]
 }
 
 func New(
 	height int, width int,
-	logWriter log.Writer,
 ) (*Editor, error) {
 	e := &Editor{
 		// buffered channel is necessary  for preventing deadlock
-		renderCh:  make(chan editor.View, config.Load().VIEW_CHANNEL_SIZE),
-		logWriter: logWriter,
+		renderCh: make(chan editor.View, config.Load().VIEW_CHANNEL_SIZE),
 
 		mu:   sync.Mutex{},
 		text: nil,
@@ -49,6 +48,7 @@ func New(
 			Background: "",
 			Other:      nil,
 		},
+		pool: subsciber_pool.New[func(log.Entry)](),
 	}
 	return e, nil
 }
@@ -73,14 +73,21 @@ func (e *Editor) setMessageWithoutLock(format string, a ...any) {
 }
 
 func (e *Editor) writeLog(entry log.Entry) {
-	if e.logWriter == nil {
-		return
+	for _, consume := range e.pool.Iter {
+		consume(entry)
 	}
-	_, err := e.logWriter.Write(entry)
-	if err != nil {
-		side_channel.Panic("error write log", err)
-		return
-	}
+}
+
+func (e *Editor) Subscribe(consume func(log.Entry)) uint64 {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	return e.pool.Subscribe(consume)
+}
+
+func (e *Editor) Unsubscribe(key uint64) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.pool.Unsubscribe(key)
 }
 
 func (e *Editor) Resize(height int, width int) {

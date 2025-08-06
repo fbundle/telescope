@@ -309,3 +309,10 @@ func (c *Editor) Action(action map[string]any) {
 		}
 	}
 }
+
+func (c *Editor) Subscribe(consume func(log.Entry)) uint64 {
+	return c.e.Subscribe(consume)
+}
+func (c *Editor) Unsubscribe(key uint64) {
+	c.e.Unsubscribe(key)
+}

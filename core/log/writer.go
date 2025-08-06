@@ -7,7 +7,7 @@ import (
 )
 
 type Writer interface {
-	Write(e Entry) (Writer, error)
+	Write(e Entry) error
 }
 
 func NewWriter(iowriter io.Writer) (Writer, error) {
@@ -25,7 +25,7 @@ func NewWriter(iowriter io.Writer) (Writer, error) {
 
 	// write set_version using INITIAL_SERIALIZER_VERSION
 	// tell reader to use SERIALIZER_VERSION
-	_, err = w.Write(Entry{
+	err = w.Write(Entry{
 		Command: CommandSetVersion,
 		Version: config.Load().SERIALIZER_VERSION,
 	})
@@ -47,18 +47,14 @@ type writer struct {
 	marshal func(Entry) ([]byte, error)
 }
 
-func (w *writer) Write(e Entry) (Writer, error) {
+func (w *writer) Write(e Entry) error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
 	b, err := w.marshal(e)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	err = lengthPrefixWrite(w.writer, b)
-	if err != nil {
-		return nil, err
-	}
-	return w, nil
+	return lengthPrefixWrite(w.writer, b)
 }
