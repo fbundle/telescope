@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"telescope/config"
 )
 
 var initialized = false
 
 func writeln(vs []any, msg string) bool {
-	sideChannelPath := "side_channel.txt"
+	sideChannelPath := config.Load().SIDE_CHANNEL_PATH
 
 	if !initialized {
 		initialized = true

@@ -68,6 +68,7 @@ type Config struct {
 	MAX_SEACH_TIME             time.Duration
 	TAB_SIZE                   int
 	LOG_DIR                    string
+	SIDE_CHANNEL_PATH          string
 }
 
 func Load() Config {
@@ -88,6 +89,7 @@ func Load() Config {
 		MAX_SEACH_TIME:             5 * time.Second,
 		TAB_SIZE:                   2,
 		LOG_DIR:                    filepath.Join(tempDir, "telescope_log"),
+		SIDE_CHANNEL_PATH:          filepath.Join(tempDir, "telescope_log", "side_channel.txt"),
 	}
 }
 
