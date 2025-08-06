@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-const VERSION = "0.1.7e"
+const VERSION = "0.1.7f"
 
 const HELP = `
 Usage: "telescope [option] file [logfile]"
@@ -75,7 +75,6 @@ type Config struct {
 
 func Load() Config {
 	tempDir := os.TempDir()
-	tempDir = "/tmp/"
 
 	// TODO - export these into environment variables
 	return Config{
