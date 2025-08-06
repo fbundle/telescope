@@ -148,6 +148,14 @@ func parseCommand(cmd string) (command, []string) {
 			return commandWrite, strings.Fields(cmd)
 		}
 	}
+
+	// default to goto
+	for _, prefix := range []string{":"} {
+		if strings.HasPrefix(cmd, prefix) {
+			cmd = strings.TrimPrefix(cmd, prefix)
+			return commandGoto, strings.Fields(cmd)
+		}
+	}
 	return commandUnknown, nil
 }
 
