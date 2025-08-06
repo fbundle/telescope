@@ -28,12 +28,11 @@ func indexFile(ctx context.Context, reader buffer.Reader, update func(offset int
 		}
 
 		b := reader.At(i)
-		if b != delim {
-			line = append(line, b)
-			continue
+		line = append(line, b)
+		if b == delim {
+			update(offset, line) // line with delim
+			offset, line = i+1, nil
 		}
-		update(offset, line) // line without delim
-		offset, line = offset+len(line)+1, nil
 	}
 	if len(line) > 0 {
 		update(offset, line)
