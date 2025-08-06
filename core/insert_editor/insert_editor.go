@@ -71,7 +71,7 @@ func (e *Editor) setMessageWithoutLock(format string, a ...any) {
 	e.status.Message = fmt.Sprintf(format, a...)
 }
 
-func (e *Editor) writeLog(entry editor.Entry) {
+func (e *Editor) writeLogWithoutLock(entry editor.Entry) {
 	for _, consume := range e.pool.Iter {
 		consume(entry)
 	}
