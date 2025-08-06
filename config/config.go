@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
@@ -83,6 +84,7 @@ func Load() *Config {
 	defer mu.Unlock()
 	if config == nil {
 		tempDir := os.TempDir()
+		fmt.Println("temp dir", tempDir)
 		debug := len(os.Getenv("DEBUG")) > 0
 		// TODO - export these into environment variables
 		config = &Config{
