@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"telescope/config"
+	"telescope/util/side_channel"
 )
 
 type Serializer interface {
@@ -17,6 +18,7 @@ func GetSerializer(version uint64) (Serializer, error) {
 	case config.HUMAN_READABLE_SERIALIZER:
 		return humanReadableSerializer{}, nil
 	case config.BINARY_SERIALIZER:
+		side_channel.Panic("binary serializer is not fully implemented yet")
 		return binarySerializer{}, nil
 	default:
 		return nil, errors.New("serializer not found")
