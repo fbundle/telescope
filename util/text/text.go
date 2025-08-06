@@ -8,70 +8,70 @@ import (
 
 func New(reader buffer.Reader) Text {
 	return Text{
-		Reader: reader,
-		Lines:  seq.Empty[Line](),
+		reader: reader,
+		lines:  seq.Empty[Line](),
 	}
 }
 
 type Text struct {
-	Reader buffer.Reader
-	Lines  seq.Seq[Line]
+	reader buffer.Reader
+	lines  seq.Seq[Line]
 }
 
 func (t Text) Get(i int) []rune {
-	return t.Lines.Get(i).Repr(t.Reader)
+	return t.lines.Get(i).Repr(t.reader)
 }
 
 func (t Text) Set(i int, val []rune) Text {
 	return Text{
-		Reader: t.Reader,
-		Lines:  t.Lines.Set(i, makeLineFromData(val)),
+		reader: t.reader,
+		lines:  t.lines.Set(i, makeLineFromData(val)),
 	}
 }
 
 func (t Text) Ins(i int, val []rune) Text {
 	return Text{
-		Reader: t.Reader,
-		Lines:  t.Lines.Ins(i, makeLineFromData(val)),
+		reader: t.reader,
+		lines:  t.lines.Ins(i, makeLineFromData(val)),
 	}
 }
 
 func (t Text) AppendLine(line Line) Text {
 	return Text{
-		Reader: t.Reader,
-		Lines:  t.Lines.Ins(t.Lines.Len(), line),
+		reader: t.reader,
+		lines:  t.lines.Ins(t.lines.Len(), line),
 	}
 }
 
 func (t Text) Del(i int) Text {
 	return Text{
-		Reader: t.Reader,
-		Lines:  t.Lines.Del(i),
+		reader: t.reader,
+		lines:  t.lines.Del(i),
 	}
 }
 
 func (t Text) Iter(f func(i int, val []rune) bool) {
-	t.Lines.Iter(func(i int, l Line) bool {
-		return f(i, l.Repr(t.Reader))
+	t.lines.Iter(func(i int, l Line) bool {
+		return f(i, l.Repr(t.reader))
 	})
 }
 
 func (t Text) Len() int {
-	return t.Lines.Len()
+	return t.lines.Len()
 }
 
 func (t Text) Repr() [][]rune {
-	text := make([][]rune, 0, t.Lines.Len())
-	for _, line := range t.Lines.Iter {
-		text = append(text, line.Repr(t.Reader))
+	text := make([][]rune, 0, t.lines.Len())
+	for _, line := range t.lines.Iter {
+		text = append(text, line.Repr(t.reader))
 	}
 	return text
 }
 
 func Slice(t Text, beg int, end int) Text {
 	return Text{
-		Reader: t.Reader,
-		Lines:  seq.Slice(t.Lines, beg, end),
+		reader: t.reader,
+		lines:  seq.Slice(t.lines, beg, end),
 	}
 }
 
@@ -83,18 +83,18 @@ func Merge(ts ...Text) Text {
 	t := ts[0]
 	for i := 1; i < len(ts); i++ {
 		t1 := ts[i]
-		reader := t.Reader
+		reader := t.reader
 		if reader == nil {
-			reader = t1.Reader
+			reader = t1.reader
 		} else {
-			if t1.Reader != nil && t1.Reader != reader {
+			if t1.reader != nil && t1.reader != reader {
 				side_channel.Panic("cannot merge text with different reader")
 				return Text{}
 			}
 		}
 		t = Text{
-			Reader: reader,
-			Lines:  seq.Merge(t.Lines, t1.Lines),
+			reader: reader,
+			lines:  seq.Merge(t.lines, t1.lines),
 		}
 	}
 	return t

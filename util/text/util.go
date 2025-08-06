@@ -10,7 +10,7 @@ func MakeTextFromLine(lines [][]rune) Text {
 		s = s.Ins(s.Len(), makeLineFromData(line))
 	}
 	return Text{
-		Reader: nil,
-		Lines:  s,
+		reader: nil,
+		lines:  s,
 	}
 }
