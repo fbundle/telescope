@@ -72,9 +72,11 @@ func (e *Editor) setMessageWithoutLock(format string, a ...any) {
 }
 
 func (e *Editor) writeLogWithoutLock(entry editor.LogEntry) {
-	for _, consume := range e.pool.Iter {
-		consume(entry)
-	}
+	go func() {
+		for _, consume := range e.pool.Iter {
+			consume(entry)
+		}
+	}()
 }
 
 func (e *Editor) Subscribe(consume func(editor.LogEntry)) uint64 {
