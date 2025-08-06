@@ -7,7 +7,7 @@ import (
 	"telescope/core/editor"
 	"telescope/core/insert_editor"
 	"telescope/util/buffer"
-	seq "telescope/util/persistent/sequence"
+	"telescope/util/persistent/seq"
 	"telescope/util/side_channel"
 	"telescope/util/text"
 )

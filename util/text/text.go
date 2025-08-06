@@ -2,7 +2,7 @@ package text
 
 import (
 	"telescope/util/buffer"
-	seq "telescope/util/persistent/sequence"
+	"telescope/util/persistent/seq"
 )
 
 func New(reader buffer.Reader) Text {

@@ -3,7 +3,7 @@ package text
 import (
 	"context"
 	"telescope/util/buffer"
-	seq "telescope/util/persistent/sequence"
+	"telescope/util/persistent/seq"
 )
 
 const delim byte = '\n'

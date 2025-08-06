@@ -1,4 +1,4 @@
-package sequence
+package seq
 
 const (
 	delta = 3

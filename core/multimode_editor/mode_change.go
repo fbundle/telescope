@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"telescope/config"
-	seq "telescope/util/persistent/sequence"
+	"telescope/util/persistent/seq"
 	"telescope/util/side_channel"
 	"time"
 )

@@ -11,7 +11,7 @@ import (
 	"telescope/util/hist"
 	"telescope/util/side_channel"
 	"telescope/util/subsciber_pool"
-	text2 "telescope/util/text"
+	"telescope/util/text"
 	"time"
 )
 
@@ -19,7 +19,7 @@ type Editor struct {
 	renderCh chan editor.View
 
 	mu     sync.Mutex // the fields below are protected by mu
-	text   *hist.Hist[text2.Text]
+	text   *hist.Hist[text.Text]
 	cursor editor.Position
 	window editor.Window
 	status editor.Status
@@ -119,7 +119,7 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 			err = errors.New("load twice")
 			return
 		}
-		e.text = hist.New(text2.New(reader))
+		e.text = hist.New(text.New(reader))
 		e.status.Background = "loading started"
 		go func() { // load file asynchronously
 			defer loadDone()
@@ -129,12 +129,12 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 
 			t0 := time.Now()
 			l := newLoader(reader.Len())
-			err = text2.LoadFile(ctx, reader, func(line text2.Line, size int) {
+			err = text.LoadFile(ctx, reader, func(line text.Line, size int) {
 				e.lock(func() {
-					e.text.Update(func(t text2.Text) text2.Text {
+					e.text.Update(func(t text.Text) text.Text {
 						lines := t.Lines
 						lines = lines.Ins(lines.Len(), line)
-						return text2.Text{
+						return text.Text{
 							Reader: t.Reader,
 							Lines:  lines,
 						}
