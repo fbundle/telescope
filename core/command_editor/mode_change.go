@@ -59,6 +59,11 @@ func (c *commandEditor) Type(ch rune) {
 				}
 				c.e.InsertLine(c.state.clipboard)
 				c.writeWithoutLock("pasted")
+			case 'g': // go to beg of file
+				c.e.Goto(0, 0)
+			case 'G': // go to end of file
+				row := c.e.Render().Text.Len() - 1
+				c.e.Goto(row, 0)
 			default:
 			}
 		case ModeInsert:
