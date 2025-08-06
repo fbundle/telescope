@@ -4,16 +4,17 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"sync/atomic"
 	"telescope/config"
 )
 
-var initialized = false
+var writeCount uint64 = 0
 
 func writeln(vs []any, msg string) bool {
 	sideChannelPath := config.Load().SIDE_CHANNEL_PATH
 
-	if !initialized {
-		initialized = true
+	if atomic.AddUint64(&writeCount, 1) == 1 {
+		// first call
 		_ = os.Remove(sideChannelPath)
 	}
 
