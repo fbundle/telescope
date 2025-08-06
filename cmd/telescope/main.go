@@ -46,30 +46,16 @@ func main() {
 			side_channel.Panic(err)
 		}
 	case "-i", "--insert":
-		if fileNonEmpty(args.secondFilename) {
-			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.secondFilename), false)
-			if !ok {
-				return
-			}
-			err := os.Remove(args.secondFilename)
-			if err != nil {
-				side_channel.Panic(err)
-			}
+		if !promptDeleteLogFile(args) {
+			return
 		}
 		err := ui.RunEditor(args.firstFilename, args.secondFilename, false)
 		if err != nil {
 			side_channel.Panic(err)
 		}
 	case "-c", "--command":
-		if fileNonEmpty(args.secondFilename) {
-			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.secondFilename), false)
-			if !ok {
-				return
-			}
-			err := os.Remove(args.secondFilename)
-			if err != nil {
-				side_channel.Panic(err)
-			}
+		if !promptDeleteLogFile(args) {
+			return
 		}
 		err := ui.RunEditor(args.firstFilename, args.secondFilename, true)
 		if err != nil {
@@ -77,15 +63,8 @@ func main() {
 		}
 	default:
 		// by default - open with command mode
-		if fileNonEmpty(args.secondFilename) {
-			ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.secondFilename), false)
-			if !ok {
-				return
-			}
-			err := os.Remove(args.secondFilename)
-			if err != nil {
-				side_channel.Panic(err)
-			}
+		if !promptDeleteLogFile(args) {
+			return
 		}
 		err := ui.RunEditor(args.firstFilename, args.secondFilename, true)
 		if err != nil {
@@ -130,6 +109,21 @@ func fileNonEmpty(filename string) bool {
 		return false
 	}
 	return info.Size() > 0
+}
+
+func promptDeleteLogFile(args programArgs) bool {
+	if fileNonEmpty(args.secondFilename) {
+		ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.secondFilename), false)
+		if !ok {
+			return false
+		}
+		err := os.Remove(args.secondFilename)
+		if err != nil {
+			side_channel.Panic(err)
+		}
+		return true
+	}
+	return true
 }
 
 func getDefaultLogFilename(inputFilename string) (firstFilename string, secondFilename string) {

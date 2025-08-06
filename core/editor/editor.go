@@ -25,7 +25,7 @@ type editor struct {
 	status Status
 }
 
-func NewEditor(
+func New(
 	height int, width int,
 	logWriter log.Writer,
 ) (Editor, error) {
@@ -50,6 +50,57 @@ func NewEditor(
 		},
 	}
 	return e, nil
+}
+
+func (e *editor) lock(f func()) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+
+	f()
+}
+
+func (e *editor) lockRender(f func()) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	defer e.renderWithoutLock()
+
+	f()
+}
+
+func (e *editor) setMessageWithoutLock(format string, a ...any) {
+	e.status.Message = fmt.Sprintf(format, a...)
+}
+
+func (e *editor) writeLog(entry log.Entry) {
+	if e.logWriter == nil {
+		return
+	}
+	_, err := e.logWriter.Write(entry)
+	if err != nil {
+		side_channel.Panic("error write log", err)
+		return
+	}
+}
+
+func (e *editor) Resize(height int, width int) {
+	e.lockRender(func() {
+		if e.window.Dimension.Row == height && e.window.Dimension.Col == width {
+			return
+		}
+		e.window.Dimension.Row, e.window.Dimension.Col = height, width
+		e.moveRelativeAndFixWithoutLock(0, 0)
+		e.setMessageWithoutLock("resize to %dx%d", height, width)
+	})
+}
+
+func (e *editor) Escape() {
+
+}
+
+func (e *editor) Status(update func(status Status) Status) {
+	e.lockRender(func() {
+		e.status = update(e.status)
+	})
 }
 
 func (e *editor) Load(ctx context.Context, reader buffer.Buffer) (context.Context, error) {
@@ -108,55 +159,4 @@ func (e *editor) Load(ctx context.Context, reader buffer.Buffer) (context.Contex
 	})
 
 	return loadCtx, err
-}
-
-func (e *editor) lock(f func()) {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-
-	f()
-}
-
-func (e *editor) lockRender(f func()) {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	defer e.renderWithoutLock()
-
-	f()
-}
-
-func (e *editor) setMessageWithoutLock(format string, a ...any) {
-	e.status.Message = fmt.Sprintf(format, a...)
-}
-
-func (e *editor) writeLog(entry log.Entry) {
-	if e.logWriter == nil {
-		return
-	}
-	_, err := e.logWriter.Write(entry)
-	if err != nil {
-		side_channel.Panic("error write log", err)
-		return
-	}
-}
-
-func (e *editor) Resize(height int, width int) {
-	e.lockRender(func() {
-		if e.window.Dimension.Row == height && e.window.Dimension.Col == width {
-			return
-		}
-		e.window.Dimension.Row, e.window.Dimension.Col = height, width
-		e.moveRelativeAndFixWithoutLock(0, 0)
-		e.setMessageWithoutLock("resize to %dx%d", height, width)
-	})
-}
-
-func (e *editor) Escape() {
-
-}
-
-func (e *editor) Status(update func(status Status) Status) {
-	e.lockRender(func() {
-		e.status = update(e.status)
-	})
 }
