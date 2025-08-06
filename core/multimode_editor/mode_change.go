@@ -62,7 +62,7 @@ func (c *Editor) Type(ch rune) {
 				c.writeWithoutLock("enter select mode")
 
 			case 'p': // paste
-				if c.state.clipboard == nil {
+				if c.state.clipboard.Len() == 0 {
 					c.writeWithoutLock("clipboard is empty")
 					return
 				}

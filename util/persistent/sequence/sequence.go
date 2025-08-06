@@ -2,71 +2,59 @@ package sequence
 
 import "telescope/util/side_channel"
 
-type Seq[T any] interface {
-	Get(i int) T
-	Set(i int, val T) Seq[T]
-	Ins(i int, val T) Seq[T]
-	Del(i int) Seq[T]
-	Iter(func(i int, val T) bool)
-	Len() int
-	Split(i int) (Seq[T], Seq[T])
-	Merge(other Seq[T]) Seq[T]
-	Repr() []T
+func Empty[T any]() Seq[T] {
+	return Seq[T]{node: nil}
 }
 
-func New[T any]() Seq[T] {
-	return wbt[T]{node: nil}
-}
-
-type wbt[T any] struct {
+type Seq[T any] struct {
 	node *node[T]
 }
 
-func (t wbt[T]) Get(i int) T {
-	return get(t.node, uint(i))
+func (s Seq[T]) Get(i int) T {
+	return get(s.node, uint(i))
 }
 
-func (t wbt[T]) Set(i int, val T) Seq[T] {
-	return wbt[T]{node: set(t.node, uint(i), val)}
+func (s Seq[T]) Set(i int, val T) Seq[T] {
+	return Seq[T]{node: set(s.node, uint(i), val)}
 }
 
-func (t wbt[T]) Ins(i int, val T) Seq[T] {
-	return wbt[T]{node: ins(t.node, uint(i), val)}
+func (s Seq[T]) Ins(i int, val T) Seq[T] {
+	return Seq[T]{node: ins(s.node, uint(i), val)}
 }
 
-func (t wbt[T]) Del(i int) Seq[T] {
-	return wbt[T]{node: del(t.node, uint(i))}
+func (s Seq[T]) Del(i int) Seq[T] {
+	return Seq[T]{node: del(s.node, uint(i))}
 }
 
-func (t wbt[T]) Iter(f func(i int, val T) bool) {
+func (s Seq[T]) Iter(f func(i int, val T) bool) {
 	i := 0
-	iter(t.node, func(val T) bool {
+	iter(s.node, func(val T) bool {
 		ok := f(i, val)
 		i++
 		return ok
 	})
 }
 
-func (t wbt[T]) Len() int {
-	return int(weight(t.node))
+func (s Seq[T]) Len() int {
+	return int(weight(s.node))
 }
-func (t wbt[T]) Height() int {
-	return int(height(t.node))
+func (s Seq[T]) Height() int {
+	return int(height(s.node))
 }
-func (t wbt[T]) Split(i int) (Seq[T], Seq[T]) {
-	n1, n2 := split(t.node, uint(i))
-	return wbt[T]{node: n1}, wbt[T]{node: n2}
+func (s Seq[T]) Split(i int) (Seq[T], Seq[T]) {
+	n1, n2 := split(s.node, uint(i))
+	return Seq[T]{node: n1}, Seq[T]{node: n2}
 }
 
-func (t wbt[T]) Merge(other Seq[T]) Seq[T] {
-	n1, n2 := t.node, other.(wbt[T]).node
+func (s Seq[T]) Merge(other Seq[T]) Seq[T] {
+	n1, n2 := s.node, other.node
 	n3 := merge(n1, n2)
-	return wbt[T]{node: n3}
+	return Seq[T]{node: n3}
 }
 
-func (t wbt[T]) Repr() []T {
-	buffer := make([]T, 0, t.Len())
-	t.Iter(func(i int, val T) bool {
+func (s Seq[T]) Repr() []T {
+	buffer := make([]T, 0, s.Len())
+	s.Iter(func(i int, val T) bool {
 		buffer = append(buffer, val)
 		return true
 	})
@@ -76,7 +64,7 @@ func (t wbt[T]) Repr() []T {
 func Slice[T any](s Seq[T], beg int, end int) Seq[T] {
 	if beg > end {
 		side_channel.Panic("slice out of range")
-		return nil
+		return Empty[T]()
 	}
 	s, _ = s.Split(end)
 	_, s = s.Split(beg)
@@ -85,7 +73,7 @@ func Slice[T any](s Seq[T], beg int, end int) Seq[T] {
 
 func Concat[T any](ss ...Seq[T]) Seq[T] {
 	if len(ss) == 0 {
-		return nil
+		return Empty[T]()
 	}
 	s := ss[0]
 	for i := 1; i < len(ss); i++ {

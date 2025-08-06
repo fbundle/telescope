@@ -250,9 +250,10 @@ func New(cancel func(), e *insert_editor.Editor, defaultOutputFile string) *Edit
 		e:                 e,
 		defaultOutputFile: defaultOutputFile,
 		state: state{
-			mode:     ModeNormal,
-			command:  "",
-			selector: nil,
+			mode:      ModeNormal,
+			command:   "",
+			selector:  nil,
+			clipboard: seq.Empty[text.Line](),
 		},
 	}
 	c.writeWithoutLock("")

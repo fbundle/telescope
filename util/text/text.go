@@ -8,7 +8,7 @@ import (
 func New(reader buffer.Reader) Text {
 	return Text{
 		Reader: reader,
-		Lines:  seq.New[Line](),
+		Lines:  seq.Empty[Line](),
 	}
 }
 
