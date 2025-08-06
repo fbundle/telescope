@@ -49,6 +49,18 @@ func getSelector(m map[string]any) *multimode_editor.Selector {
 	return selector
 }
 
+type drawFunc func(x int, y int, primary rune, combining []rune, style tcell.Style)
+
+func makeDrawContext(s tcell.Screen, offsetX int, offsetY int, width int, height int) func(func(width int, height int, draw drawFunc)) {
+	return func(f func(width int, height int, draw drawFunc)) {
+		f(width, height, func(x int, y int, primary rune, combining []rune, style tcell.Style) {
+			if 0 <= x && x < width && 0 <= y && y < height {
+				s.SetContent(offsetX+x, offsetY+y, primary, combining, style)
+			}
+		})
+	}
+}
+
 func draw(s tcell.Screen, view editor.View) {
 	statusStyle := tcell.StyleDefault.
 		Background(tcell.ColorLightGray).
@@ -57,8 +69,6 @@ func draw(s tcell.Screen, view editor.View) {
 	highlightStyle := tcell.StyleDefault.
 		Background(tcell.ColorLightGray).
 		Foreground(tcell.ColorBlack)
-
-	_ = highlightStyle
 
 	s.Clear()
 	screenWidth, screenHeight := s.Size()
@@ -72,66 +82,71 @@ func draw(s tcell.Screen, view editor.View) {
 		}
 		return textStyle
 	}
-	// Draw content from (0, 0) -> (screenWidth-1, screenHeight-2)
-	t := view.Text
-	for relRow := 0; relRow <= screenHeight-2; relRow++ {
-		row := view.Window.TopLeft.Row + relRow
-		style := getStyle(row)
-		var line []rune = nil
-		if row < t.Len() {
-			line = t.Get(row)
-		}
 
-		for relCol := 0; relCol <= screenWidth-1; relCol++ {
-			col := view.Window.TopLeft.Col + relCol
-			ch := ' '
-			if col < len(line) {
-				ch = line[col]
-			}
-			if row >= t.Len() && relCol == 0 {
-				// special case
-				ch = '~'
-			}
-			s.SetContent(relCol, relRow, ch, nil, style)
-		}
-	}
 	// Draw cursor from (0, 0)
 	relRow := view.Cursor.Row - view.Window.TopLeft.Row
 	relCol := view.Cursor.Col - view.Window.TopLeft.Col
 	s.ShowCursor(relCol, relRow)
 
-	// Draw the status bar at the bottom (screenHeight-1)
-	for col := 0; col <= screenWidth-1; col++ {
-		s.SetContent(col, screenHeight-1, ' ', nil, statusStyle)
-	}
+	// Draw content from (0, 0) -> (screenWidth-1, screenHeight-2)
+	makeDrawContext(s, 0, 0, screenWidth, screenHeight-1)(func(width int, height int, draw drawFunc) {
+		for col := 0; col < width; col++ {
+			draw(col, 0, ' ', nil, statusStyle)
+		}
+		t := view.Text
+		for relRow := 0; relRow < height; relRow++ {
+			row := view.Window.TopLeft.Row + relRow
+			style := getStyle(row)
+			var line []rune = nil
+			if row < t.Len() {
+				line = t.Get(row)
+			}
 
-	header, command := getModeAndCommand(view.Status.Other)
-	sep := []rune(" > ")
-	fromLeft := []rune(fmt.Sprintf(" %s (%d, %d)", header, view.Cursor.Col+1, view.Cursor.Row+1))
-	if len(command) > 0 {
-		fromLeft = append(fromLeft, sep...)
-		fromLeft = append(fromLeft, []rune(command)...)
-	}
-	if len(view.Status.Message) > 0 {
-		fromLeft = append(fromLeft, sep...)
-		fromLeft = append(fromLeft, []rune(view.Status.Message)...)
-	}
-	for col, ch := range fromLeft {
-		if 0 <= col && col < screenWidth {
-			s.SetContent(col, screenHeight-1, ch, nil, statusStyle)
+			for relCol := 0; relCol < width; relCol++ {
+				col := view.Window.TopLeft.Col + relCol
+				ch := ' '
+				if col < len(line) {
+					ch = line[col]
+				}
+				if row >= t.Len() && relCol == 0 {
+					// special case
+					ch = '~'
+				}
+				// s.SetContent(relCol, relRow, ch, nil, style)
+				draw(relCol, relRow, ch, nil, style)
+			}
 		}
-	}
-	fromRight := []rune{}
-	if len(view.Status.Background) > 0 {
-		fromRight = append(fromRight, sep...)
-		fromRight = append(fromRight, []rune(view.Status.Background)...)
-	}
-	for i, ch := range fromRight {
-		col := i + screenWidth - len(fromRight)
-		if 0 <= col && col < screenWidth {
-			s.SetContent(col, screenHeight-1, ch, nil, statusStyle)
+	})
+
+	// Draw the status bar at the bottom (screenHeight-1)
+	makeDrawContext(s, 0, screenHeight-1, screenWidth, 1)(func(width int, height int, draw drawFunc) {
+		for col := 0; col < width; col++ {
+			draw(col, 0, ' ', nil, statusStyle)
 		}
-	}
+		header, command := getModeAndCommand(view.Status.Other)
+		sep := []rune(" > ")
+		fromLeft := []rune(fmt.Sprintf(" %s (%d, %d)", header, view.Cursor.Col+1, view.Cursor.Row+1))
+		if len(command) > 0 {
+			fromLeft = append(fromLeft, sep...)
+			fromLeft = append(fromLeft, []rune(command)...)
+		}
+		if len(view.Status.Message) > 0 {
+			fromLeft = append(fromLeft, sep...)
+			fromLeft = append(fromLeft, []rune(view.Status.Message)...)
+		}
+		for col, ch := range fromLeft {
+			draw(col, 0, ch, nil, statusStyle)
+		}
+		fromRight := []rune{}
+		if len(view.Status.Background) > 0 {
+			fromRight = append(fromRight, sep...)
+			fromRight = append(fromRight, []rune(view.Status.Background)...)
+		}
+		for i, ch := range fromRight {
+			col := i + screenWidth - len(fromRight)
+			draw(col, 0, ch, nil, statusStyle)
+		}
+	})
 
 	s.Show()
 }
