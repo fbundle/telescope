@@ -19,10 +19,10 @@ func LoadFile(ctx context.Context, reader buffer.Reader, update func(Line, int))
 			if truncLine[len(truncLine)-1] == delim {
 				truncLine = truncLine[:len(truncLine)-1]
 			}
-			l = MakeLineFromData([]rune(string(truncLine)))
+			l = makeLineFromData([]rune(string(truncLine)))
 
 		} else {
-			l = MakeLineFromOffset(offset)
+			l = makeLineFromOffset(offset)
 		}
 		update(l, len(line))
 	})
@@ -64,7 +64,7 @@ func GetLinesFromSeq(reader buffer.Reader, lines seq.Seq[Line]) [][]rune {
 func GetSeqFromLines(lines [][]rune) seq.Seq[Line] {
 	s := seq.New[Line]()
 	for _, line := range lines {
-		s = s.Ins(s.Len(), MakeLineFromData(line))
+		s = s.Ins(s.Len(), makeLineFromData(line))
 	}
 	return s
 }

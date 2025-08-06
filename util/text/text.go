@@ -24,14 +24,14 @@ func (t Text) Get(i int) []rune {
 func (t Text) Set(i int, val []rune) Text {
 	return Text{
 		Reader: t.Reader,
-		Lines:  t.Lines.Set(i, MakeLineFromData(val)),
+		Lines:  t.Lines.Set(i, makeLineFromData(val)),
 	}
 }
 
 func (t Text) Ins(i int, val []rune) Text {
 	return Text{
 		Reader: t.Reader,
-		Lines:  t.Lines.Ins(i, MakeLineFromData(val)),
+		Lines:  t.Lines.Ins(i, makeLineFromData(val)),
 	}
 }
 

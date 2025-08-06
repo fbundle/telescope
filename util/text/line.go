@@ -8,14 +8,14 @@ type Line struct {
 	data   *[]rune // 8 bytes on 64-bit system
 }
 
-func MakeLineFromData(data []rune) Line {
+func makeLineFromData(data []rune) Line {
 	return Line{
 		offset: -1,
 		data:   &data,
 	}
 }
 
-func MakeLineFromOffset(offset int) Line {
+func makeLineFromOffset(offset int) Line {
 	return Line{
 		offset: int64(offset),
 		data:   nil,
