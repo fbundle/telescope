@@ -159,7 +159,7 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 		return err
 	}
 	if commandMode {
-		e = command_editor.NewCommandEditor(stop, e)
+		e = command_editor.NewCommandEditor(stop, e, inputFilename)
 	}
 	defer closer()
 

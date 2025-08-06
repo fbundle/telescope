@@ -1,10 +1,8 @@
 package command_editor
 
 import (
-	"bufio"
 	"context"
 	"fmt"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -221,34 +219,45 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		c.enterNormalModeWithoutLock()
 		c.writeWithoutLock("goto line " + cmd)
 		return
+	case strings.HasPrefix(cmd, ":w") || strings.HasPrefix(cmd, ":write"):
+		t := c.e.Render().Text
+		// default file - load file into memory
+		lines := make([][]rune, 0, t.Len())
+		for _, line := range t.Iter {
+			lines = append(lines, line)
+		}
+		iter := func(f func(i int, val []rune) bool) {
+			for i, line := range lines {
+				f(i, line)
+			}
+		}
+		filename := c.defaultOutputFile
+
+		// write file
+		err := writeFile(filename, iter)
+		if err != nil {
+			c.enterNormalModeWithoutLock()
+			c.writeWithoutLock("error write file " + err.Error())
+			return
+		}
+		c.enterNormalModeWithoutLock()
+		c.writeWithoutLock("file written into " + filename)
+		return
+
 	case strings.HasPrefix(cmd, ":w ") || strings.HasPrefix(cmd, ":write "):
 		cmd = strings.TrimPrefix(cmd, ":w ")
 		cmd = strings.TrimPrefix(cmd, ":write ")
 
-		filename := cmd
-		file, err := os.Create(filename)
-		if err != nil {
-			c.enterNormalModeWithoutLock()
-			c.writeWithoutLock("error open file " + err.Error())
-			return
-		}
-		defer file.Close()
-		writer := bufio.NewWriter(file)
-		for _, line := range c.e.Render().Text.Iter {
-			_, err = writer.WriteString(string(line) + "\n")
-			if err != nil {
-				c.enterNormalModeWithoutLock()
-				c.writeWithoutLock("error writeWithoutLock file " + err.Error())
-				return
-			}
-		}
-		err = writer.Flush()
-		if err != nil {
-			c.enterNormalModeWithoutLock()
-			c.writeWithoutLock("error flush file " + err.Error())
-			return
-		}
+		filename := strings.TrimSpace(cmd)
+		iter := c.e.Render().Text.Iter
 
+		// write file
+		err := writeFile(filename, iter)
+		if err != nil {
+			c.enterNormalModeWithoutLock()
+			c.writeWithoutLock("error write file " + err.Error())
+			return
+		}
 		c.enterNormalModeWithoutLock()
 		c.writeWithoutLock("file written into " + filename)
 		return
