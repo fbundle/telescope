@@ -45,8 +45,8 @@ func (c *commandEditor) Type(ch rune) {
 			case 'i':
 				c.enterInsertModeWithoutLock()
 				c.writeWithoutLock("enter insert mode")
-			case ':':
-				c.enterCommandModeWithoutLock(":")
+			case ':', '/':
+				c.enterCommandModeWithoutLock(string(ch))
 				c.writeWithoutLock("enter command mode")
 			case 'V': // start selecting
 				row := c.e.Render().Cursor.Row
@@ -98,77 +98,70 @@ func (c *commandEditor) Type(ch rune) {
 	})
 }
 
-func (c *commandEditor) applyCommandWithoutLock() {
-	cmd := c.state.command
+type command string
 
-	switch {
-	case cmd == ":i" || cmd == ":insert":
+const (
+	commandInsert        command = "i"
+	commandQuit          command = "q"
+	commandOverwriteQuit command = "owq"
+	commandSearch        command = "s"
+	commandRegex         command = "r"
+	commandGoto          command = "g"
+	commandWrite         command = "w"
+	commandUnknown       command = "u"
+)
+
+func parseCommand(cmd string) (command, []string) {
+	if cmd == ":i" || cmd == ":insert" {
+		return commandInsert, nil
+	}
+	if cmd == ":q" || cmd == ":quit" {
+		return commandQuit, nil
+	}
+	if cmd == ":w" || cmd == ":write" || cmd == ":wq" {
+		return commandOverwriteQuit, nil
+	}
+
+	for _, prefix := range []string{"/", ":s ", ":search "} {
+		if strings.HasPrefix(cmd, prefix) {
+			cmd = strings.TrimPrefix(cmd, prefix)
+			return commandSearch, strings.Fields(cmd)
+		}
+	}
+
+	for _, prefix := range []string{":regex "} {
+		if strings.HasPrefix(cmd, prefix) {
+			cmd = strings.TrimPrefix(cmd, prefix)
+			return commandRegex, strings.Fields(cmd)
+		}
+	}
+
+	for _, prefix := range []string{":g ", ":goto "} {
+		if strings.HasPrefix(cmd, prefix) {
+			cmd = strings.TrimPrefix(cmd, prefix)
+			return commandGoto, strings.Fields(cmd)
+		}
+	}
+	for _, prefix := range []string{":w ", ":write "} {
+		if strings.HasPrefix(cmd, prefix) {
+			cmd = strings.TrimPrefix(cmd, prefix)
+			return commandWrite, strings.Fields(cmd)
+		}
+	}
+	return commandUnknown, nil
+}
+
+func (c *commandEditor) applyCommandWithoutLock() {
+	cmd, args := parseCommand(c.state.command)
+	switch cmd {
+	case commandInsert:
 		c.enterInsertModeWithoutLock()
 		c.writeWithoutLock("enter insert mode")
 		return
-
-	case cmd == ":q" || cmd == ":quit":
+	case commandQuit:
 		c.cancel()
 		return
-
-	case strings.HasPrefix(cmd, ":s ") || strings.HasPrefix(cmd, ":search ") || strings.HasPrefix(cmd, ":regex "):
-		regex := strings.HasPrefix(cmd, ":regex ")
-		cmd = strings.TrimPrefix(cmd, ":s ")
-		cmd = strings.TrimPrefix(cmd, ":search ")
-		cmd = strings.TrimPrefix(cmd, ":regex ")
-
-		var match func(line string) bool
-		if regex {
-			re, err := regexp.Compile(cmd)
-			if err != nil {
-				c.enterNormalModeWithoutLock()
-				c.writeWithoutLock(fmt.Sprintf("regexp compile error %s", err.Error()))
-				return
-			}
-			match = re.MatchString
-		} else {
-			match = func(line string) bool {
-				return strings.Contains(line, cmd)
-			}
-		}
-
-		view := c.e.Render()
-		row := view.Cursor.Row
-
-		t := view.Text
-		lines := seq.Slice(t.Lines, row+1, t.Lines.Len())
-
-		t0 := time.Now()
-		for i, l := range lines.Iter {
-			line := l.Repr(t.Reader)
-			if match(string(line)) {
-				c.e.Goto(row+1+i, 0)
-				c.writeWithoutLock("found substring " + cmd)
-				return
-			}
-			t1 := time.Now()
-			if t1.Sub(t0) > config.Load().MAX_SEACH_TIME {
-				c.writeWithoutLock(fmt.Sprintf("search timeout after %d seconds and %d entries", config.Load().MAX_SEACH_TIME/time.Second, i+1))
-				return
-			}
-		}
-		c.enterNormalModeWithoutLock()
-		c.writeWithoutLock("end of file")
-		return
-	case strings.HasPrefix(cmd, ":g ") || strings.HasPrefix(cmd, ":goto "):
-		cmd = strings.TrimPrefix(cmd, ":g ")
-		cmd = strings.TrimPrefix(cmd, ":goto ")
-		lineNum, err := strconv.Atoi(cmd)
-		if err != nil {
-			c.enterNormalModeWithoutLock()
-			c.writeWithoutLock("invalid line number " + cmd)
-			return
-		}
-		c.e.Goto(lineNum-1, 0)
-		c.enterNormalModeWithoutLock()
-		c.writeWithoutLock("goto line " + cmd)
-		return
-	case cmd == ":w" || cmd == ":write" || cmd == ":wq":
+	case commandOverwriteQuit:
 		filename := c.defaultOutputFile
 
 		// write file
@@ -181,16 +174,76 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		c.enterNormalModeWithoutLock()
 		c.writeWithoutLock("file written into " + filename)
 
-		// delete log and exit
+		// exit
 		c.cancel()
 		return
+	case commandSearch, commandRegex:
+		if len(args) == 0 {
+			c.enterNormalModeWithoutLock()
+			c.writeWithoutLock("empty args")
+			return
+		}
+		pattern := args[0]
+		var match func(line string) bool
+		if cmd == commandRegex {
+			re, err := regexp.Compile(pattern)
+			if err != nil {
+				c.enterNormalModeWithoutLock()
+				c.writeWithoutLock(fmt.Sprintf("regexp compile error %s", err.Error()))
+				return
+			}
+			match = re.MatchString
+		} else {
+			match = func(line string) bool {
+				return strings.Contains(line, pattern)
+			}
+		}
 
-	case strings.HasPrefix(cmd, ":w ") || strings.HasPrefix(cmd, ":write "):
-		cmd = strings.TrimPrefix(cmd, ":w ")
-		cmd = strings.TrimPrefix(cmd, ":write ")
+		view := c.e.Render()
+		row, t := view.Cursor.Row, view.Text
+		lines := seq.Slice(t.Lines, row+1, t.Lines.Len())
 
-		filename := strings.TrimSpace(cmd)
-
+		t0 := time.Now()
+		for i, l := range lines.Iter {
+			line := l.Repr(t.Reader)
+			if match(string(line)) {
+				c.e.Goto(row+1+i, 0)
+				c.writeWithoutLock("found substring " + pattern)
+				return
+			}
+			t1 := time.Now()
+			if t1.Sub(t0) > config.Load().MAX_SEACH_TIME {
+				c.writeWithoutLock(fmt.Sprintf("search timeout after %d seconds and %d entries", config.Load().MAX_SEACH_TIME/time.Second, i+1))
+				return
+			}
+		}
+		c.enterNormalModeWithoutLock()
+		c.writeWithoutLock("end of file")
+		return
+	case commandGoto:
+		if len(args) == 0 {
+			c.enterNormalModeWithoutLock()
+			c.writeWithoutLock("empty args")
+			return
+		}
+		lineStr := args[0]
+		lineNum, err := strconv.Atoi(lineStr)
+		if err != nil {
+			c.enterNormalModeWithoutLock()
+			c.writeWithoutLock("invalid line number " + lineStr)
+			return
+		}
+		c.e.Goto(lineNum-1, 0)
+		c.enterNormalModeWithoutLock()
+		c.writeWithoutLock("goto line " + lineStr)
+		return
+	case commandWrite:
+		if len(args) == 0 {
+			c.enterNormalModeWithoutLock()
+			c.writeWithoutLock("empty args")
+			return
+		}
+		filename := args[0]
 		// write file
 		err := safeWriteFile(filename, c.e.Render().Text.Iter)
 		if err != nil {
@@ -200,9 +253,9 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		}
 		c.enterNormalModeWithoutLock()
 		c.writeWithoutLock("file written into " + filename)
-		return
+
 	default:
 		c.enterNormalModeWithoutLock()
-		c.writeWithoutLock("unknown command: " + cmd)
+		c.writeWithoutLock("unknown command: " + c.state.command)
 	}
 }
