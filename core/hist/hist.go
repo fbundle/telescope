@@ -6,37 +6,37 @@ import (
 
 func New[T any](t T) *Hist[T] {
 	return &Hist[T]{
-		LatestVersion: 0,
-		Stack:         []T{t},
+		latest: 0,
+		stack:  []T{t},
 	}
 }
 
 type Hist[T any] struct {
-	LatestVersion uint64 // current version
-	Stack         []T    // all versions
+	latest uint64 // latest version
+	stack  []T    // all versions
 }
 
 func (h *Hist[T]) Update(modifier func(T) T) {
-	next := modifier(h.Stack[h.LatestVersion])
-	h.Stack = append(h.Stack[:h.LatestVersion+1], next)
-	h.LatestVersion++
-	if len(h.Stack) > config.Load().MAXSIZE_HISTORY {
-		h.Stack = h.Stack[1:]
-		h.LatestVersion--
+	next := modifier(h.stack[h.latest])
+	h.stack = append(h.stack[:h.latest+1], next)
+	h.latest++
+	if len(h.stack) > config.Load().MAXSIZE_HISTORY {
+		h.stack = h.stack[1:]
+		h.latest--
 	}
 }
 
 func (h *Hist[T]) Get() T {
-	return h.Stack[h.LatestVersion]
+	return h.stack[h.latest]
 }
 func (h *Hist[T]) Undo() {
-	if h.LatestVersion > 0 {
-		h.LatestVersion--
+	if h.latest > 0 {
+		h.latest--
 	}
 }
 
 func (h *Hist[T]) Redo() {
-	if int(h.LatestVersion) < len(h.Stack)-1 {
-		h.LatestVersion++
+	if int(h.latest) < len(h.stack)-1 {
+		h.latest++
 	}
 }
