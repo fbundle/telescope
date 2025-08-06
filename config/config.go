@@ -17,6 +17,7 @@ Options:
   -l --log_writer            print the human readable log_writer format
   -i --insert         open with INSERT mode
   -c --command        open with NORMAL/COMMAND/VISUAL/INSERT mode
+     --unsafe         open with UNSAFE mode
 
 Keyboard Shortcuts:
   Ctrl+C              exit

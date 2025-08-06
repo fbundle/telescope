@@ -53,6 +53,11 @@ func main() {
 		if err != nil {
 			side_channel.Panic(err)
 		}
+	case "--unsafe":
+		err := ui.RunEditor(args.firstFilename, "", true)
+		if err != nil {
+			side_channel.Panic(err)
+		}
 	default:
 		// by default - open with command mode
 		if !promptDeleteLogFile(args) {
