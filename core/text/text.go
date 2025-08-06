@@ -58,3 +58,10 @@ func (t Text) Iter(f func(i int, val []rune) bool) {
 func (t Text) Len() int {
 	return t.Lines.Len()
 }
+
+func Slice(t Text, beg int, end int) Text {
+	return Text{
+		Reader: t.Reader,
+		Lines:  seq.Slice(t.Lines, beg, end),
+	}
+}
