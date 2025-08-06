@@ -7,6 +7,7 @@ import (
 	seq "telescope/util/persistent/sequence"
 )
 
+type Object = map[string]any
 type Position struct {
 	Row int
 	Col int
@@ -15,7 +16,7 @@ type Position struct {
 type Status struct {
 	Message    string
 	Background string
-	Other      map[string]any // arbitrary view
+	Other      Object // arbitrary view
 }
 
 type Window struct {
@@ -68,7 +69,7 @@ type Editor interface {
 	Escape()
 	Resize(height int, width int)
 	Status(update func(status Status) Status)
-	Action(map[string]any) // arbitrary action
+	Action(Object) // arbitrary action
 	Subscribe(func(LogEntry)) uint64
 	Unsubscribe(key uint64)
 	Render
