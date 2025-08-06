@@ -158,18 +158,18 @@ func RunEditor(inputFilename string, logFilename string, multiMode bool) error {
 
 	var e editor.Editor
 	// make editor
-	insertEditor, loadCtx, flush, closer, err := makeInsertEditor(ctx, inputFilename, logFilename, width, height)
+	insertEditor, loadCtx, finalizer, err := makeInsertEditor(ctx, inputFilename, logFilename, width, height-1)
 	if err != nil {
 		cancel()
 		return err
 	}
+	defer finalizer.Close()
+
 	if multiMode {
-		multiModeEditor := multimode_editor.New(stop, insertEditor, inputFilename)
-		e = multiModeEditor
+		e = multimode_editor.New(stop, insertEditor, inputFilename)
 	} else {
 		e = insertEditor
 	}
-	defer closer()
 
 	// draw loop
 	go func() {
@@ -191,7 +191,12 @@ func RunEditor(inputFilename string, logFilename string, multiMode bool) error {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				flush()
+				err := finalizer.Flush()
+				if err != nil {
+					writeMessage(e, fmt.Sprintf("flush error: %v", err))
+				} else {
+					writeMessage(e, "log_writer flushed")
+				}
 			}
 		}
 	}()
@@ -212,8 +217,12 @@ func RunEditor(inputFilename string, logFilename string, multiMode bool) error {
 				running = false
 			} else if event.Key() == tcell.KeyCtrlS {
 				// Ctrl+S to flush
-				_ = flush()
-				writeMessage(e, "log_writer flushed")
+				err := finalizer.Flush()
+				if err != nil {
+					writeMessage(e, fmt.Sprintf("flush error: %v", err))
+				} else {
+					writeMessage(e, "log_writer flushed")
+				}
 			} else {
 				handleEditorKey(e, event)
 			}
