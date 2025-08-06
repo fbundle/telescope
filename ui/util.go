@@ -38,7 +38,7 @@ func makeInsertEditor(ctx context.Context, inputFilename string, logFilename str
 
 	// log_writer
 	var logFile *os.File = nil
-	var logWriter log_writer.Writer = nil
+	var logWriter *log_writer.Writer = nil
 	var flush func() error = func() error { return nil }
 	if len(logFilename) > 0 {
 		logFile, err = os.OpenFile(logFilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
@@ -51,7 +51,7 @@ func makeInsertEditor(ctx context.Context, inputFilename string, logFilename str
 
 		closerList = append(closerList, writer.Flush) // flush before closer
 
-		logWriter, err = log_writer.NewWriter(writer)
+		logWriter, err = log_writer.New(writer)
 		if err != nil {
 			closer()
 			return nil, nil, nil, nil, err

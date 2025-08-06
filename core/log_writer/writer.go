@@ -7,20 +7,16 @@ import (
 	"telescope/core/editor"
 )
 
-type Writer interface {
-	Write(e editor.LogEntry) error
-}
-
-func NewWriter(iowriter io.Writer) (Writer, error) {
+func New(writer io.Writer) (*Writer, error) {
 	// use initial serializer
 	version := uint64(config.Load().INITIAL_SERIALIZER_VERSION)
 	s, err := GetSerializer(version)
 	if err != nil {
 		return nil, err
 	}
-	w := &writer{
+	w := &Writer{
 		mu:      sync.Mutex{},
-		writer:  iowriter,
+		writer:  writer,
 		marshal: s.Marshal,
 	}
 
@@ -42,13 +38,13 @@ func NewWriter(iowriter io.Writer) (Writer, error) {
 	return w, nil
 }
 
-type writer struct {
+type Writer struct {
 	mu      sync.Mutex
 	writer  io.Writer
 	marshal func(editor.LogEntry) ([]byte, error)
 }
 
-func (w *writer) Write(e editor.LogEntry) error {
+func (w *Writer) Write(e editor.LogEntry) error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
