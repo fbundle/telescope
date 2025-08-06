@@ -136,6 +136,8 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 	}
 	defer s.Fini()
 
+	s.EnableMouse()
+
 	ctx, cancel := context.WithCancel(context.Background())
 	stop := func() {
 		cancel()
@@ -197,6 +199,40 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 		case *quitEvent:
 			// quit from editor
 			running = false
+		case *tcell.EventMouse:
+			col, row := event.Position()
+			button := event.Buttons()
+			var msg string
+			switch {
+			case button&tcell.Button1 != 0:
+				// msg = fmt.Sprintf("Left click at (%d, %d)", col, row)
+				tl := e.Render().Window.TopLeft
+				e.Goto(tl.Row+row, tl.Col+col)
+			case button&tcell.Button2 != 0:
+				//msg = fmt.Sprintf("Middle click at (%d, %d)", col, row)
+			case button&tcell.Button3 != 0:
+				//msg = fmt.Sprintf("Right click at (%d, %d)", col, row)
+			case button&tcell.WheelUp != 0:
+				//msg = "Mouse wheel up"
+				for i := 0; i < config.Load().SCROLL_SPEED; i++ {
+					e.MoveUp()
+				}
+
+			case button&tcell.WheelDown != 0:
+				//msg = "Mouse wheel down"
+				for i := 0; i < config.Load().SCROLL_SPEED; i++ {
+					e.MoveDown()
+				}
+			case button == tcell.ButtonNone:
+				// msg = fmt.Sprintf("Mouse move at (%d, %d)", col, row)
+			}
+			if len(msg) > 0 {
+				e.Status(func(status editor.Status) editor.Status {
+					status.Message = msg
+					return status
+				})
+			}
+
 		case *tcell.EventKey:
 			if event.Key() == tcell.KeyCtrlC {
 				// Ctrl+C to stop

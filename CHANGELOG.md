@@ -40,6 +40,7 @@
 - added write to input file, when user use `:w` without specifying an output file, program will load input file into memory and write it back to the input file
 - added commands: `:w` to overwrite the file, `:q! = :q`, `:wq = :w`
 - added using `b` or `g` to go to beg of file, `e` or `G` to go to end of file 
+- added basic mouse support
 
 # TODO
 

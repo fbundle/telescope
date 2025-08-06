@@ -70,6 +70,7 @@ type Config struct {
 	LOG_DIR                    string
 	TMP_DIR                    string
 	SIDE_CHANNEL_PATH          string
+	SCROLL_SPEED               int
 }
 
 func Load() Config {
@@ -92,6 +93,7 @@ func Load() Config {
 		LOG_DIR:                    filepath.Join(tempDir, "telescope", "log"),
 		TMP_DIR:                    filepath.Join(tempDir, "telescope", "tmp"),
 		SIDE_CHANNEL_PATH:          filepath.Join(tempDir, "telescope", "tmp", "side_channel.txt"),
+		SCROLL_SPEED:               3,
 	}
 }
 
