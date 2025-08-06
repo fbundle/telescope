@@ -43,10 +43,11 @@ type state struct {
 }
 
 type commandEditor struct {
-	cancel func()
-	mu     sync.Mutex
-	e      editor.Editor
-	state  state
+	cancel            func()
+	mu                sync.Mutex
+	e                 editor.Editor
+	defaultOutputFile string
+	state             state
 }
 
 func (c *commandEditor) enterNormalModeWithoutLock() {
@@ -448,11 +449,12 @@ func (c *commandEditor) DeleteLine(count int) {
 	})
 }
 
-func NewCommandEditor(cancel func(), e editor.Editor) editor.Editor {
+func NewCommandEditor(cancel func(), e editor.Editor, defaultOutputFile string) editor.Editor {
 	c := &commandEditor{
-		cancel: cancel,
-		mu:     sync.Mutex{},
-		e:      e,
+		cancel:            cancel,
+		mu:                sync.Mutex{},
+		e:                 e,
+		defaultOutputFile: defaultOutputFile,
 		state: state{
 			mode:     ModeNormal,
 			command:  "",
