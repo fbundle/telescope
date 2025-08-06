@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 )
 
@@ -74,26 +75,34 @@ type Config struct {
 	SCROLL_SPEED               int
 }
 
-func Load() Config {
-	tempDir := os.TempDir()
-	debug := len(os.Getenv("DEBUG")) > 0
-	// TODO - export these into environment variables
-	return Config{
-		DEBUG:                     debug,
-		VERSION:                   VERSION,
-		HELP:                      HELP,
-		LOG_AUTOFLUSH_INTERVAL:    60 * time.Second,
-		LOADING_PROGRESS_INTERVAL: 100 * time.Millisecond,
-		// SERIALIZER_VERSION:         BINARY_SERIALIZER,
-		SERIALIZER_VERSION:         HUMAN_READABLE_SERIALIZER, // TODO - update serializer and enable binary version
-		INITIAL_SERIALIZER_VERSION: HUMAN_READABLE_SERIALIZER,
-		MAXSIZE_HISTORY:            1024,
-		VIEW_CHANNEL_SIZE:          64,
-		MAX_SEACH_TIME:             5 * time.Second,
-		TAB_SIZE:                   2,
-		LOG_DIR:                    filepath.Join(tempDir, "telescope", "log"),
-		TMP_DIR:                    filepath.Join(tempDir, "telescope", "tmp"),
-		SIDE_CHANNEL_PATH:          filepath.Join(tempDir, "telescope", "tmp", "side_channel.txt"),
-		SCROLL_SPEED:               3,
+var mu sync.Mutex = sync.Mutex{}
+var config *Config = nil
+
+func Load() *Config {
+	mu.Lock()
+	defer mu.Unlock()
+	if config == nil {
+		tempDir := os.TempDir()
+		debug := len(os.Getenv("DEBUG")) > 0
+		// TODO - export these into environment variables
+		config = &Config{
+			DEBUG:                     debug,
+			VERSION:                   VERSION,
+			HELP:                      HELP,
+			LOG_AUTOFLUSH_INTERVAL:    60 * time.Second,
+			LOADING_PROGRESS_INTERVAL: 100 * time.Millisecond,
+			// SERIALIZER_VERSION:         BINARY_SERIALIZER,
+			SERIALIZER_VERSION:         HUMAN_READABLE_SERIALIZER, // TODO - update serializer and enable binary version
+			INITIAL_SERIALIZER_VERSION: HUMAN_READABLE_SERIALIZER,
+			MAXSIZE_HISTORY:            1024,
+			VIEW_CHANNEL_SIZE:          64,
+			MAX_SEACH_TIME:             5 * time.Second,
+			TAB_SIZE:                   2,
+			LOG_DIR:                    filepath.Join(tempDir, "telescope", "log"),
+			TMP_DIR:                    filepath.Join(tempDir, "telescope", "tmp"),
+			SIDE_CHANNEL_PATH:          filepath.Join(tempDir, "telescope", "tmp", "side_channel.txt"),
+			SCROLL_SPEED:               3,
+		}
 	}
+	return config
 }
