@@ -248,6 +248,7 @@ func (c *Editor) applyCommandWithoutLock() {
 			}
 			t1 := time.Now()
 			if t1.Sub(t0) > config.Load().MAX_SEACH_TIME {
+				c.e.Goto(row+1+i, 0)
 				c.writeWithoutLock(fmt.Sprintf("search timeout after %d seconds and %d entries", config.Load().MAX_SEACH_TIME/time.Second, i+1))
 				return
 			}
