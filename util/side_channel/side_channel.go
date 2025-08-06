@@ -13,7 +13,7 @@ var (
 )
 
 func writeln(vs []any, msg string) bool {
-	sideChannelPath := ".side_channel.log"
+	sideChannelPath := ".telescope_side_channel.log"
 	writeMu.Lock()
 	defer writeMu.Unlock()
 	writeCount++
