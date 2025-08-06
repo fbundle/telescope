@@ -9,7 +9,7 @@ import (
 
 func New(writer io.Writer) (*Writer, error) {
 	// use initial serializer
-	version := uint64(config.Load().INITIAL_SERIALIZER_VERSION)
+	version := config.Load().INITIAL_SERIALIZER_VERSION
 	s, err := GetSerializer(version)
 	if err != nil {
 		return nil, err
