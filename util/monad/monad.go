@@ -54,6 +54,10 @@ func Bind[T1 any, T2 any](m1 *Monad[T1], f func(T1) (*Monad[T2], error)) *Monad[
 			for v2 := range m2.Chan {
 				ch <- v2
 			}
+			if err := m2.Error; err != nil {
+				m.Error = err
+				break
+			}
 		}
 		close(ch)
 	}()
