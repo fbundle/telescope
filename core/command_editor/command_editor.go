@@ -220,9 +220,9 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		c.enterNormalModeWithoutLock()
 		c.writeWithoutLock("goto line " + cmd)
 		return
-	case strings.HasPrefix(cmd, ":w ") || strings.HasPrefix(cmd, ":writeWithoutLock "):
+	case strings.HasPrefix(cmd, ":w ") || strings.HasPrefix(cmd, ":write "):
 		cmd = strings.TrimPrefix(cmd, ":w ")
-		cmd = strings.TrimPrefix(cmd, ":writeWithoutLock ")
+		cmd = strings.TrimPrefix(cmd, ":write ")
 
 		filename := cmd
 		file, err := os.Create(filename)
