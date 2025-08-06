@@ -38,9 +38,7 @@ func (s Seq[T]) Iter(f func(i int, val T) bool) {
 func (s Seq[T]) Len() int {
 	return int(weight(s.node))
 }
-func (s Seq[T]) Height() int {
-	return int(height(s.node))
-}
+
 func (s Seq[T]) Split(i int) (Seq[T], Seq[T]) {
 	n1, n2 := split(s.node, uint(i))
 	return Seq[T]{node: n1}, Seq[T]{node: n2}

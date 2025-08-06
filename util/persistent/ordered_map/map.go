@@ -35,10 +35,6 @@ func (m Map[T]) Weight() uint {
 	return weight(m.node)
 }
 
-func (m Map[T]) Height() uint {
-	return height(m.node)
-}
-
 func (m Map[T]) Split(entryIn T) (Map[T], Map[T]) {
 	n1, n2 := split(m.node, entryIn)
 	return Map[T]{node: n1}, Map[T]{node: n2}
