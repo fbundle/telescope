@@ -228,6 +228,7 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 	cancel()
 	<-loadCtx.Done() // wait for load context then exit, exec deferred closer function
 
+	s.Clear()
 	// last thing to do - delete log file
 	_ = os.Remove(logFilename)
 	return nil

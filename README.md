@@ -42,4 +42,3 @@ an extremely fast text editor
 
 5. user use `telescope -r inputfile` to replay the log to make a new file. the program will write the output to stdout
 
-ehehehe
