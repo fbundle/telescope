@@ -96,6 +96,11 @@ func (c *Editor) Type(ch rune) {
 				c.state.clipboard = seq.Slice(l, beg, end+1)
 				c.enterNormalModeWithoutLock()
 				c.writeWithoutLock("copied")
+			case 'b', 'g': // go to beg of file
+				c.e.Goto(0, 0)
+			case 'e', 'G': // go to end of file
+				row := c.e.Render().Text.Len() - 1
+				c.e.Goto(row, 0)
 			}
 		default:
 			side_channel.Panic("unknown mode: ", c.state)
