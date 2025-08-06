@@ -3,20 +3,15 @@ package ui
 import (
 	"bufio"
 	"context"
-	"golang.org/x/exp/mmap"
 	"os"
 	"path/filepath"
 	"telescope/core/editor"
 	"telescope/core/log"
+	"telescope/util/buffer"
+
+	"golang.org/x/exp/mmap"
 )
 
-func fileNonEmpty(filename string) bool {
-	info, err := os.Stat(filename)
-	if err != nil {
-		return false
-	}
-	return info.Size() > 0
-}
 func makeEditor(ctx context.Context, inputFilename string, logFilename string, width int, height int) (editor.Editor, context.Context, func() error, func(), error) {
 	closerList := make([]func() error, 0)
 	closer := func() {
@@ -27,14 +22,15 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 
 	var err error
 	// input text
-	var inputMmapReader *mmap.ReaderAt = nil
+	var inputBuffer buffer.Buffer = nil
 	var winName string = "telescope"
-	if fileNonEmpty(inputFilename) {
-		inputMmapReader, err = mmap.Open(inputFilename)
+	if len(inputFilename) > 0 {
+		inputMmapReader, err := mmap.Open(inputFilename)
 		if err != nil {
 			closer()
 			return nil, nil, nil, nil, err
 		}
+		inputBuffer = inputMmapReader
 		closerList = append(closerList, inputMmapReader.Close)
 		winName += " " + filepath.Base(inputFilename)
 	}
@@ -73,7 +69,7 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 	}
 
 	// load input file
-	loadCtx, err := e.Load(ctx, inputMmapReader)
+	loadCtx, err := e.Load(ctx, inputBuffer)
 	if err != nil {
 		closer()
 		return nil, nil, nil, nil, err

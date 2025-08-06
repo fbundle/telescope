@@ -64,7 +64,7 @@ func (e *editor) Load(ctx context.Context, reader buffer.Buffer) (context.Contex
 		e.status.Background = "loading started"
 		go func() { // load file asynchronously
 			defer loadDone()
-			if reader == nil || reader.Len() == 0 {
+			if reader == nil {
 				return // nothing to load
 			}
 
