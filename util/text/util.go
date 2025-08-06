@@ -5,8 +5,6 @@ import (
 	"telescope/util/persistent/seq"
 )
 
-const delim byte = '\n'
-
 func GetLinesFromSeq(reader buffer.Reader, lines seq.Seq[Line]) [][]rune {
 	out := make([][]rune, 0, lines.Len())
 	for _, line := range lines.Iter {

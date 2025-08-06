@@ -2,6 +2,8 @@ package text
 
 import "telescope/util/buffer"
 
+const delim byte = '\n'
+
 // Line - if offset >= 0, this is a file else this is a []rune buffer
 type Line struct {
 	offset int64   // 8 bytes
