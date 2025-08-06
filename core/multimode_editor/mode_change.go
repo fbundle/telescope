@@ -89,10 +89,7 @@ func (c *Editor) Type(ch rune) {
 		case ModeSelect:
 			switch ch {
 			case 'd': // cut
-				beg, end := c.state.selector.beg, c.state.selector.end
-				if beg > end {
-					beg, end = end, beg
-				}
+				beg, end := c.state.selector.Interval()
 				t := c.e.Render().Text
 				c.state.clipboard = text.Slice(t, beg, end+1)
 				// delete
@@ -103,10 +100,7 @@ func (c *Editor) Type(ch rune) {
 				c.writeWithoutLock("cut")
 
 			case 'y': //copy
-				beg, end := c.state.selector.beg, c.state.selector.end
-				if beg > end {
-					beg, end = end, beg
-				}
+				beg, end := c.state.selector.Interval()
 				t := c.e.Render().Text
 				c.state.clipboard = text.Slice(t, beg, end+1)
 				c.enterNormalModeWithoutLock()
