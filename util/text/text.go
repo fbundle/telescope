@@ -36,6 +36,13 @@ func (t Text) Ins(i int, val []rune) Text {
 	}
 }
 
+func (t Text) AppendLine(line Line) Text {
+	return Text{
+		Reader: t.Reader,
+		Lines:  t.Lines.Ins(t.Lines.Len(), line),
+	}
+}
+
 func (t Text) Del(i int) Text {
 	return Text{
 		Reader: t.Reader,

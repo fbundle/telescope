@@ -132,12 +132,7 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 			err = text.LoadFile(ctx, reader, func(line text.Line, size int) {
 				e.lock(func() {
 					e.text.Update(func(t text.Text) text.Text {
-						lines := t.Lines
-						lines = lines.Ins(lines.Len(), line)
-						return text.Text{
-							Reader: t.Reader,
-							Lines:  lines,
-						}
+						return t.AppendLine(line)
 					})
 					if l.add(size) { // to makeView
 						e.status.Background = fmt.Sprintf(
