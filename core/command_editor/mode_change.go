@@ -109,7 +109,6 @@ func (c *commandEditor) applyCommandWithoutLock() {
 
 	case cmd == ":q" || cmd == ":quit":
 		c.cancel()
-		c.writeWithoutLock("exitting ...")
 		return
 
 	case strings.HasPrefix(cmd, ":s ") || strings.HasPrefix(cmd, ":search ") || strings.HasPrefix(cmd, ":regex "):
@@ -179,6 +178,9 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		}
 		c.enterNormalModeWithoutLock()
 		c.writeWithoutLock("file written into " + filename)
+
+		// exit
+		c.cancel()
 		return
 
 	case strings.HasPrefix(cmd, ":w ") || strings.HasPrefix(cmd, ":write "):
