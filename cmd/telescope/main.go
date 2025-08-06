@@ -31,7 +31,10 @@ type programArgs struct {
 func main() {
 	defer func() {
 		if err := recover(); err != nil {
-			side_channel.WriteLn(string(debug.Stack()))
+			stack := string(debug.Stack())
+			fmt.Println(stack)
+			fmt.Println(err)
+			side_channel.WriteLn(stack)
 			side_channel.Panic(err)
 		}
 	}()
