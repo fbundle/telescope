@@ -8,10 +8,10 @@ import (
 	"telescope/config"
 	"telescope/core/editor"
 	"telescope/core/hist"
-	"telescope/core/subsciber_pool"
 	"telescope/core/text"
 	"telescope/util/buffer"
 	"telescope/util/side_channel"
+	"telescope/util/subsciber_pool"
 	"time"
 )
 
