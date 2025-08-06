@@ -5,7 +5,7 @@ type Reader interface {
 	At(i int) byte
 }
 
-func NewMemBuffer(b []byte) Reader {
+func NewMemReaderBuffer(b []byte) Reader {
 	return &memBuffer{b: b}
 }
 
