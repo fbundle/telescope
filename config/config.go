@@ -71,6 +71,7 @@ type Config struct {
 	TMP_DIR                    string
 	SIDE_CHANNEL_PATH          string
 	SCROLL_SPEED               int
+	MAX_MEM_FILE               int
 }
 
 func Load() Config {
@@ -94,5 +95,6 @@ func Load() Config {
 		TMP_DIR:                    filepath.Join(tempDir, "telescope", "tmp"),
 		SIDE_CHANNEL_PATH:          filepath.Join(tempDir, "telescope", "tmp", "side_channel.txt"),
 		SCROLL_SPEED:               3,
+		MAX_MEM_FILE:               50 * 1024 * 1024, // 50MB
 	}
 }

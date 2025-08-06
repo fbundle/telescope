@@ -2,6 +2,7 @@ package text
 
 import (
 	"context"
+	"telescope/config"
 	"telescope/util/buffer"
 	seq "telescope/util/persistent/sequence"
 )
@@ -9,8 +10,20 @@ import (
 const delim byte = '\n'
 
 func LoadFile(ctx context.Context, reader buffer.Reader, update func(Line, int)) error {
+	memFile := reader.Len() <= config.Load().MAX_MEM_FILE
 	return indexFile(ctx, reader, func(offset int, line []byte) {
-		l := MakeLineFromOffset(offset)
+		var l Line
+		if memFile {
+			// load directly to memory
+			truncLine := line
+			if truncLine[len(truncLine)-1] == delim {
+				truncLine = truncLine[:len(truncLine)-1]
+			}
+			l = MakeLineFromData([]rune(string(truncLine)))
+
+		} else {
+			l = MakeLineFromOffset(offset)
+		}
 		update(l, len(line))
 	})
 }
