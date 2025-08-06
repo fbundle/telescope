@@ -171,14 +171,14 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		cmd = strings.TrimPrefix(cmd, ":search ")
 		cmd = strings.TrimPrefix(cmd, ":regex ")
 
-		re, err := regexp.Compile(cmd)
-		if err != nil {
-			c.enterNormalModeWithoutLock()
-			c.writeWithoutLock(fmt.Sprintf("regexp compile error %s", err.Error()))
-			return
-		}
 		var match func(line string) bool
 		if regex {
+			re, err := regexp.Compile(cmd)
+			if err != nil {
+				c.enterNormalModeWithoutLock()
+				c.writeWithoutLock(fmt.Sprintf("regexp compile error %s", err.Error()))
+				return
+			}
 			match = re.MatchString
 		} else {
 			match = func(line string) bool {
