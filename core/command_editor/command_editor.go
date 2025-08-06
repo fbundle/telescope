@@ -205,7 +205,7 @@ func (c *commandEditor) applyCommandWithoutLock() {
 			}
 		}
 		c.enterNormalModeWithoutLock()
-		c.writeWithoutLock("End of file")
+		c.writeWithoutLock("end of file")
 		return
 	case strings.HasPrefix(cmd, ":g ") || strings.HasPrefix(cmd, ":goto "):
 		cmd = strings.TrimPrefix(cmd, ":g ")
