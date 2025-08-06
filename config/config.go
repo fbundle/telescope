@@ -91,7 +91,7 @@ func Load() Config {
 		VIEW_CHANNEL_SIZE:          64,
 		MAX_SEACH_TIME:             5 * time.Second,
 		TAB_SIZE:                   2,
-		LOG_DIR:                    filepath.Join(tempDir, "telescope", "log_writer"),
+		LOG_DIR:                    filepath.Join(tempDir, "telescope", "log"),
 		TMP_DIR:                    filepath.Join(tempDir, "telescope", "tmp"),
 		SIDE_CHANNEL_PATH:          filepath.Join(tempDir, "telescope", "tmp", "side_channel.txt"),
 		SCROLL_SPEED:               3,
