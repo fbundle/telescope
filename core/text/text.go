@@ -17,13 +17,6 @@ type Text struct {
 	Lines  seq.Seq[Line]
 }
 
-func (t Text) Append(line Line) Text {
-	return Text{
-		Reader: t.Reader,
-		Lines:  t.Lines.Ins(t.Lines.Len(), line),
-	}
-}
-
 func (t Text) Get(i int) []rune {
 	return t.Lines.Get(i).Repr(t.Reader)
 }
