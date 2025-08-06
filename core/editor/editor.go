@@ -21,7 +21,6 @@ type Status struct {
 type Window struct {
 	TopLeft   Position
 	Dimension Position
-	Data      [][]rune
 }
 
 type View struct {

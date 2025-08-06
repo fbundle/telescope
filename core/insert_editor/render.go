@@ -2,7 +2,6 @@ package insert_editor
 
 import (
 	"telescope/core/editor"
-	"telescope/util/text"
 )
 
 func (e *Editor) renderWithoutLock() {
@@ -10,18 +9,6 @@ func (e *Editor) renderWithoutLock() {
 }
 
 func (e *Editor) makeView() editor.View {
-	getLineForView := func(t text.Text, row int, col int) []rune {
-		if row < t.Len() {
-			line := t.Get(row)
-			if col >= len(line) {
-				return nil
-			} else {
-				return line[col:] // shifted by col
-			}
-		} else {
-			return []rune{'~'}
-		}
-	}
 	render := func() editor.View {
 		view := editor.View{
 			Cursor: e.cursor,
@@ -29,14 +16,7 @@ func (e *Editor) makeView() editor.View {
 			Status: e.status,
 		}
 
-		t := e.text.Get()
-		data := make([][]rune, e.window.Dimension.Row)
-		for row := 0; row < e.window.Dimension.Row; row++ {
-			data[row] = getLineForView(t, row+e.window.TopLeft.Row, e.window.TopLeft.Col)
-		}
-
-		view.Text = t
-		view.Window.Data = data
+		view.Text = e.text.Get()
 		return view
 
 	}
