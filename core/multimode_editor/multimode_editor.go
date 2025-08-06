@@ -26,7 +26,7 @@ type Selector struct {
 	End int
 }
 
-type clipboard seq.Seq[text.Line]
+type clipboard = seq.Seq[text.Line]
 
 type state struct {
 	mode      Mode

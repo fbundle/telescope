@@ -60,6 +60,7 @@ func (c *Editor) Type(ch rune) {
 				row := c.e.Render().Cursor.Row
 				c.enterSelectModeWithoutLock(row)
 				c.writeWithoutLock("enter select mode")
+
 			case 'p': // paste
 				if c.state.clipboard == nil {
 					c.writeWithoutLock("clipboard is empty")
@@ -67,8 +68,10 @@ func (c *Editor) Type(ch rune) {
 				}
 				c.e.InsertLine(c.state.clipboard)
 				c.writeWithoutLock("pasted")
+
 			case 'b', 'g': // go to beg of file
 				c.e.Goto(0, 0)
+
 			case 'e', 'G': // go to end of file
 				row := c.e.Render().Text.Len() - 1
 				c.e.Goto(row, 0)
