@@ -142,6 +142,7 @@ func draw(s tcell.Screen, view editor.View) {
 		if len(view.Status.Background) > 0 {
 			fromRight = append(fromRight, sep...)
 			fromRight = append(fromRight, []rune(view.Status.Background)...)
+			fromRight = append(fromRight, ' ')
 		}
 		for i, ch := range fromRight {
 			col := i + width - len(fromRight)
