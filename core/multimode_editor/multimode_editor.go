@@ -21,19 +21,16 @@ const (
 )
 
 type Selector struct {
-	Beg int
-	End int
+	beg int
+	end int
 }
 
-func (s *Selector) Sort() *Selector {
-	beg, end := s.Beg, s.End
+func (s *Selector) Interval() (beg int, end int) {
+	beg, end = s.beg, s.end
 	if beg > end {
 		beg, end = end, beg
 	}
-	return &Selector{
-		Beg: beg,
-		End: end,
-	}
+	return beg, end
 }
 
 type clipboard = text.Text
@@ -72,8 +69,8 @@ func (c *Editor) enterSelectModeWithoutLock(beg int) {
 	c.state.mode = ModeSelect
 	c.state.command = ""
 	c.state.selector = &Selector{
-		Beg: beg,
-		End: beg,
+		beg: beg,
+		end: beg,
 	}
 }
 
@@ -154,7 +151,7 @@ func (c *Editor) MoveUp() {
 		c.e.MoveUp()
 		if c.state.mode == ModeSelect {
 			row := c.e.Render().Cursor.Row
-			c.state.selector.End = row
+			c.state.selector.end = row
 			c.writeWithoutLock("select more")
 		}
 	})
@@ -165,7 +162,7 @@ func (c *Editor) MoveDown() {
 		c.e.MoveDown()
 		if c.state.mode == ModeSelect {
 			row := c.e.Render().Cursor.Row
-			c.state.selector.End = row
+			c.state.selector.end = row
 			c.writeWithoutLock("select more")
 		}
 	})

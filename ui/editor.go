@@ -46,7 +46,7 @@ func getSelector(m map[string]any) *multimode_editor.Selector {
 	if selector == nil {
 		return nil
 	}
-	return selector.Sort()
+	return selector
 }
 
 func draw(s tcell.Screen, view editor.View) {
@@ -67,8 +67,9 @@ func draw(s tcell.Screen, view editor.View) {
 	for row, line := range view.Window.Data {
 		style := textStyle
 		if selector != nil {
+			beg, end := selector.Interval()
 			textRow := view.Window.TopLeft.Row + row
-			if selector.Beg <= textRow && textRow <= selector.End {
+			if beg <= textRow && textRow <= end {
 				style = highlightStyle
 			}
 		}

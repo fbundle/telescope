@@ -40,7 +40,7 @@ func (c *Editor) Enter() {
 func (c *Editor) maybeUpdateSelectorEndWithoutLock() {
 	if c.state.mode == ModeSelect {
 		row := c.e.Render().Cursor.Row
-		c.state.selector.End = row
+		c.state.selector.end = row
 		c.writeWithoutLock("select more")
 	}
 }
@@ -89,7 +89,7 @@ func (c *Editor) Type(ch rune) {
 		case ModeSelect:
 			switch ch {
 			case 'd': // cut
-				beg, end := c.state.selector.Beg, c.state.selector.End
+				beg, end := c.state.selector.beg, c.state.selector.end
 				if beg > end {
 					beg, end = end, beg
 				}
@@ -103,7 +103,7 @@ func (c *Editor) Type(ch rune) {
 				c.writeWithoutLock("cut")
 
 			case 'y': //copy
-				beg, end := c.state.selector.Beg, c.state.selector.End
+				beg, end := c.state.selector.beg, c.state.selector.end
 				if beg > end {
 					beg, end = end, beg
 				}
