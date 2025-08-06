@@ -72,9 +72,9 @@ func draw(s tcell.Screen, view editor.View) {
 		}
 		return textStyle
 	}
-	// Draw content from (0, 0) -> (screenWidth, screenHeight-1)
+	// Draw content from (0, 0) -> (screenWidth-1, screenHeight-2)
 	t := view.Text
-	for relRow := 0; relRow < screenHeight-1; relRow++ {
+	for relRow := 0; relRow <= screenHeight-2; relRow++ {
 		row := view.Window.TopLeft.Row + relRow
 		style := getStyle(row)
 		var line []rune = nil
@@ -82,7 +82,7 @@ func draw(s tcell.Screen, view editor.View) {
 			line = t.Get(row)
 		}
 
-		for relCol := 0; relCol < screenWidth; relCol++ {
+		for relCol := 0; relCol <= screenWidth-1; relCol++ {
 			col := view.Window.TopLeft.Col + relCol
 			ch := ' '
 			if col < len(line) {
@@ -100,8 +100,8 @@ func draw(s tcell.Screen, view editor.View) {
 	relCol := view.Cursor.Col - view.Window.TopLeft.Col
 	s.ShowCursor(relCol, relRow)
 
-	// Draw the status bar at the bottom
-	for col := 0; col < screenWidth; col++ {
+	// Draw the status bar at the bottom (screenHeight-1)
+	for col := 0; col <= screenWidth-1; col++ {
 		s.SetContent(col, screenHeight-1, ' ', nil, statusStyle)
 	}
 
