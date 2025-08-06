@@ -168,21 +168,10 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		c.writeWithoutLock("goto line " + cmd)
 		return
 	case strings.HasPrefix(cmd, ":w") || strings.HasPrefix(cmd, ":write"):
-		t := c.e.Render().Text
-		// default file - load file into memory
-		lines := make([][]rune, 0, t.Len())
-		for _, line := range t.Iter {
-			lines = append(lines, line)
-		}
-		iter := func(f func(i int, val []rune) bool) {
-			for i, line := range lines {
-				f(i, line)
-			}
-		}
 		filename := c.defaultOutputFile
 
 		// write file
-		err := writeFile(filename, iter)
+		err := safeWriteFile(filename, c.e.Render().Text.Iter)
 		if err != nil {
 			c.enterNormalModeWithoutLock()
 			c.writeWithoutLock("error write file " + err.Error())
@@ -197,10 +186,9 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		cmd = strings.TrimPrefix(cmd, ":write ")
 
 		filename := strings.TrimSpace(cmd)
-		iter := c.e.Render().Text.Iter
 
 		// write file
-		err := writeFile(filename, iter)
+		err := safeWriteFile(filename, c.e.Render().Text.Iter)
 		if err != nil {
 			c.enterNormalModeWithoutLock()
 			c.writeWithoutLock("error write file " + err.Error())
