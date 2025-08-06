@@ -6,10 +6,10 @@ import (
 	"telescope/config"
 	"telescope/core/editor"
 	"telescope/core/insert_editor"
-	"telescope/core/text"
 	"telescope/util/buffer"
 	seq "telescope/util/persistent/sequence"
 	"telescope/util/side_channel"
+	"telescope/util/text"
 )
 
 type Mode = string

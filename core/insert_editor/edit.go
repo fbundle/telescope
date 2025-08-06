@@ -4,9 +4,9 @@ import (
 	"slices"
 	"telescope/config"
 	"telescope/core/editor"
-	"telescope/core/text"
 	seq "telescope/util/persistent/sequence"
 	"telescope/util/side_channel"
+	text2 "telescope/util/text"
 )
 
 func (e *Editor) Type(ch rune) {
@@ -18,7 +18,7 @@ func (e *Editor) Type(ch rune) {
 			Col:     uint64(e.cursor.Col),
 		})
 
-		updateText := func(t text.Text) text.Text {
+		updateText := func(t text2.Text) text2.Text {
 			row, col := e.cursor.Row, e.cursor.Col
 			// NOTE - handle empty file
 			if t.Len() == 0 {
@@ -47,7 +47,7 @@ func (e *Editor) Backspace() {
 		})
 
 		moveRow, moveCol := 0, 0
-		updateText := func(t text.Text) text.Text {
+		updateText := func(t text2.Text) text2.Text {
 			row, col := e.cursor.Row, e.cursor.Col
 			// NOTE - handle empty file
 			if t.Len() == 0 {
@@ -88,7 +88,7 @@ func (e *Editor) Delete() {
 			Col:     uint64(e.cursor.Col),
 		})
 
-		updateText := func(t text.Text) text.Text {
+		updateText := func(t text2.Text) text2.Text {
 			row, col := e.cursor.Row, e.cursor.Col
 			// NOTE - handle empty file
 			if t.Len() == 0 {
@@ -125,7 +125,7 @@ func (e *Editor) Enter() {
 			Col:     uint64(e.cursor.Col),
 		})
 
-		updateText := func(t text.Text) text.Text {
+		updateText := func(t text2.Text) text2.Text {
 			row, col := e.cursor.Row, e.cursor.Col
 			// NOTE - handle empty file
 			if t.Len() == 0 {
@@ -204,7 +204,7 @@ func (e *Editor) Apply(entry editor.LogEntry) {
 		e.Redo()
 	case editor.CommandInsertLine:
 		e.Goto(int(entry.Row), 0)
-		e.InsertLine(text.GetSeqFromLines(entry.Text))
+		e.InsertLine(text2.GetSeqFromLines(entry.Text))
 	case editor.CommandDeleteLine:
 		e.Goto(int(entry.Row), 0)
 		e.DeleteLine(int(entry.Count))
@@ -213,17 +213,17 @@ func (e *Editor) Apply(entry editor.LogEntry) {
 	}
 }
 
-func (e *Editor) InsertLine(lines seq.Seq[text.Line]) {
+func (e *Editor) InsertLine(lines seq.Seq[text2.Line]) {
 	e.lockRender(func() {
 		t := e.text.Get()
 		e.writeLogWithoutLock(editor.LogEntry{
 			Command: editor.CommandInsertLine,
 			Row:     uint64(e.cursor.Row),
-			Text:    text.GetLinesFromSeq(t.Reader, lines),
+			Text:    text2.GetLinesFromSeq(t.Reader, lines),
 		})
 		row := e.cursor.Row
-		update := func(t text.Text) text.Text {
-			return text.Text{
+		update := func(t text2.Text) text2.Text {
+			return text2.Text{
 				Reader: t.Reader,
 				Lines: seq.Concat(
 					seq.Slice(t.Lines, 0, row),
@@ -246,8 +246,8 @@ func (e *Editor) DeleteLine(count int) {
 			Row:     uint64(row),
 			Count:   uint64(count),
 		})
-		update := func(t text.Text) text.Text {
-			return text.Text{
+		update := func(t text2.Text) text2.Text {
+			return text2.Text{
 				Reader: t.Reader,
 				Lines: seq.Concat(
 					seq.Slice(t.Lines, 0, row),

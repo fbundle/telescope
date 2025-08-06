@@ -2,7 +2,7 @@ package insert_editor
 
 import (
 	"telescope/core/editor"
-	"telescope/core/text"
+	"telescope/util/text"
 )
 
 func (e *Editor) renderWithoutLock() {

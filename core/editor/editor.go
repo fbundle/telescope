@@ -2,9 +2,9 @@ package editor
 
 import (
 	"context"
-	"telescope/core/text"
 	"telescope/util/buffer"
 	seq "telescope/util/persistent/sequence"
+	text2 "telescope/util/text"
 )
 
 type Object = map[string]any
@@ -26,7 +26,7 @@ type Window struct {
 }
 
 type View struct {
-	Text   text.Text
+	Text   text2.Text
 	Cursor Position
 	Window Window
 	Status Status
@@ -53,7 +53,7 @@ type Edit interface {
 	Undo()
 	Redo()
 
-	InsertLine(lines seq.Seq[text.Line])
+	InsertLine(lines seq.Seq[text2.Line])
 	DeleteLine(count int)
 
 	Apply(entry LogEntry)
