@@ -4,7 +4,6 @@ import (
 	"slices"
 	"telescope/config"
 	"telescope/core/editor"
-	"telescope/util/persistent/seq"
 	"telescope/util/side_channel"
 	"telescope/util/text"
 )
@@ -245,13 +244,10 @@ func (e *Editor) DeleteLine(count int) {
 			Count:   uint64(count),
 		})
 		update := func(t text.Text) text.Text {
-			return text.Text{
-				Reader: t.Reader,
-				Lines: seq.Merge(
-					seq.Slice(t.Lines, 0, row),
-					seq.Slice(t.Lines, row+count, t.Lines.Len()),
-				),
-			}
+			return text.Merge(
+				text.Slice(t, 0, row),
+				text.Slice(t, row+count, t.Len()),
+			)
 		}
 		e.text.Update(update)
 		e.setMessageWithoutLock("delete lines")
