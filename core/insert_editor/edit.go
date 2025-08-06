@@ -11,7 +11,7 @@ import (
 
 func (e *Editor) Type(ch rune) {
 	e.lockRender(func() {
-		e.writeLogWithoutLock(editor.Entry{
+		e.writeLogWithoutLock(editor.LogEntry{
 			Command: editor.CommandType,
 			Rune:    ch,
 			Row:     uint64(e.cursor.Row),
@@ -40,7 +40,7 @@ func (e *Editor) Type(ch rune) {
 
 func (e *Editor) Backspace() {
 	e.lockRender(func() {
-		e.writeLogWithoutLock(editor.Entry{
+		e.writeLogWithoutLock(editor.LogEntry{
 			Command: editor.CommandBackspace,
 			Row:     uint64(e.cursor.Row),
 			Col:     uint64(e.cursor.Col),
@@ -82,7 +82,7 @@ func (e *Editor) Backspace() {
 
 func (e *Editor) Delete() {
 	e.lockRender(func() {
-		e.writeLogWithoutLock(editor.Entry{
+		e.writeLogWithoutLock(editor.LogEntry{
 			Command: editor.CommandDelete,
 			Row:     uint64(e.cursor.Row),
 			Col:     uint64(e.cursor.Col),
@@ -119,7 +119,7 @@ func (e *Editor) Delete() {
 
 func (e *Editor) Enter() {
 	e.lockRender(func() {
-		e.writeLogWithoutLock(editor.Entry{
+		e.writeLogWithoutLock(editor.LogEntry{
 			Command: editor.CommandEnter,
 			Row:     uint64(e.cursor.Row),
 			Col:     uint64(e.cursor.Col),
@@ -166,7 +166,7 @@ func (e *Editor) Tabular() {
 
 func (e *Editor) Undo() {
 	e.lockRender(func() {
-		e.writeLogWithoutLock(editor.Entry{
+		e.writeLogWithoutLock(editor.LogEntry{
 			Command: editor.CommandUndo,
 		})
 		e.text.Undo()
@@ -176,7 +176,7 @@ func (e *Editor) Undo() {
 
 func (e *Editor) Redo() {
 	e.lockRender(func() {
-		e.writeLogWithoutLock(editor.Entry{
+		e.writeLogWithoutLock(editor.LogEntry{
 			Command: editor.CommandRedo,
 		})
 		e.text.Redo()
@@ -184,7 +184,7 @@ func (e *Editor) Redo() {
 	})
 }
 
-func (e *Editor) Apply(entry editor.Entry) {
+func (e *Editor) Apply(entry editor.LogEntry) {
 	switch entry.Command {
 	case editor.CommandEnter:
 		e.Goto(int(entry.Row), int(entry.Col))
@@ -216,7 +216,7 @@ func (e *Editor) Apply(entry editor.Entry) {
 func (e *Editor) InsertLine(lines seq.Seq[text.Line]) {
 	e.lockRender(func() {
 		t := e.text.Get()
-		e.writeLogWithoutLock(editor.Entry{
+		e.writeLogWithoutLock(editor.LogEntry{
 			Command: editor.CommandInsertLine,
 			Row:     uint64(e.cursor.Row),
 			Text:    text.GetLinesFromSeq(t.Reader, lines),
@@ -241,7 +241,7 @@ func (e *Editor) InsertLine(lines seq.Seq[text.Line]) {
 func (e *Editor) DeleteLine(count int) {
 	e.lockRender(func() {
 		row := e.cursor.Row
-		e.writeLogWithoutLock(editor.Entry{
+		e.writeLogWithoutLock(editor.LogEntry{
 			Command: editor.CommandDeleteLine,
 			Row:     uint64(row),
 			Count:   uint64(count),

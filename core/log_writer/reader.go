@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func Read(filename string, apply func(e editor.Entry) bool) error {
+func Read(filename string, apply func(e editor.LogEntry) bool) error {
 	f, err := os.Open(filename)
 	if err != nil {
 		return err

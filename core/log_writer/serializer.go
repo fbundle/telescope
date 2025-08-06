@@ -9,8 +9,8 @@ import (
 )
 
 type Serializer interface {
-	Marshal(editor.Entry) ([]byte, error)
-	Unmarshal([]byte) (editor.Entry, error)
+	Marshal(editor.LogEntry) ([]byte, error)
+	Unmarshal([]byte) (editor.LogEntry, error)
 	Version() uint64
 }
 
@@ -28,7 +28,7 @@ func GetSerializer(version uint64) (Serializer, error) {
 
 type humanReadableSerializer struct{}
 
-func (humanReadableSerializer) Marshal(e editor.Entry) ([]byte, error) {
+func (humanReadableSerializer) Marshal(e editor.LogEntry) ([]byte, error) {
 	b, err := json.Marshal(e)
 	// padding for human readability
 	b1 := []byte{' '}
@@ -38,7 +38,7 @@ func (humanReadableSerializer) Marshal(e editor.Entry) ([]byte, error) {
 	return b1, err
 }
 
-func (humanReadableSerializer) Unmarshal(b []byte) (e editor.Entry, err error) {
+func (humanReadableSerializer) Unmarshal(b []byte) (e editor.LogEntry, err error) {
 	err = json.Unmarshal(b, &e)
 	return e, err
 }
@@ -81,7 +81,7 @@ func consume(buffer []byte, n int) ([]byte, []byte) {
 	return buffer[n:], buffer[:n]
 }
 
-func (binarySerializer) Marshal(e editor.Entry) ([]byte, error) {
+func (binarySerializer) Marshal(e editor.LogEntry) ([]byte, error) {
 	var buffer []byte
 	buffer = append(buffer, commandToByte(e.Command))
 	switch e.Command {
@@ -104,7 +104,7 @@ func (binarySerializer) Marshal(e editor.Entry) ([]byte, error) {
 	}
 }
 
-func (binarySerializer) Unmarshal(buffer []byte) (e editor.Entry, err error) {
+func (binarySerializer) Unmarshal(buffer []byte) (e editor.LogEntry, err error) {
 	buffer, b := consume(buffer, 1)
 	e.Command = byteToCommand(b[0])
 	switch e.Command {

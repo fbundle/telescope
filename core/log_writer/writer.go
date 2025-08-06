@@ -8,7 +8,7 @@ import (
 )
 
 type Writer interface {
-	Write(e editor.Entry) error
+	Write(e editor.LogEntry) error
 }
 
 func NewWriter(iowriter io.Writer) (Writer, error) {
@@ -26,7 +26,7 @@ func NewWriter(iowriter io.Writer) (Writer, error) {
 
 	// write set_version using INITIAL_SERIALIZER_VERSION
 	// tell reader to use SERIALIZER_VERSION
-	err = w.Write(editor.Entry{
+	err = w.Write(editor.LogEntry{
 		Command: editor.CommandSetVersion,
 		Version: config.Load().SERIALIZER_VERSION,
 	})
@@ -45,10 +45,10 @@ func NewWriter(iowriter io.Writer) (Writer, error) {
 type writer struct {
 	mu      sync.Mutex
 	writer  io.Writer
-	marshal func(editor.Entry) ([]byte, error)
+	marshal func(editor.LogEntry) ([]byte, error)
 }
 
-func (w *writer) Write(e editor.Entry) error {
+func (w *writer) Write(e editor.LogEntry) error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 

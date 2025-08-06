@@ -23,7 +23,7 @@ type Editor struct {
 	cursor editor.Position
 	window editor.Window
 	status editor.Status
-	pool   *subsciber_pool.Pool[func(editor.Entry)]
+	pool   *subsciber_pool.Pool[func(editor.LogEntry)]
 }
 
 func New(
@@ -47,7 +47,7 @@ func New(
 			Background: "",
 			Other:      nil,
 		},
-		pool: subsciber_pool.New[func(editor.Entry)](),
+		pool: subsciber_pool.New[func(editor.LogEntry)](),
 	}
 	return e, nil
 }
@@ -71,13 +71,13 @@ func (e *Editor) setMessageWithoutLock(format string, a ...any) {
 	e.status.Message = fmt.Sprintf(format, a...)
 }
 
-func (e *Editor) writeLogWithoutLock(entry editor.Entry) {
+func (e *Editor) writeLogWithoutLock(entry editor.LogEntry) {
 	for _, consume := range e.pool.Iter {
 		consume(entry)
 	}
 }
 
-func (e *Editor) Subscribe(consume func(editor.Entry)) uint64 {
+func (e *Editor) Subscribe(consume func(editor.LogEntry)) uint64 {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	return e.pool.Subscribe(consume)

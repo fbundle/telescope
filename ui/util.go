@@ -67,7 +67,7 @@ func makeInsertEditor(ctx context.Context, inputFilename string, logFilename str
 		closer()
 		return nil, nil, nil, nil, err
 	}
-	e.Subscribe(func(entry editor.Entry) {
+	e.Subscribe(func(entry editor.LogEntry) {
 		_ = logWriter.Write(entry)
 	})
 

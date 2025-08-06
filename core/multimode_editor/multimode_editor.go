@@ -224,7 +224,7 @@ func (c *Editor) Redo() {
 	})
 }
 
-func (c *Editor) Apply(entry editor.Entry) {
+func (c *Editor) Apply(entry editor.LogEntry) {
 	c.lock(func() {
 		c.e.Apply(entry)
 	})
@@ -309,7 +309,7 @@ func (c *Editor) Action(action map[string]any) {
 	}
 }
 
-func (c *Editor) Subscribe(consume func(editor.Entry)) uint64 {
+func (c *Editor) Subscribe(consume func(editor.LogEntry)) uint64 {
 	var key uint64
 	c.lock(func() {
 		key = c.e.Subscribe(consume)

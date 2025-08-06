@@ -51,7 +51,7 @@ type Edit interface {
 	Tabular()
 	Undo()
 	Redo()
-	Apply(entry Entry)
+	Apply(entry LogEntry)
 
 	InsertLine(lines seq.Seq[text.Line])
 	DeleteLine(count int)
@@ -68,7 +68,7 @@ type Editor interface {
 	Resize(height int, width int)
 	Status(update func(status Status) Status)
 	Action(map[string]any) // arbitrary action
-	Subscribe(func(Entry)) uint64
+	Subscribe(func(LogEntry)) uint64
 	Unsubscribe(key uint64)
 	Render
 	Edit

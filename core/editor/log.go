@@ -14,7 +14,7 @@ const (
 	CommandDeleteLine Command = "delete_line"
 )
 
-type Entry struct {
+type LogEntry struct {
 	Command Command  `json:"command"`
 	Version uint64   `json:"version,omitempty"`
 	Row     uint64   `json:"row,omitempty"`

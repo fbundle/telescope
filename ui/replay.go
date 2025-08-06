@@ -40,7 +40,7 @@ func RunReplay(inputFilename string, logFilename string) error {
 
 	_, _ = fmt.Fprintf(os.Stderr, "loading log_writer file %s\n", logFilename)
 
-	err = log_writer.Read(logFilename, func(entry editor.Entry) bool {
+	err = log_writer.Read(logFilename, func(entry editor.LogEntry) bool {
 		e.Apply(entry)
 		return true
 	})

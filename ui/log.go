@@ -16,7 +16,7 @@ func RunLog(logFilename string) error {
 		return err
 	}
 
-	err = log_writer.Read(logFilename, func(e editor.Entry) bool {
+	err = log_writer.Read(logFilename, func(e editor.LogEntry) bool {
 		var b []byte
 		b, err = s.Marshal(e)
 		if err != nil {
