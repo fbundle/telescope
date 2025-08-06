@@ -165,3 +165,7 @@ func (e *editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 
 	return loadCtx, err
 }
+
+func (e *editor) Action(map[string]any) {
+	// do nothing
+}

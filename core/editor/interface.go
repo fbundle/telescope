@@ -68,6 +68,7 @@ type Editor interface {
 	Escape()
 	Resize(height int, width int)
 	Status(update func(status Status) Status)
+	Action(map[string]any)
 	Render
 	Edit
 	Move

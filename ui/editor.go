@@ -200,39 +200,7 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 			// quit from editor
 			running = false
 		case *tcell.EventMouse:
-			col, row := event.Position()
-			button := event.Buttons()
-			var msg string
-			switch {
-			case button&tcell.Button1 != 0:
-				// msg = fmt.Sprintf("Left click at (%d, %d)", col, row)
-				tl := e.Render().Window.TopLeft
-				e.Goto(tl.Row+row, tl.Col+col)
-			case button&tcell.Button2 != 0:
-				//msg = fmt.Sprintf("Middle click at (%d, %d)", col, row)
-			case button&tcell.Button3 != 0:
-				//msg = fmt.Sprintf("Right click at (%d, %d)", col, row)
-			case button&tcell.WheelUp != 0:
-				//msg = "Mouse wheel up"
-				for i := 0; i < config.Load().SCROLL_SPEED; i++ {
-					e.MoveUp()
-				}
-
-			case button&tcell.WheelDown != 0:
-				//msg = "Mouse wheel down"
-				for i := 0; i < config.Load().SCROLL_SPEED; i++ {
-					e.MoveDown()
-				}
-			case button == tcell.ButtonNone:
-				// msg = fmt.Sprintf("Mouse move at (%d, %d)", col, row)
-			}
-			if len(msg) > 0 {
-				e.Status(func(status editor.Status) editor.Status {
-					status.Message = msg
-					return status
-				})
-			}
-
+			handleEditorMouse(e, event)
 		case *tcell.EventKey:
 			if event.Key() == tcell.KeyCtrlC {
 				// Ctrl+C to stop
@@ -263,6 +231,47 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 	// last thing to do - delete log file
 	_ = os.Remove(logFilename)
 	return nil
+}
+
+func handleEditorMouse(e editor.Editor, ev *tcell.EventMouse) {
+	col, row := ev.Position()
+	button := ev.Buttons()
+	switch {
+	case button&tcell.Button1 != 0:
+		// msg = fmt.Sprintf("Left click at (%d, %d)", col, row)
+		e.Action(map[string]any{
+			"mouse": command_editor.MouseAction{
+				Button: command_editor.MouseButtonLeftClick,
+				Row:    row,
+				Col:    col,
+			},
+		})
+	case button&tcell.Button2 != 0:
+		//msg = fmt.Sprintf("Middle click at (%d, %d)", col, row)
+	case button&tcell.Button3 != 0:
+		//msg = fmt.Sprintf("Right click at (%d, %d)", col, row)
+	case button&tcell.WheelUp != 0:
+		//msg = "Mouse wheel up"
+		e.Action(map[string]any{
+			"mouse": command_editor.MouseAction{
+				Button: command_editor.MouseButtonWheelUp,
+				Row:    row,
+				Col:    col,
+			},
+		})
+
+	case button&tcell.WheelDown != 0:
+		//msg = "Mouse wheel down"
+		e.Action(map[string]any{
+			"mouse": command_editor.MouseAction{
+				Button: command_editor.MouseButtonWheelDown,
+				Row:    row,
+				Col:    col,
+			},
+		})
+	case button == tcell.ButtonNone:
+		// msg = fmt.Sprintf("Mouse move at (%d, %d)", col, row)
+	}
 }
 
 func handleEditorKey(e editor.Editor, ev *tcell.EventKey) {

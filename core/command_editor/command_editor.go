@@ -3,6 +3,7 @@ package command_editor
 import (
 	"context"
 	"sync"
+	"telescope/config"
 	"telescope/core/editor"
 	"telescope/core/log"
 	"telescope/core/text"
@@ -284,4 +285,45 @@ func (c *commandEditor) writeWithoutLock(message string) {
 		status.Message = message
 		return status
 	})
+}
+
+type MouseButton int
+
+const (
+	MouseButtonLeftClick MouseButton = iota
+	MouseButtonRightClick
+	MouseButtonMiddleClick
+	MouseButtonWheelUp
+	MouseButtonWheelDown
+	MouseButtonNone
+)
+
+type MouseAction struct {
+	Button MouseButton
+	Row    int
+	Col    int
+}
+
+func (c *commandEditor) Action(action map[string]any) {
+	if action == nil {
+		return
+	}
+	if o, ok := action["mouse"]; ok {
+		a := o.(MouseAction)
+		row, col := a.Row, a.Col
+		switch a.Button {
+		case MouseButtonLeftClick:
+			tl := c.e.Render().Window.TopLeft
+			c.e.Goto(tl.Row+row, tl.Col+col)
+
+		case MouseButtonWheelUp:
+			for i := 0; i < config.Load().SCROLL_SPEED; i++ {
+				c.e.MoveUp()
+			}
+		case MouseButtonWheelDown:
+			for i := 0; i < config.Load().SCROLL_SPEED; i++ {
+				c.e.MoveDown()
+			}
+		}
+	}
 }
