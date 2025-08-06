@@ -287,43 +287,24 @@ func (c *commandEditor) writeWithoutLock(message string) {
 	})
 }
 
-type MouseButton int
-
-const (
-	MouseButtonLeftClick MouseButton = iota
-	MouseButtonRightClick
-	MouseButtonMiddleClick
-	MouseButtonWheelUp
-	MouseButtonWheelDown
-	MouseButtonNone
-)
-
-type MouseAction struct {
-	Button MouseButton
-	Row    int
-	Col    int
-}
-
 func (c *commandEditor) Action(action map[string]any) {
 	if action == nil {
 		return
 	}
-	if o, ok := action["mouse"]; ok {
-		a := o.(MouseAction)
-		row, col := a.Row, a.Col
-		switch a.Button {
-		case MouseButtonLeftClick:
-			tl := c.e.Render().Window.TopLeft
-			c.e.Goto(tl.Row+row, tl.Col+col)
-
-		case MouseButtonWheelUp:
-			for i := 0; i < config.Load().SCROLL_SPEED; i++ {
-				c.e.MoveUp()
-			}
-		case MouseButtonWheelDown:
-			for i := 0; i < config.Load().SCROLL_SPEED; i++ {
-				c.e.MoveDown()
-			}
+	if o, ok := action["mouse_click"]; ok {
+		p := o.(editor.Position)
+		row, col := p.Row, p.Col
+		tl := c.e.Render().Window.TopLeft
+		c.e.Goto(tl.Row+row, tl.Col+col)
+	}
+	if _, ok := action["mouse_scroll_up"]; ok {
+		for i := 0; i < config.Load().SCROLL_SPEED; i++ {
+			c.e.MoveUp()
+		}
+	}
+	if _, ok := action["mouse_scroll_down"]; ok {
+		for i := 0; i < config.Load().SCROLL_SPEED; i++ {
+			c.e.MoveDown()
 		}
 	}
 }

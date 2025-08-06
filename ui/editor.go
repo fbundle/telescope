@@ -240,10 +240,9 @@ func handleEditorMouse(e editor.Editor, ev *tcell.EventMouse) {
 	case button&tcell.Button1 != 0:
 		// msg = fmt.Sprintf("Left click at (%d, %d)", col, row)
 		e.Action(map[string]any{
-			"mouse": command_editor.MouseAction{
-				Button: command_editor.MouseButtonLeftClick,
-				Row:    row,
-				Col:    col,
+			"mouse_click": editor.Position{
+				Row: row,
+				Col: col,
 			},
 		})
 	case button&tcell.Button2 != 0:
@@ -253,21 +252,13 @@ func handleEditorMouse(e editor.Editor, ev *tcell.EventMouse) {
 	case button&tcell.WheelUp != 0:
 		//msg = "Mouse wheel up"
 		e.Action(map[string]any{
-			"mouse": command_editor.MouseAction{
-				Button: command_editor.MouseButtonWheelUp,
-				Row:    row,
-				Col:    col,
-			},
+			"mouse_scroll_up": nil,
 		})
 
 	case button&tcell.WheelDown != 0:
 		//msg = "Mouse wheel down"
 		e.Action(map[string]any{
-			"mouse": command_editor.MouseAction{
-				Button: command_editor.MouseButtonWheelDown,
-				Row:    row,
-				Col:    col,
-			},
+			"mouse_scroll_down": nil,
 		})
 	case button == tcell.ButtonNone:
 		// msg = fmt.Sprintf("Mouse move at (%d, %d)", col, row)
