@@ -10,7 +10,7 @@ type Seq[T any] interface {
 	Iter(func(i int, val T) bool)
 	Len() int
 	Split(i int) (Seq[T], Seq[T])
-	Concat(other Seq[T]) Seq[T]
+	Merge(other Seq[T]) Seq[T]
 	Repr() []T
 }
 
@@ -58,7 +58,7 @@ func (t wbt[T]) Split(i int) (Seq[T], Seq[T]) {
 	return wbt[T]{node: n1}, wbt[T]{node: n2}
 }
 
-func (t wbt[T]) Concat(other Seq[T]) Seq[T] {
+func (t wbt[T]) Merge(other Seq[T]) Seq[T] {
 	n1, n2 := t.node, other.(wbt[T]).node
 	n3 := merge(n1, n2)
 	return wbt[T]{node: n3}
@@ -89,7 +89,7 @@ func Concat[T any](ss ...Seq[T]) Seq[T] {
 	}
 	s := ss[0]
 	for i := 1; i < len(ss); i++ {
-		s = s.Concat(ss[i])
+		s = s.Merge(ss[i])
 	}
 	return s
 }

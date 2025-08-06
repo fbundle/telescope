@@ -71,12 +71,12 @@ func (t Text) Split(i int) (Text, Text) {
 		}
 }
 
-func (t Text) Concat(t2 Text) Text {
+func (t Text) Merge(t2 Text) Text {
 	if t.Reader != t2.Reader {
 		side_channel.Panic("different readers")
 	}
 	return Text{
 		Reader: t.Reader,
-		Lines:  t.Lines.Concat(t2.Lines),
+		Lines:  t.Lines.Merge(t2.Lines),
 	}
 }
