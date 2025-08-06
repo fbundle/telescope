@@ -76,7 +76,7 @@ func draw(s tcell.Screen, view editor.View) {
 	t := view.Text
 	for relRow := 0; relRow < screenHeight-1; relRow++ {
 		row := view.Window.TopLeft.Row + relRow
-		textStyle := getStyle(row)
+		style := getStyle(row)
 		var line []rune = nil
 		if row < t.Len() {
 			line = t.Get(row)
@@ -92,7 +92,7 @@ func draw(s tcell.Screen, view editor.View) {
 				// special case
 				ch = '~'
 			}
-			s.SetContent(relCol, relRow, ch, nil, textStyle)
+			s.SetContent(relCol, relRow, ch, nil, style)
 		}
 	}
 	// Draw cursor from (0, 0)
