@@ -13,8 +13,14 @@ func (m *Monad[T]) Unwrap() ([]T, error) {
 	return vs, m.Error
 }
 
-func None[T any]() *Monad[T] {
-	return Unit[T]()
+func None[T any](err error) *Monad[T] {
+	ch := make(chan T, 1)
+	close(ch)
+	m := &Monad[T]{
+		Chan:  ch,
+		Error: err,
+	}
+	return m
 }
 
 func Unit[T any](vs ...T) *Monad[T] {
