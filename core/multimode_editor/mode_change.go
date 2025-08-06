@@ -8,6 +8,7 @@ import (
 	"telescope/config"
 	"telescope/util/persistent/seq"
 	"telescope/util/side_channel"
+	"telescope/util/text"
 	"time"
 )
 
@@ -93,8 +94,8 @@ func (c *Editor) Type(ch rune) {
 				if beg > end {
 					beg, end = end, beg
 				}
-				l := c.e.Render().Text.Lines
-				c.state.clipboard = seq.Slice(l, beg, end+1)
+				t := c.e.Render().Text
+				c.state.clipboard = text.Slice(t, beg, end+1)
 				// delete
 				c.e.Goto(beg, 0)
 				c.e.DeleteLine(c.state.clipboard.Len())
@@ -107,8 +108,8 @@ func (c *Editor) Type(ch rune) {
 				if beg > end {
 					beg, end = end, beg
 				}
-				l := c.e.Render().Text.Lines
-				c.state.clipboard = seq.Slice(l, beg, end+1)
+				t := c.e.Render().Text
+				c.state.clipboard = text.Slice(t, beg, end+1)
 				c.enterNormalModeWithoutLock()
 				c.writeWithoutLock("copied")
 

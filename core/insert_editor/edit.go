@@ -206,7 +206,7 @@ func (e *Editor) Apply(entry editor.LogEntry) {
 		e.Redo()
 	case editor.CommandInsertLine:
 		e.Goto(int(entry.Row), 0)
-		e.InsertLine(text.GetSeqFromLines(entry.Text))
+		e.InsertLine(text.MakeTextFromLine(entry.Text))
 	case editor.CommandDeleteLine:
 		e.Goto(int(entry.Row), 0)
 		e.DeleteLine(int(entry.Count))
@@ -215,27 +215,23 @@ func (e *Editor) Apply(entry editor.LogEntry) {
 	}
 }
 
-func (e *Editor) InsertLine(lines seq.Seq[text.Line]) {
+func (e *Editor) InsertLine(t2 text.Text) {
 	e.lockRender(func() {
-		t := e.text.Get()
 		e.writeLogWithoutLock(editor.LogEntry{
 			Command: editor.CommandInsertLine,
 			Row:     uint64(e.cursor.Row),
-			Text:    text.GetLinesFromSeq(t.Reader, lines),
+			Text:    t2.Repr(),
 		})
 		row := e.cursor.Row
 		update := func(t text.Text) text.Text {
-			return text.Text{
-				Reader: t.Reader,
-				Lines: seq.Concat(
-					seq.Slice(t.Lines, 0, row),
-					lines,
-					seq.Slice(t.Lines, row, t.Lines.Len()),
-				),
-			}
+			return text.Merge(
+				text.Slice(t, 0, row),
+				t2,
+				text.Slice(t, row, t.Len()),
+			)
 		}
 		e.text.Update(update)
-		e.moveRelativeAndFixWithoutLock(lines.Len(), 0)
+		e.moveRelativeAndFixWithoutLock(t2.Len(), 0)
 		e.setMessageWithoutLock("insert lines")
 	})
 }
@@ -251,7 +247,7 @@ func (e *Editor) DeleteLine(count int) {
 		update := func(t text.Text) text.Text {
 			return text.Text{
 				Reader: t.Reader,
-				Lines: seq.Concat(
+				Lines: seq.Merge(
 					seq.Slice(t.Lines, 0, row),
 					seq.Slice(t.Lines, row+count, t.Lines.Len()),
 				),

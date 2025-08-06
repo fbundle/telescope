@@ -1,22 +1,16 @@
 package text
 
 import (
-	"telescope/util/buffer"
 	"telescope/util/persistent/seq"
 )
 
-func GetLinesFromSeq(reader buffer.Reader, lines seq.Seq[Line]) [][]rune {
-	out := make([][]rune, 0, lines.Len())
-	for _, line := range lines.Iter {
-		out = append(out, line.Repr(reader))
-	}
-	return out
-}
-
-func GetSeqFromLines(lines [][]rune) seq.Seq[Line] {
+func MakeTextFromLine(lines [][]rune) Text {
 	s := seq.Empty[Line]()
 	for _, line := range lines {
 		s = s.Ins(s.Len(), makeLineFromData(line))
 	}
-	return s
+	return Text{
+		Reader: nil,
+		Lines:  s,
+	}
 }

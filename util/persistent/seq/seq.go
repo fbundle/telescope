@@ -71,7 +71,7 @@ func Slice[T any](s Seq[T], beg int, end int) Seq[T] {
 	return s
 }
 
-func Concat[T any](ss ...Seq[T]) Seq[T] {
+func Merge[T any](ss ...Seq[T]) Seq[T] {
 	if len(ss) == 0 {
 		return Empty[T]()
 	}

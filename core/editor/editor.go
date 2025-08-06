@@ -3,7 +3,6 @@ package editor
 import (
 	"context"
 	"telescope/util/buffer"
-	"telescope/util/persistent/seq"
 	"telescope/util/text"
 )
 
@@ -53,7 +52,7 @@ type Edit interface {
 	Undo()
 	Redo()
 
-	InsertLine(lines seq.Seq[text.Line])
+	InsertLine(t2 text.Text)
 	DeleteLine(count int)
 
 	Apply(entry LogEntry)

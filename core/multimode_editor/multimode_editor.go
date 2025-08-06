@@ -7,7 +7,6 @@ import (
 	"telescope/core/editor"
 	"telescope/core/insert_editor"
 	"telescope/util/buffer"
-	"telescope/util/persistent/seq"
 	"telescope/util/side_channel"
 	"telescope/util/text"
 )
@@ -26,7 +25,7 @@ type Selector struct {
 	End int
 }
 
-type clipboard = seq.Seq[text.Line]
+type clipboard = text.Text
 
 type state struct {
 	mode      Mode
@@ -231,9 +230,9 @@ func (c *Editor) Status(update func(status editor.Status) editor.Status) {
 		c.e.Status(update)
 	})
 }
-func (c *Editor) InsertLine(lines seq.Seq[text.Line]) {
+func (c *Editor) InsertLine(t2 text.Text) {
 	c.lock(func() {
-		c.e.InsertLine(lines)
+		c.e.InsertLine(t2)
 	})
 }
 
@@ -253,7 +252,7 @@ func New(cancel func(), e *insert_editor.Editor, defaultOutputFile string) *Edit
 			mode:      ModeNormal,
 			command:   "",
 			selector:  nil,
-			clipboard: seq.Empty[text.Line](),
+			clipboard: text.Text{},
 		},
 	}
 	c.writeWithoutLock("")
