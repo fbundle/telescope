@@ -12,17 +12,18 @@ type Comparable[T any] interface {
 
 type node[T Comparable[T]] struct {
 	weight uint
-	height uint
-	entry  T
-	left   *node[T]
-	right  *node[T]
+	// height uint
+	entry T
+	left  *node[T]
+	right *node[T]
 }
 
 func height[T Comparable[T]](n *node[T]) uint {
 	if n == nil {
 		return 0
 	}
-	return n.height
+	// return n.height
+	return 0
 }
 
 func weight[T Comparable[T]](n *node[T]) uint {
@@ -34,10 +35,10 @@ func weight[T Comparable[T]](n *node[T]) uint {
 func makeNode[T Comparable[T]](entry T, left *node[T], right *node[T]) *node[T] {
 	return &node[T]{
 		weight: 1 + weight(left) + weight(right),
-		height: 1 + max(height(left), height(right)),
-		entry:  entry,
-		left:   left,
-		right:  right,
+		// height: 1 + max(height(left), height(right)),
+		entry: entry,
+		left:  left,
+		right: right,
 	}
 }
 

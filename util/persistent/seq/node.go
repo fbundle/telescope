@@ -8,17 +8,18 @@ const (
 
 type node[T any] struct {
 	weight uint
-	height uint
-	entry  T
-	left   *node[T]
-	right  *node[T]
+	// height uint
+	entry T
+	left  *node[T]
+	right *node[T]
 }
 
 func height[T any](n *node[T]) uint {
 	if n == nil {
 		return 0
 	}
-	return n.height
+	// return n.height
+	return 0
 }
 
 func weight[T any](n *node[T]) uint {
@@ -31,10 +32,10 @@ func weight[T any](n *node[T]) uint {
 func makeNode[T any](entry T, left *node[T], right *node[T]) *node[T] {
 	return &node[T]{
 		weight: 1 + weight(left) + weight(right),
-		height: 1 + max(height(left), height(right)),
-		entry:  entry,
-		left:   left,
-		right:  right,
+		// height: 1 + max(height(left), height(right)),
+		entry: entry,
+		left:  left,
+		right: right,
 	}
 }
 
