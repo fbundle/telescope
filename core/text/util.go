@@ -32,7 +32,7 @@ func indexFile(ctx context.Context, reader buffer.Buffer, update func(offset int
 			line = append(line, b)
 			continue
 		}
-		update(offset, line)
+		update(offset, line) // line without delim
 		offset, line = offset+len(line)+1, nil
 	}
 	if len(line) > 0 {
