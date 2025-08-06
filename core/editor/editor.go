@@ -103,7 +103,7 @@ func (e *editor) Status(update func(status Status) Status) {
 	})
 }
 
-func (e *editor) Load(ctx context.Context, reader buffer.Buffer) (context.Context, error) {
+func (e *editor) Load(ctx context.Context, reader buffer.Reader) (context.Context, error) {
 	loadCtx, loadDone := context.WithCancel(ctx) // if ctx is done then this editor will also stop loading
 	var err error = nil
 	e.lockRender(func() {

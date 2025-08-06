@@ -1,11 +1,11 @@
 package buffer
 
-type Buffer interface {
+type Reader interface {
 	Len() int
 	At(i int) byte
 }
 
-func NewMemBuffer(b []byte) Buffer {
+func NewMemBuffer(b []byte) Reader {
 	return &memBuffer{b: b}
 }
 

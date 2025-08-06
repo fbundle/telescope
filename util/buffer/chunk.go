@@ -45,7 +45,7 @@ func NewChunkFromOffset[T any](offset int64) *Chunk[T] {
 	}
 }
 
-func (l *Chunk[T]) Repr(reader Buffer, delim byte, unmarshal func([]byte) T) T {
+func (l *Chunk[T]) Repr(reader Reader, delim byte, unmarshal func([]byte) T) T {
 	i := l.raw
 	if i >= 0 {
 		buf := make([]byte, 0)

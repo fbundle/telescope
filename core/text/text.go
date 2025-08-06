@@ -5,7 +5,7 @@ import (
 	seq "telescope/util/persistent/sequence"
 )
 
-func New(reader buffer.Buffer) Text {
+func New(reader buffer.Reader) Text {
 	return Text{
 		Reader: reader,
 		Lines:  seq.New[Line](),
@@ -13,7 +13,7 @@ func New(reader buffer.Buffer) Text {
 }
 
 type Text struct {
-	Reader buffer.Buffer
+	Reader buffer.Reader
 	Lines  seq.Seq[Line]
 }
 

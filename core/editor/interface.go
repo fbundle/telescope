@@ -64,7 +64,7 @@ type Render interface {
 }
 
 type Editor interface {
-	Load(ctx context.Context, reader buffer.Buffer) (context.Context, error)
+	Load(ctx context.Context, reader buffer.Reader) (context.Context, error)
 	Escape()
 	Resize(height int, width int)
 	Status(update func(status Status) Status)

@@ -22,7 +22,7 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 
 	var err error
 	// input text
-	var inputBuffer buffer.Buffer = nil
+	var inputBuffer buffer.Reader = nil
 	var winName string = "telescope"
 	if len(inputFilename) > 0 {
 		inputMmapReader, err := mmap.Open(inputFilename)

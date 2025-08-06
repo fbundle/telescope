@@ -8,14 +8,14 @@ import (
 
 const delim byte = '\n'
 
-func LoadFile(ctx context.Context, reader buffer.Buffer, update func(Line, int)) error {
+func LoadFile(ctx context.Context, reader buffer.Reader, update func(Line, int)) error {
 	return indexFile(ctx, reader, func(offset int, line []byte) {
 		l := MakeLineFromOffset(offset)
 		update(l, len(line))
 	})
 }
 
-func indexFile(ctx context.Context, reader buffer.Buffer, update func(offset int, line []byte)) error {
+func indexFile(ctx context.Context, reader buffer.Reader, update func(offset int, line []byte)) error {
 	var offset int = 0
 
 	var line []byte
@@ -41,7 +41,7 @@ func indexFile(ctx context.Context, reader buffer.Buffer, update func(offset int
 	return nil
 }
 
-func GetLinesFromSeq(reader buffer.Buffer, lines seq.Seq[Line]) [][]rune {
+func GetLinesFromSeq(reader buffer.Reader, lines seq.Seq[Line]) [][]rune {
 	out := make([][]rune, 0, lines.Len())
 	for _, line := range lines.Iter {
 		out = append(out, line.Repr(reader))
