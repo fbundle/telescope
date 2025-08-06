@@ -1,14 +1,15 @@
-package editor
+package insert_editor
 
 import (
+	"telescope/core/editor"
 	"telescope/core/text"
 )
 
-func (e *editor) renderWithoutLock() {
+func (e *Editor) renderWithoutLock() {
 	e.renderCh <- e.makeView()
 }
 
-func (e *editor) makeView() View {
+func (e *Editor) makeView() editor.View {
 	getLineForView := func(t text.Text, row int, col int) []rune {
 		if row < t.Len() {
 			line := t.Get(row)
@@ -21,8 +22,8 @@ func (e *editor) makeView() View {
 			return []rune{'~'}
 		}
 	}
-	render := func() View {
-		view := View{
+	render := func() editor.View {
+		view := editor.View{
 			Cursor: e.cursor,
 			Window: e.window,
 			Status: e.status,
@@ -42,13 +43,13 @@ func (e *editor) makeView() View {
 	return render()
 }
 
-func (e *editor) Render() (view View) {
+func (e *Editor) Render() (view editor.View) {
 	e.lock(func() {
 		view = e.makeView()
 	})
 	return view
 }
 
-func (e *editor) Update() <-chan View {
+func (e *Editor) Update() <-chan editor.View {
 	return e.renderCh
 }

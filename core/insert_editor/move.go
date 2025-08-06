@@ -1,7 +1,7 @@
-package editor
+package insert_editor
 
 // moveRelativeAndFixWithoutLock - textCursor is either in the text or at the end of a line
-func (e *editor) moveRelativeAndFixWithoutLock(moveRow int, moveCol int) {
+func (e *Editor) moveRelativeAndFixWithoutLock(moveRow int, moveCol int) {
 	t := e.text.Get()
 
 	e.cursor.Row += moveRow
@@ -33,37 +33,37 @@ func (e *editor) moveRelativeAndFixWithoutLock(moveRow int, moveCol int) {
 	}
 }
 
-func (e *editor) MoveLeft() {
+func (e *Editor) MoveLeft() {
 	e.lockRender(func() {
 		e.moveRelativeAndFixWithoutLock(0, -1)
 		e.setMessageWithoutLock("move left")
 	})
 }
-func (e *editor) MoveRight() {
+func (e *Editor) MoveRight() {
 	e.lockRender(func() {
 		e.moveRelativeAndFixWithoutLock(0, 1)
 		e.setMessageWithoutLock("move right")
 	})
 }
-func (e *editor) MoveUp() {
+func (e *Editor) MoveUp() {
 	e.lockRender(func() {
 		e.moveRelativeAndFixWithoutLock(-1, 0)
 		e.setMessageWithoutLock("move up")
 	})
 }
-func (e *editor) MoveDown() {
+func (e *Editor) MoveDown() {
 	e.lockRender(func() {
 		e.moveRelativeAndFixWithoutLock(1, 0)
 		e.setMessageWithoutLock("move down")
 	})
 }
-func (e *editor) MoveHome() {
+func (e *Editor) MoveHome() {
 	e.lockRender(func() {
 		e.moveRelativeAndFixWithoutLock(0, -e.cursor.Col)
 		e.setMessageWithoutLock("move home")
 	})
 }
-func (e *editor) MoveEnd() {
+func (e *Editor) MoveEnd() {
 	e.lockRender(func() {
 		t := e.text.Get()
 		if e.cursor.Row < t.Len() {
@@ -73,20 +73,20 @@ func (e *editor) MoveEnd() {
 		e.setMessageWithoutLock("move end")
 	})
 }
-func (e *editor) MovePageUp() {
+func (e *Editor) MovePageUp() {
 	e.lockRender(func() {
 		e.moveRelativeAndFixWithoutLock(-e.window.Dimension.Row, 0)
 		e.setMessageWithoutLock("move page up")
 	})
 }
-func (e *editor) MovePageDown() {
+func (e *Editor) MovePageDown() {
 	e.lockRender(func() {
 		e.moveRelativeAndFixWithoutLock(e.window.Dimension.Row, 0)
 		e.setMessageWithoutLock("move page down")
 	})
 }
 
-func (e *editor) Goto(row int, col int) {
+func (e *Editor) Goto(row int, col int) {
 	e.lockRender(func() {
 		// move to absolute position
 		moveRow := row - e.cursor.Row

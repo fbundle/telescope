@@ -1,4 +1,4 @@
-package editor
+package insert_editor
 
 import (
 	"telescope/config"

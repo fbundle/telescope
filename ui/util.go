@@ -6,13 +6,14 @@ import (
 	"os"
 	"path/filepath"
 	"telescope/core/editor"
+	"telescope/core/insert_editor"
 	"telescope/core/log"
 	"telescope/util/buffer"
 
 	"golang.org/x/exp/mmap"
 )
 
-func makeEditor(ctx context.Context, inputFilename string, logFilename string, width int, height int) (editor.Editor, context.Context, func() error, func(), error) {
+func makeInsertEditor(ctx context.Context, inputFilename string, logFilename string, width int, height int) (*insert_editor.Editor, context.Context, func() error, func(), error) {
 	closerList := make([]func() error, 0)
 	closer := func() {
 		for i := len(closerList) - 1; i >= 0; i-- {
@@ -58,8 +59,8 @@ func makeEditor(ctx context.Context, inputFilename string, logFilename string, w
 		flush = writer.Flush
 	}
 
-	// editor
-	e, err := editor.New(
+	// insert_editor
+	e, err := insert_editor.New(
 		height-1, width,
 		logWriter,
 	)

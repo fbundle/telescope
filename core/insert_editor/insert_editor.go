@@ -1,4 +1,4 @@
-package editor
+package insert_editor
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sync"
 	"telescope/config"
+	"telescope/core/editor"
 	"telescope/core/hist"
 	"telescope/core/log"
 	"telescope/core/text"
@@ -14,36 +15,36 @@ import (
 	"time"
 )
 
-type editor struct {
-	renderCh  chan View
+type Editor struct {
+	renderCh  chan editor.View
 	logWriter log.Writer
 
 	mu     sync.Mutex // the fields below are protected by mu
 	text   hist.Hist[text.Text]
-	cursor Position
-	window Window
-	status Status
+	cursor editor.Position
+	window editor.Window
+	status editor.Status
 }
 
 func New(
 	height int, width int,
 	logWriter log.Writer,
-) (Editor, error) {
-	e := &editor{
+) (*Editor, error) {
+	e := &Editor{
 		// buffered channel is necessary  for preventing deadlock
-		renderCh:  make(chan View, config.Load().VIEW_CHANNEL_SIZE),
+		renderCh:  make(chan editor.View, config.Load().VIEW_CHANNEL_SIZE),
 		logWriter: logWriter,
 
 		mu:   sync.Mutex{},
 		text: nil,
-		cursor: Position{
+		cursor: editor.Position{
 			Row: 0, Col: 0,
 		},
-		window: Window{
-			TopLeft:   Position{Row: 0, Col: 0},
-			Dimension: Position{Row: height, Col: width},
+		window: editor.Window{
+			TopLeft:   editor.Position{Row: 0, Col: 0},
+			Dimension: editor.Position{Row: height, Col: width},
 		},
-		status: Status{
+		status: editor.Status{
 			Message:    "",
 			Background: "",
 			Other:      nil,
@@ -52,14 +53,14 @@ func New(
 	return e, nil
 }
 
-func (e *editor) lock(f func()) {
+func (e *Editor) lock(f func()) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
 	f()
 }
 
-func (e *editor) lockRender(f func()) {
+func (e *Editor) lockRender(f func()) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	defer e.renderWithoutLock()
@@ -67,11 +68,11 @@ func (e *editor) lockRender(f func()) {
 	f()
 }
 
-func (e *editor) setMessageWithoutLock(format string, a ...any) {
+func (e *Editor) setMessageWithoutLock(format string, a ...any) {
 	e.status.Message = fmt.Sprintf(format, a...)
 }
 
-func (e *editor) writeLog(entry log.Entry) {
+func (e *Editor) writeLog(entry log.Entry) {
 	if e.logWriter == nil {
 		return
 	}
@@ -82,7 +83,7 @@ func (e *editor) writeLog(entry log.Entry) {
 	}
 }
 
-func (e *editor) Resize(height int, width int) {
+func (e *Editor) Resize(height int, width int) {
 	e.lockRender(func() {
 		if e.window.Dimension.Row == height && e.window.Dimension.Col == width {
 			return
@@ -93,18 +94,18 @@ func (e *editor) Resize(height int, width int) {
 	})
 }
 
-func (e *editor) Escape() {
+func (e *Editor) Escape() {
 
 }
 
-func (e *editor) Status(update func(status Status) Status) {
+func (e *Editor) Status(update func(status editor.Status) editor.Status) {
 	e.lockRender(func() {
 		e.status = update(e.status)
 	})
 }
 
-func (e *editor) Load(ctx context.Context, reader buffer.Reader) (context.Context, error) {
-	loadCtx, loadDone := context.WithCancel(ctx) // if ctx is done then this editor will also stop loading
+func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Context, error) {
+	loadCtx, loadDone := context.WithCancel(ctx) // if ctx is done then this insert_editor will also stop loading
 	var err error = nil
 	e.lockRender(func() {
 		if e.text != nil {
@@ -166,6 +167,6 @@ func (e *editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 	return loadCtx, err
 }
 
-func (e *editor) Action(map[string]any) {
+func (e *Editor) Action(map[string]any) {
 	// do nothing
 }

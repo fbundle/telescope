@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 	"telescope/config"
-	"telescope/core/command_editor"
 	"telescope/core/editor"
+	"telescope/core/multimode_editor"
 	"telescope/util/side_channel"
 	"time"
 
@@ -31,7 +31,7 @@ func getModeAndCommand(m map[string]any) (string, string) {
 	return mode, command
 }
 
-func getSelector(m map[string]any) *command_editor.Selector {
+func getSelector(m map[string]any) *multimode_editor.Selector {
 	if m == nil {
 		return nil
 	}
@@ -39,7 +39,7 @@ func getSelector(m map[string]any) *command_editor.Selector {
 	if !ok {
 		return nil
 	}
-	selector, ok := s.(*command_editor.Selector)
+	selector, ok := s.(*multimode_editor.Selector)
 	if !ok {
 		return nil
 	}
@@ -60,7 +60,7 @@ func draw(s tcell.Screen, view editor.View) {
 	s.Clear()
 	screenWidth, screenHeight := s.Size()
 	selector := getSelector(view.Status.Other)
-	// Draw editor content from (0, 0)
+	// Draw insert_editor content from (0, 0)
 	for row, line := range view.Window.Data {
 		style := textStyle
 		if selector != nil {
@@ -156,13 +156,17 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 
 	width, height := s.Size()
 
-	e, loadCtx, flush, closer, err := makeEditor(ctx, inputFilename, logFilename, width, height)
+	var e editor.Editor
+	// make editor
+	ie, loadCtx, flush, closer, err := makeInsertEditor(ctx, inputFilename, logFilename, width, height)
 	if err != nil {
 		cancel()
 		return err
 	}
 	if commandMode {
-		e = command_editor.NewCommandEditor(stop, e, inputFilename)
+		e = multimode_editor.New(stop, ie, inputFilename)
+	} else {
+		e = ie
 	}
 	defer closer()
 
@@ -197,7 +201,7 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 		event := s.PollEvent()
 		switch event := event.(type) {
 		case *quitEvent:
-			// quit from editor
+			// quit from insert_editor
 			running = false
 		case *tcell.EventMouse:
 			handleEditorMouse(e, event)

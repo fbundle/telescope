@@ -1,4 +1,4 @@
-package command_editor
+package multimode_editor
 
 import (
 	"fmt"
@@ -13,14 +13,14 @@ import (
 
 // all functions resulting in mode change
 
-func (c *commandEditor) Escape() {
+func (c *Editor) Escape() {
 	c.lock(func() {
 		c.enterNormalModeWithoutLock()
 		c.writeWithoutLock("enter normal mode")
 	})
 }
 
-func (c *commandEditor) Enter() {
+func (c *Editor) Enter() {
 	c.lock(func() {
 		switch c.state.mode {
 		case ModeNormal:
@@ -37,7 +37,7 @@ func (c *commandEditor) Enter() {
 	})
 }
 
-func (c *commandEditor) Type(ch rune) {
+func (c *Editor) Type(ch rune) {
 	c.lock(func() {
 		switch c.state.mode {
 		case ModeNormal:
@@ -164,7 +164,7 @@ func parseCommand(cmd string) (command, []string) {
 	return commandUnknown, nil
 }
 
-func (c *commandEditor) applyCommandWithoutLock() {
+func (c *Editor) applyCommandWithoutLock() {
 	cmd, args := parseCommand(c.state.command)
 	switch cmd {
 	case commandInsert:

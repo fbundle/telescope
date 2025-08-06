@@ -1,4 +1,4 @@
-package editor
+package insert_editor
 
 import (
 	"slices"
@@ -9,7 +9,7 @@ import (
 	"telescope/util/side_channel"
 )
 
-func (e *editor) Type(ch rune) {
+func (e *Editor) Type(ch rune) {
 	e.lockRender(func() {
 		e.writeLog(log.Entry{
 			Command: log.CommandType,
@@ -38,7 +38,7 @@ func (e *editor) Type(ch rune) {
 	})
 }
 
-func (e *editor) Backspace() {
+func (e *Editor) Backspace() {
 	e.lockRender(func() {
 		e.writeLog(log.Entry{
 			Command: log.CommandBackspace,
@@ -80,7 +80,7 @@ func (e *editor) Backspace() {
 	})
 }
 
-func (e *editor) Delete() {
+func (e *Editor) Delete() {
 	e.lockRender(func() {
 		e.writeLog(log.Entry{
 			Command: log.CommandDelete,
@@ -117,7 +117,7 @@ func (e *editor) Delete() {
 	})
 }
 
-func (e *editor) Enter() {
+func (e *Editor) Enter() {
 	e.lockRender(func() {
 		e.writeLog(log.Entry{
 			Command: log.CommandEnter,
@@ -158,13 +158,13 @@ func (e *editor) Enter() {
 	})
 }
 
-func (e *editor) Tabular() {
+func (e *Editor) Tabular() {
 	for i := 0; i < config.Load().TAB_SIZE; i++ {
 		e.Type(' ')
 	}
 }
 
-func (e *editor) Undo() {
+func (e *Editor) Undo() {
 	e.lockRender(func() {
 		e.writeLog(log.Entry{
 			Command: log.CommandUndo,
@@ -174,7 +174,7 @@ func (e *editor) Undo() {
 	})
 }
 
-func (e *editor) Redo() {
+func (e *Editor) Redo() {
 	e.lockRender(func() {
 		e.writeLog(log.Entry{
 			Command: log.CommandRedo,
@@ -184,7 +184,7 @@ func (e *editor) Redo() {
 	})
 }
 
-func (e *editor) Apply(entry log.Entry) {
+func (e *Editor) Apply(entry log.Entry) {
 	switch entry.Command {
 	case log.CommandEnter:
 		e.Goto(int(entry.Row), int(entry.Col))
@@ -213,7 +213,7 @@ func (e *editor) Apply(entry log.Entry) {
 	}
 }
 
-func (e *editor) InsertLine(lines seq.Seq[text.Line]) {
+func (e *Editor) InsertLine(lines seq.Seq[text.Line]) {
 	e.lockRender(func() {
 		t := e.text.Get()
 		e.writeLog(log.Entry{
@@ -238,7 +238,7 @@ func (e *editor) InsertLine(lines seq.Seq[text.Line]) {
 	})
 }
 
-func (e *editor) DeleteLine(count int) {
+func (e *Editor) DeleteLine(count int) {
 	e.lockRender(func() {
 		row := e.cursor.Row
 		e.writeLog(log.Entry{

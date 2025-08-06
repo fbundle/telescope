@@ -13,8 +13,8 @@ func RunReplay(inputFilename string, logFilename string) error {
 	defer cancel()
 	_, _ = fmt.Fprintf(os.Stderr, "loading input file %s\n", inputFilename)
 
-	// make editor without log
-	e, loadCtx, flush, close, err := makeEditor(ctx, inputFilename, "", 20, 20)
+	// make insert_editor without log
+	e, loadCtx, flush, close, err := makeInsertEditor(ctx, inputFilename, "", 20, 20)
 	if err != nil {
 		return err
 	}

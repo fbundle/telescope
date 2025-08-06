@@ -1,10 +1,11 @@
-package command_editor
+package multimode_editor
 
 import (
 	"context"
 	"sync"
 	"telescope/config"
 	"telescope/core/editor"
+	"telescope/core/insert_editor"
 	"telescope/core/log"
 	"telescope/core/text"
 	"telescope/util/buffer"
@@ -35,30 +36,30 @@ type state struct {
 	clipboard clipboard
 }
 
-type commandEditor struct {
+type Editor struct {
 	cancel            func()
 	mu                sync.Mutex
-	e                 editor.Editor
+	e                 *insert_editor.Editor
 	defaultOutputFile string
 	state             state
 }
 
-func (c *commandEditor) enterNormalModeWithoutLock() {
+func (c *Editor) enterNormalModeWithoutLock() {
 	c.state.mode = ModeNormal
 	c.state.command = ""
 	c.state.selector = nil
 }
-func (c *commandEditor) enterInsertModeWithoutLock() {
+func (c *Editor) enterInsertModeWithoutLock() {
 	c.state.mode = ModeInsert
 	c.state.command = ""
 	c.state.selector = nil
 }
-func (c *commandEditor) enterCommandModeWithoutLock(command string) {
+func (c *Editor) enterCommandModeWithoutLock(command string) {
 	c.state.mode = ModeCommand
 	c.state.command = command
 	c.state.selector = nil
 }
-func (c *commandEditor) enterSelectModeWithoutLock(beg int) {
+func (c *Editor) enterSelectModeWithoutLock(beg int) {
 	c.state.mode = ModeSelect
 	c.state.command = ""
 	c.state.selector = &Selector{
@@ -67,24 +68,24 @@ func (c *commandEditor) enterSelectModeWithoutLock(beg int) {
 	}
 }
 
-func (c *commandEditor) Update() <-chan editor.View {
+func (c *Editor) Update() <-chan editor.View {
 	return c.e.Update()
 }
 
-func (c *commandEditor) Load(ctx context.Context, reader buffer.Reader) (loadCtx context.Context, err error) {
+func (c *Editor) Load(ctx context.Context, reader buffer.Reader) (loadCtx context.Context, err error) {
 	c.lock(func() {
 		loadCtx, err = c.e.Load(ctx, reader)
 	})
 	return loadCtx, err
 }
 
-func (c *commandEditor) Resize(height int, width int) {
+func (c *Editor) Resize(height int, width int) {
 	c.lock(func() {
 		c.e.Resize(height, width)
 	})
 }
 
-func (c *commandEditor) Backspace() {
+func (c *Editor) Backspace() {
 	c.lock(func() {
 		switch c.state.mode {
 		case ModeNormal:
@@ -104,7 +105,7 @@ func (c *commandEditor) Backspace() {
 	})
 }
 
-func (c *commandEditor) Delete() {
+func (c *Editor) Delete() {
 	c.lock(func() {
 		switch c.state.mode {
 		case ModeNormal:
@@ -121,7 +122,7 @@ func (c *commandEditor) Delete() {
 	})
 }
 
-func (c *commandEditor) Tabular() {
+func (c *Editor) Tabular() {
 	c.lock(func() {
 		switch c.state.mode {
 		case ModeNormal:
@@ -138,25 +139,25 @@ func (c *commandEditor) Tabular() {
 	})
 }
 
-func (c *commandEditor) Goto(row int, col int) {
+func (c *Editor) Goto(row int, col int) {
 	c.lock(func() {
 		c.e.Goto(row, col)
 	})
 }
 
-func (c *commandEditor) MoveLeft() {
+func (c *Editor) MoveLeft() {
 	c.lock(func() {
 		c.e.MoveLeft()
 	})
 }
 
-func (c *commandEditor) MoveRight() {
+func (c *Editor) MoveRight() {
 	c.lock(func() {
 		c.e.MoveRight()
 	})
 }
 
-func (c *commandEditor) MoveUp() {
+func (c *Editor) MoveUp() {
 	c.lock(func() {
 		c.e.MoveUp()
 		if c.state.mode == ModeSelect {
@@ -167,7 +168,7 @@ func (c *commandEditor) MoveUp() {
 	})
 }
 
-func (c *commandEditor) MoveDown() {
+func (c *Editor) MoveDown() {
 	c.lock(func() {
 		c.e.MoveDown()
 		if c.state.mode == ModeSelect {
@@ -178,19 +179,19 @@ func (c *commandEditor) MoveDown() {
 	})
 }
 
-func (c *commandEditor) MoveHome() {
+func (c *Editor) MoveHome() {
 	c.lock(func() {
 		c.e.MoveHome()
 	})
 }
 
-func (c *commandEditor) MoveEnd() {
+func (c *Editor) MoveEnd() {
 	c.lock(func() {
 		c.e.MoveEnd()
 	})
 }
 
-func (c *commandEditor) MovePageUp() {
+func (c *Editor) MovePageUp() {
 	c.lock(func() {
 		c.e.MovePageUp()
 		if c.state.mode == ModeSelect {
@@ -201,7 +202,7 @@ func (c *commandEditor) MovePageUp() {
 	})
 }
 
-func (c *commandEditor) MovePageDown() {
+func (c *Editor) MovePageDown() {
 	c.lock(func() {
 		c.e.MovePageDown()
 		if c.state.mode == ModeSelect {
@@ -212,47 +213,47 @@ func (c *commandEditor) MovePageDown() {
 	})
 }
 
-func (c *commandEditor) Undo() {
+func (c *Editor) Undo() {
 	c.lock(func() {
 		c.e.Undo()
 	})
 }
 
-func (c *commandEditor) Redo() {
+func (c *Editor) Redo() {
 	c.lock(func() {
 		c.e.Redo()
 	})
 }
 
-func (c *commandEditor) Apply(entry log.Entry) {
+func (c *Editor) Apply(entry log.Entry) {
 	c.lock(func() {
 		c.e.Apply(entry)
 	})
 }
 
-func (c *commandEditor) Render() editor.View {
+func (c *Editor) Render() editor.View {
 	return c.e.Render()
 }
 
-func (c *commandEditor) Status(update func(status editor.Status) editor.Status) {
+func (c *Editor) Status(update func(status editor.Status) editor.Status) {
 	c.lock(func() {
 		c.e.Status(update)
 	})
 }
-func (c *commandEditor) InsertLine(lines seq.Seq[text.Line]) {
+func (c *Editor) InsertLine(lines seq.Seq[text.Line]) {
 	c.lock(func() {
 		c.e.InsertLine(lines)
 	})
 }
 
-func (c *commandEditor) DeleteLine(count int) {
+func (c *Editor) DeleteLine(count int) {
 	c.lock(func() {
 		c.e.DeleteLine(count)
 	})
 }
 
-func NewCommandEditor(cancel func(), e editor.Editor, defaultOutputFile string) editor.Editor {
-	c := &commandEditor{
+func New(cancel func(), e *insert_editor.Editor, defaultOutputFile string) *Editor {
+	c := &Editor{
 		cancel:            cancel,
 		mu:                sync.Mutex{},
 		e:                 e,
@@ -267,14 +268,14 @@ func NewCommandEditor(cancel func(), e editor.Editor, defaultOutputFile string) 
 	return c
 }
 
-func (c *commandEditor) lock(f func()) {
+func (c *Editor) lock(f func()) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	f()
 }
 
-func (c *commandEditor) writeWithoutLock(message string) {
+func (c *Editor) writeWithoutLock(message string) {
 	c.e.Status(func(status editor.Status) editor.Status {
 		if status.Other == nil {
 			status.Other = make(map[string]any)
@@ -287,7 +288,7 @@ func (c *commandEditor) writeWithoutLock(message string) {
 	})
 }
 
-func (c *commandEditor) Action(action map[string]any) {
+func (c *Editor) Action(action map[string]any) {
 	if action == nil {
 		return
 	}

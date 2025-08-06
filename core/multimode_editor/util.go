@@ -1,4 +1,4 @@
-package command_editor
+package multimode_editor
 
 import (
 	"bufio"
