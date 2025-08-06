@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"telescope/util/side_channel"
 	"time"
 )
 
@@ -82,6 +83,7 @@ func Load() *Config {
 	defer mu.Unlock()
 	if config == nil {
 		tempDir := os.TempDir()
+		side_channel.WriteLn(tempDir)
 		debug := len(os.Getenv("DEBUG")) > 0
 		// TODO - export these into environment variables
 		config = &Config{
