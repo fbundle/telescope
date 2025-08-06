@@ -170,6 +170,7 @@ func (e *Editor) Undo() {
 			Command: editor.CommandUndo,
 		})
 		e.text.Undo()
+		e.moveRelativeAndFixWithoutLock(0, 0)
 		e.setMessageWithoutLock("undo")
 	})
 }
@@ -180,6 +181,7 @@ func (e *Editor) Redo() {
 			Command: editor.CommandRedo,
 		})
 		e.text.Redo()
+		e.moveRelativeAndFixWithoutLock(0, 0)
 		e.setMessageWithoutLock("redo")
 	})
 }
