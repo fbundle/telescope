@@ -52,6 +52,7 @@ func getSelector(m map[string]any) *multimode_editor.Selector {
 type drawFunc = func(x int, y int, primary rune, combining []rune, style tcell.Style)
 type drawCtx = func(width int, height int, draw drawFunc)
 
+// makeDrawContext - draw relative
 func makeDrawContext(s tcell.Screen, offsetX int, offsetY int, width int, height int) func(drawCtx) {
 	return func(f func(width int, height int, draw drawFunc)) {
 		f(width, height, func(x int, y int, primary rune, combining []rune, style tcell.Style) {
@@ -90,7 +91,8 @@ func draw(s tcell.Screen, view editor.View) {
 	s.ShowCursor(relCol, relRow)
 
 	// Draw content from (0, 0) -> (screenWidth-1, screenHeight-2)
-	makeDrawContext(s, 0, 0, screenWidth, screenHeight-1)(func(width int, height int, draw drawFunc) {
+	contentDrawContext := makeDrawContext(s, 0, 0, screenWidth, screenHeight-1)
+	contentDrawContext(func(width int, height int, draw drawFunc) {
 		for col := 0; col < width; col++ {
 			draw(col, 0, ' ', nil, statusStyle)
 		}
@@ -120,7 +122,8 @@ func draw(s tcell.Screen, view editor.View) {
 	})
 
 	// Draw the status bar at the bottom (screenHeight-1)
-	makeDrawContext(s, 0, screenHeight-1, screenWidth, 1)(func(width int, height int, draw drawFunc) {
+	statusDrawContext := makeDrawContext(s, 0, screenHeight-1, screenWidth, 1)
+	statusDrawContext(func(width int, height int, draw drawFunc) {
 		for col := 0; col < width; col++ {
 			draw(col, 0, ' ', nil, statusStyle)
 		}
