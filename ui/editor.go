@@ -126,7 +126,7 @@ func (e *quitEvent) When() time.Time {
 	return e.when
 }
 
-func RunEditor(inputFilename string, logFilename string, commandMode bool) error {
+func RunEditor(inputFilename string, logFilename string, multiMode bool) error {
 	s, err := tcell.NewScreen()
 	if err != nil {
 		return err
@@ -158,15 +158,16 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 
 	var e editor.Editor
 	// make editor
-	ie, loadCtx, flush, closer, err := makeInsertEditor(ctx, inputFilename, logFilename, width, height)
+	insertEditor, loadCtx, flush, closer, err := makeInsertEditor(ctx, inputFilename, logFilename, width, height)
 	if err != nil {
 		cancel()
 		return err
 	}
-	if commandMode {
-		e = multimode_editor.New(stop, ie, inputFilename)
+	if multiMode {
+		multiModeEditor := multimode_editor.New(stop, insertEditor, inputFilename)
+		e = multiModeEditor
 	} else {
-		e = ie
+		e = insertEditor
 	}
 	defer closer()
 
