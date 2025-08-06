@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"telescope/config"
-	"telescope/util/persistent/seq"
 	"telescope/util/side_channel"
 	"telescope/util/text"
 	"time"
@@ -238,11 +237,10 @@ func (c *Editor) applyCommandWithoutLock() {
 
 		view := c.e.Render()
 		row, t := view.Cursor.Row, view.Text
-		lines := seq.Slice(t.Lines, row+1, t.Lines.Len())
+		t = text.Slice(t, row+1, t.Len())
 
 		t0 := time.Now()
-		for i, l := range lines.Iter {
-			line := l.Repr(t.Reader)
+		for i, line := range t.Iter {
 			if match(string(line)) {
 				c.e.Goto(row+1+i, 0)
 				c.writeWithoutLock("found substring " + pattern)
