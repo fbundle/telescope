@@ -3,64 +3,34 @@ package main
 import (
 	"context"
 	"fmt"
-	"runtime"
-	"sync"
-	"sync/atomic"
+	"telescope/util/future"
 	"time"
-	"unsafe"
 )
 
-type Chunk[T any] struct {
-	raw int64 // 8 bytes
-	_   *bool
-}
-
-var pool = &sync.Map{} // map[uint64]any
-var lastKey = int64(0)
-
-func poolSize() int {
-	count := 0
-	for range pool.Range {
-		count++
-	}
-	return count
-}
-
-func NewChunkFromData[T any](data T, cancel func()) *Chunk[T] {
-	key := atomic.AddInt64(&lastKey, -1)
-	pool.Store(key, data)
-	line := &Chunk[T]{
-		raw: key,
-	}
-	runtime.AddCleanup(line, func(key int64) {
-		pool.Delete(key)
-		fmt.Printf("key %d was cleaned\n", key)
-		if poolSize() == 0 {
-			cancel()
+func test(ctx context.Context) {
+	v := future.New(ctx, func(ctx context.Context) (int, error) {
+		s := 0
+		for i := 0; i < 100; i++ {
+			select {
+			case <-ctx.Done():
+				return s, ctx.Err()
+			default:
+			}
+			s += i
+			time.Sleep(time.Millisecond)
 		}
-	}, key)
-	return line
-}
-
-func test() context.Context {
-	ctx, cancel := context.WithCancel(context.Background())
-	x := NewChunkFromData([]byte{1, 2, 3}, cancel)
-	fmt.Println("size", unsafe.Sizeof(*x))
-	_ = x
-	NewChunkFromData([]byte{1, 2, 3}, cancel)
-	NewChunkFromData([]byte{1, 2, 3}, cancel)
-	NewChunkFromData([]byte{1, 2, 3}, cancel)
-	NewChunkFromData([]byte{1, 2, 3}, cancel)
-	NewChunkFromData([]byte{1, 2, 3}, cancel)
-	return ctx
+		return s, nil
+	})
+	<-v.Done()
+	if v.Error == nil {
+		fmt.Println(v.Value)
+	} else {
+		panic(v.Error)
+	}
 }
 
 func main() {
-	ctx := test()
-	runtime.GC()
-
-	fmt.Println("done")
-
-	time.Sleep(time.Second * 5)
-	<-ctx.Done()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	test(ctx)
+	defer cancel()
 }
