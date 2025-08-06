@@ -4,16 +4,22 @@ import (
 	"fmt"
 	"os"
 	"runtime"
-	"sync/atomic"
+	"sync"
 	"telescope/config"
 )
 
-var writeCount uint64 = 0
+var (
+	writeMu    sync.Mutex = sync.Mutex{}
+	writeCount uint64     = 0
+)
 
 func writeln(vs []any, msg string) bool {
 	sideChannelPath := config.Load().SIDE_CHANNEL_PATH
+	writeMu.Lock()
+	defer writeMu.Unlock()
+	writeCount++
 
-	if atomic.AddUint64(&writeCount, 1) == 1 {
+	if writeCount == 1 {
 		// first call
 		_ = os.Remove(sideChannelPath)
 	}
