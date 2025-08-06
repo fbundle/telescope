@@ -49,9 +49,10 @@ func getSelector(m map[string]any) *multimode_editor.Selector {
 	return selector
 }
 
-type drawFunc func(x int, y int, primary rune, combining []rune, style tcell.Style)
+type drawFunc = func(x int, y int, primary rune, combining []rune, style tcell.Style)
+type drawCtx = func(width int, height int, draw drawFunc)
 
-func makeDrawContext(s tcell.Screen, offsetX int, offsetY int, width int, height int) func(func(width int, height int, draw drawFunc)) {
+func makeDrawContext(s tcell.Screen, offsetX int, offsetY int, width int, height int) func(drawCtx) {
 	return func(f func(width int, height int, draw drawFunc)) {
 		f(width, height, func(x int, y int, primary rune, combining []rune, style tcell.Style) {
 			if 0 <= x && x < width && 0 <= y && y < height {
