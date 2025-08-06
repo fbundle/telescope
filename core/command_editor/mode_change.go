@@ -179,7 +179,7 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		c.enterNormalModeWithoutLock()
 		c.writeWithoutLock("file written into " + filename)
 
-		// exit
+		// delete log and exit
 		c.cancel()
 		return
 
