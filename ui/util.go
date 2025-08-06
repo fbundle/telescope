@@ -7,6 +7,7 @@ import (
 	"telescope/core/editor"
 	"telescope/core/insert_editor"
 	"telescope/core/log_writer"
+	"telescope/util/buffer"
 	"telescope/util/side_channel"
 
 	"golang.org/x/exp/mmap"
@@ -42,6 +43,7 @@ func makeInsertEditor(
 		f.Close()
 		return nil, nil, nil, err
 	}
+	var inputBuffer buffer.Reader = nil
 	if len(inputFilename) > 0 {
 		inputMmapReader, err := mmap.Open(inputFilename)
 		if err != nil {
@@ -49,15 +51,12 @@ func makeInsertEditor(
 			return nil, nil, nil, err
 		}
 		f.closerList = append(f.closerList, inputMmapReader.Close)
-		loadCtx, err = insertEditor.Load(ctx, inputMmapReader)
-		if err != nil {
-			f.Close()
-			return nil, nil, nil, err
-		}
-	} else {
-		var loadDone context.CancelFunc
-		loadCtx, loadDone = context.WithCancel(ctx)
-		loadDone()
+		inputBuffer = inputMmapReader
+	}
+	loadCtx, err = insertEditor.Load(ctx, inputBuffer)
+	if err != nil {
+		f.Close()
+		return nil, nil, nil, err
 	}
 	if len(logFilename) > 0 {
 		logFile, err := os.OpenFile(logFilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
