@@ -294,3 +294,21 @@ func (c *Editor) applyCommandWithoutLock() {
 		c.writeWithoutLock("unknown command: " + c.state.command)
 	}
 }
+func (c *Editor) Delete() {
+	c.lock(func() {
+		switch c.state.mode {
+		case ModeNormal:
+			c.enterInsertModeWithoutLock()
+			c.writeWithoutLock("enter insert mode")
+			c.e.Delete()
+		case ModeInsert:
+			c.e.Delete()
+		case ModeCommand:
+		// do nothing
+		case ModeSelect:
+			// do nothing
+		default:
+			side_channel.Panic("unknown mode: ", c.state)
+		}
+	})
+}

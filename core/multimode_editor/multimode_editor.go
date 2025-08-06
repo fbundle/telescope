@@ -103,23 +103,6 @@ func (c *Editor) Backspace() {
 	})
 }
 
-func (c *Editor) Delete() {
-	c.lock(func() {
-		switch c.state.mode {
-		case ModeNormal:
-			// do nothing
-		case ModeInsert:
-			c.e.Delete()
-		case ModeCommand:
-		// do nothing
-		case ModeSelect:
-			// do nothing
-		default:
-			side_channel.Panic("unknown mode: ", c.state)
-		}
-	})
-}
-
 func (c *Editor) Tabular() {
 	c.lock(func() {
 		switch c.state.mode {
