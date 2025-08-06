@@ -63,16 +63,18 @@ func draw(s tcell.Screen, view editor.View) {
 	s.Clear()
 	screenWidth, screenHeight := s.Size()
 	selector := getSelector(view.Status.Other)
-	// Draw content from (0, 0)
-	for row, line := range view.Window.Data {
-		style := textStyle
+	getStyle := func(textRow int) tcell.Style {
 		if selector != nil {
 			beg, end := selector.Interval()
-			textRow := view.Window.TopLeft.Row + row
 			if beg <= textRow && textRow <= end {
-				style = highlightStyle
+				return highlightStyle
 			}
 		}
+		return textStyle
+	}
+	// Draw content from (0, 0)
+	for row, line := range view.Window.Data {
+		style := getStyle(view.Window.TopLeft.Row + row)
 		for col := 0; col < min(screenWidth, len(line)); col++ {
 			ch := line[col]
 			s.SetContent(col, row, ch, nil, style)
