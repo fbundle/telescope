@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"telescope/config"
 	"telescope/ui"
@@ -30,6 +31,7 @@ type programArgs struct {
 func main() {
 	defer func() {
 		if err := recover(); err != nil {
+			side_channel.WriteLn(string(debug.Stack()))
 			side_channel.Panic(err)
 		}
 	}()
