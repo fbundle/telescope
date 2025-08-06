@@ -4,26 +4,19 @@ import (
 	"telescope/config"
 )
 
-type Hist[T any] interface {
-	Update(modifier func(T) T)
-	Get() T
-	Undo()
-	Redo()
-}
-
-func New[T any](t T) Hist[T] {
-	return &hist[T]{
+func New[T any](t T) *Hist[T] {
+	return &Hist[T]{
 		i:  0,
 		ts: []T{t},
 	}
 }
 
-type hist[T any] struct {
+type Hist[T any] struct {
 	i  int // current version
 	ts []T // all versions
 }
 
-func (h *hist[T]) Update(modifier func(T) T) {
+func (h *Hist[T]) Update(modifier func(T) T) {
 	next := modifier(h.ts[h.i])
 	h.ts = append(h.ts[:h.i+1], next)
 	h.i++
@@ -33,16 +26,16 @@ func (h *hist[T]) Update(modifier func(T) T) {
 	}
 }
 
-func (h *hist[T]) Get() T {
+func (h *Hist[T]) Get() T {
 	return h.ts[h.i]
 }
-func (h *hist[T]) Undo() {
+func (h *Hist[T]) Undo() {
 	if h.i > 0 {
 		h.i--
 	}
 }
 
-func (h *hist[T]) Redo() {
+func (h *Hist[T]) Redo() {
 	if h.i < len(h.ts)-1 {
 		h.i++
 	}

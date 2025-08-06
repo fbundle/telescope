@@ -19,7 +19,7 @@ type Editor struct {
 	renderCh chan editor.View
 
 	mu     sync.Mutex // the fields below are protected by mu
-	text   hist.Hist[text.Text]
+	text   *hist.Hist[text.Text]
 	cursor editor.Position
 	window editor.Window
 	status editor.Status

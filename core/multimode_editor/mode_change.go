@@ -68,6 +68,10 @@ func (c *Editor) Type(ch rune) {
 				}
 				c.e.InsertLine(c.state.clipboard)
 				c.writeWithoutLock("pasted")
+			case 'u':
+				c.e.Undo()
+			case 'r':
+				c.e.Redo()
 
 			case 'b', 'g': // go to beg of file
 				c.e.Goto(0, 0)
