@@ -42,3 +42,84 @@ an extremely fast text editor
 
 5. user use `telescope -r inputfile` to replay the log to make a new file. the program will write the output to stdout
 
+## EDITOR
+
+```go
+package editor
+
+import (
+	"context"
+	"telescope/util/buffer"
+	"telescope/util/text"
+)
+
+type Object = map[string]any
+type Position struct {
+	Row int
+	Col int
+}
+
+type Status struct {
+	Message    string
+	Background string
+	Other      Object // arbitrary view
+}
+
+type Window struct {
+	TopLeft   Position
+	Dimension Position
+}
+
+type View struct {
+	Text   text.Text
+	Cursor Position
+	Window Window
+	Status Status
+}
+
+type Move interface {
+	MoveLeft()
+	MoveRight()
+	MoveUp()
+	MoveDown()
+	MoveHome()
+	MoveEnd()
+	MovePageUp()
+	MovePageDown()
+	Goto(row int, col int)
+}
+
+type Edit interface {
+	Type(ch rune)
+	Backspace()
+	Delete()
+	Enter()
+	Tabular()
+	Undo()
+	Redo()
+
+	InsertLine(t2 text.Text)
+	DeleteLine(count int)
+
+	Apply(entry LogEntry)
+}
+
+type Render interface {
+	Render() View
+	Update() <-chan View
+}
+
+type Editor interface {
+	Load(ctx context.Context, reader buffer.Reader) (context.Context, error)
+	Escape()
+	Resize(height int, width int)
+	Status(update func(status Status) Status)
+	Action(Object) // arbitrary action
+	Subscribe(func(LogEntry)) uint64
+	Unsubscribe(key uint64)
+	Render
+	Edit
+	Move
+}
+
+```
