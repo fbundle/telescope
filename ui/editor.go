@@ -72,12 +72,27 @@ func draw(s tcell.Screen, view editor.View) {
 		}
 		return textStyle
 	}
-	// Draw content from (0, 0)
-	for row, line := range view.Window.Data {
-		style := getStyle(view.Window.TopLeft.Row + row)
-		for col := 0; col < min(screenWidth, len(line)); col++ {
-			ch := line[col]
-			s.SetContent(col, row, ch, nil, style)
+	// Draw content from (0, 0) -> (screenWidth, screenHeight-1)
+	t := view.Text
+	for relRow := 0; relRow < screenHeight-1; relRow++ {
+		row := view.Window.TopLeft.Row + relRow
+		textStyle := getStyle(row)
+		var line []rune = nil
+		if row < t.Len() {
+			line = t.Get(row)
+		}
+
+		for relCol := 0; relCol < screenWidth; relCol++ {
+			col := view.Window.TopLeft.Col + relCol
+			ch := ' '
+			if col < len(line) {
+				ch = line[col]
+			}
+			if row >= t.Len() && relCol == 0 {
+				// special case
+				ch = '~'
+			}
+			s.SetContent(relCol, relRow, ch, nil, textStyle)
 		}
 	}
 	// Draw cursor from (0, 0)
