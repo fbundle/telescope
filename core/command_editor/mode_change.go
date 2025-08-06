@@ -135,10 +135,12 @@ func (c *commandEditor) applyCommandWithoutLock() {
 		view := c.e.Render()
 		row := view.Cursor.Row
 
-		_, t2 := view.Text.Split(row + 1)
+		t := view.Text
+		lines := seq.Slice(t.Lines, row+1, t.Lines.Len())
 
 		t0 := time.Now()
-		for i, line := range t2.Iter {
+		for i, l := range lines.Iter {
+			line := l.Repr(t.Reader)
 			if match(string(line)) {
 				c.e.Goto(row+1+i, 0)
 				c.writeWithoutLock("found substring " + cmd)

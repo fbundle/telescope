@@ -3,7 +3,6 @@ package text
 import (
 	"telescope/util/buffer"
 	seq "telescope/util/persistent/sequence"
-	"telescope/util/side_channel"
 )
 
 func New(reader buffer.Buffer) Text {
@@ -58,25 +57,4 @@ func (t Text) Iter(f func(i int, val []rune) bool) {
 
 func (t Text) Len() int {
 	return t.Lines.Len()
-}
-
-func (t Text) Split(i int) (Text, Text) {
-	v1, v2 := t.Lines.Split(i)
-	return Text{
-			Reader: t.Reader,
-			Lines:  v1,
-		}, Text{
-			Reader: t.Reader,
-			Lines:  v2,
-		}
-}
-
-func (t Text) Merge(t2 Text) Text {
-	if t.Reader != t2.Reader {
-		side_channel.Panic("different readers")
-	}
-	return Text{
-		Reader: t.Reader,
-		Lines:  t.Lines.Merge(t2.Lines),
-	}
 }
