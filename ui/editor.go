@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"telescope/config"
 	"telescope/core/command_editor"
 	"telescope/core/editor"
@@ -224,7 +225,7 @@ func RunEditor(inputFilename string, logFilename string, commandMode bool) error
 	<-loadCtx.Done() // wait for load context then exit, exec deferred closer function
 
 	// last thing to do - delete log file
-	// _ = os.Remove(logFilename)
+	_ = os.Remove(logFilename)
 	return nil
 }
 
