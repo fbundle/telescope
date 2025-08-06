@@ -34,7 +34,7 @@ func New(
 		renderCh: make(chan editor.View, config.Load().VIEW_CHANNEL_SIZE),
 
 		mu:   sync.Mutex{},
-		text: nil,
+		text: nil, // awaiting Load
 		cursor: editor.Position{
 			Row: 0, Col: 0,
 		},
