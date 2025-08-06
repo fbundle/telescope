@@ -16,7 +16,7 @@ import (
 func (c *Editor) Escape() {
 	c.lock(func() {
 		c.enterNormalModeWithoutLock()
-		c.writeWithoutLock("enter normal mode")
+		c.writeWithoutLock("")
 	})
 }
 
@@ -52,14 +52,14 @@ func (c *Editor) Type(ch rune) {
 			switch ch {
 			case 'i':
 				c.enterInsertModeWithoutLock()
-				c.writeWithoutLock("enter insert mode")
+				c.writeWithoutLock("")
 			case ':', '/':
 				c.enterCommandModeWithoutLock(string(ch))
-				c.writeWithoutLock("enter command mode")
+				c.writeWithoutLock("")
 			case 'V': // start selecting
 				row := c.e.Render().Cursor.Row
 				c.enterSelectModeWithoutLock(row)
-				c.writeWithoutLock("enter select mode")
+				c.writeWithoutLock("")
 
 			case 'p': // paste
 				if c.state.clipboard.Len() == 0 {
@@ -186,7 +186,7 @@ func (c *Editor) applyCommandWithoutLock() {
 	switch cmd {
 	case commandInsert:
 		c.enterInsertModeWithoutLock()
-		c.writeWithoutLock("enter insert mode")
+		c.writeWithoutLock("")
 		return
 	case commandQuit:
 		c.cancel()
@@ -294,7 +294,7 @@ func (c *Editor) Delete() {
 		switch c.state.mode {
 		case ModeNormal:
 			c.enterInsertModeWithoutLock()
-			c.writeWithoutLock("enter insert mode")
+			c.writeWithoutLock("")
 			c.e.Delete()
 		case ModeInsert:
 			c.e.Delete()
