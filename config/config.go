@@ -14,13 +14,13 @@ Options:
   -h --help           show help
   -v --version        get version
   -r --replay         replay the edited file 
-  -l --log            print the human readable log format
+  -l --log_writer            print the human readable log_writer format
   -i --insert         open with INSERT mode
   -c --command        open with NORMAL/COMMAND/VISUAL/INSERT mode
 
 Keyboard Shortcuts:
   Ctrl+C              exit
-  Ctrl+S              flush log (autosave is always on, so this is not necessary)
+  Ctrl+S              flush log_writer (autosave is always on, so this is not necessary)
   Ctrl+U              undo
   Ctrl+R              redo
 
@@ -91,7 +91,7 @@ func Load() Config {
 		VIEW_CHANNEL_SIZE:          64,
 		MAX_SEACH_TIME:             5 * time.Second,
 		TAB_SIZE:                   2,
-		LOG_DIR:                    filepath.Join(tempDir, "telescope", "log"),
+		LOG_DIR:                    filepath.Join(tempDir, "telescope", "log_writer"),
 		TMP_DIR:                    filepath.Join(tempDir, "telescope", "tmp"),
 		SIDE_CHANNEL_PATH:          filepath.Join(tempDir, "telescope", "tmp", "side_channel.txt"),
 		SCROLL_SPEED:               3,

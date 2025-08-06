@@ -7,16 +7,16 @@ import (
 	"strings"
 	"telescope/config"
 	"telescope/core/editor"
-	"telescope/core/log"
+	"telescope/core/log_writer"
 )
 
 func RunLog(logFilename string) error {
-	s, err := log.GetSerializer(config.Load().INITIAL_SERIALIZER_VERSION)
+	s, err := log_writer.GetSerializer(config.Load().INITIAL_SERIALIZER_VERSION)
 	if err != nil {
 		return err
 	}
 
-	err = log.Read(logFilename, func(e editor.Entry) bool {
+	err = log_writer.Read(logFilename, func(e editor.Entry) bool {
 		var b []byte
 		b, err = s.Marshal(e)
 		if err != nil {

@@ -40,7 +40,7 @@ func main() {
 		if err := ui.RunReplay(args.firstFilename, args.secondFilename); err != nil {
 			log.Fatalln(err)
 		}
-	case "-l", "--log":
+	case "-l", "--log_writer":
 		err := ui.RunLog(args.firstFilename)
 		if err != nil {
 			side_channel.Panic(err)
@@ -105,7 +105,7 @@ func fileNonEmpty(filename string) bool {
 
 func promptDeleteLogFile(args programArgs) bool {
 	if fileNonEmpty(args.secondFilename) {
-		ok := promptYesNo(fmt.Sprintf("log file exists (%s), delete it?", args.secondFilename), false)
+		ok := promptYesNo(fmt.Sprintf("log_writer file exists (%s), delete it?", args.secondFilename), false)
 		if !ok {
 			return false
 		}

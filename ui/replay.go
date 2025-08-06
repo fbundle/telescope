@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 	"telescope/core/editor"
-	"telescope/core/log"
+	"telescope/core/log_writer"
 )
 
 func RunReplay(inputFilename string, logFilename string) error {
@@ -14,7 +14,7 @@ func RunReplay(inputFilename string, logFilename string) error {
 	defer cancel()
 	_, _ = fmt.Fprintf(os.Stderr, "loading input file %s\n", inputFilename)
 
-	// make insert_editor without log
+	// make insert_editor without log_writer
 	e, loadCtx, flush, close, err := makeInsertEditor(ctx, inputFilename, "", 20, 20)
 	if err != nil {
 		return err
@@ -38,9 +38,9 @@ func RunReplay(inputFilename string, logFilename string) error {
 	// wait for loading
 	<-loadCtx.Done()
 
-	_, _ = fmt.Fprintf(os.Stderr, "loading log file %s\n", logFilename)
+	_, _ = fmt.Fprintf(os.Stderr, "loading log_writer file %s\n", logFilename)
 
-	err = log.Read(logFilename, func(entry editor.Entry) bool {
+	err = log_writer.Read(logFilename, func(entry editor.Entry) bool {
 		e.Apply(entry)
 		return true
 	})

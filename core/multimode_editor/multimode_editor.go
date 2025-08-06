@@ -310,8 +310,14 @@ func (c *Editor) Action(action map[string]any) {
 }
 
 func (c *Editor) Subscribe(consume func(editor.Entry)) uint64 {
-	return c.e.Subscribe(consume)
+	var key uint64
+	c.lock(func() {
+		key = c.e.Subscribe(consume)
+	})
+	return key
 }
 func (c *Editor) Unsubscribe(key uint64) {
-	c.e.Unsubscribe(key)
+	c.lock(func() {
+		c.e.Unsubscribe(key)
+	})
 }

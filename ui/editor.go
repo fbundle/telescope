@@ -213,7 +213,7 @@ func RunEditor(inputFilename string, logFilename string, multiMode bool) error {
 			} else if event.Key() == tcell.KeyCtrlS {
 				// Ctrl+S to flush
 				_ = flush()
-				writeMessage(e, "log flushed")
+				writeMessage(e, "log_writer flushed")
 			} else {
 				handleEditorKey(e, event)
 			}
@@ -233,7 +233,7 @@ func RunEditor(inputFilename string, logFilename string, multiMode bool) error {
 	cancel()
 	<-loadCtx.Done() // wait for load context then exit, exec deferred closer function
 
-	s.Clear() // last thing to do - clear screen, delete log file
+	s.Clear() // last thing to do - clear screen, delete log_writer file
 	_ = os.Remove(logFilename)
 	return nil
 }
