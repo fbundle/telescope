@@ -129,12 +129,18 @@ func promptYesNo(prompt string, defaultOption bool) bool {
 	}
 }
 func getDefaultLogFilename(inputFilename string) string {
-	absPath, err := filepath.Abs(inputFilename)
-	if err != nil {
-		side_channel.Panic(err)
-		return ""
-	}
 	tempDir := os.TempDir()
+	var absPath string
+	var err error
+	if len(inputFilename) > 0 {
+		absPath, err = filepath.Abs(inputFilename)
+		if err != nil {
+			side_channel.Panic(err)
+			return ""
+		}
+	} else {
+		absPath = "empty_file"
+	}
 	destPath := filepath.Join(tempDir, "telescope_log", absPath)
 	err = os.MkdirAll(filepath.Dir(destPath), 0o700)
 	if err != nil {
