@@ -37,6 +37,7 @@
 - optimize size of `core.text.Line` to a 16 bytes
 - make clipboard just another persistent vector (`vector.Vector`) to save space and copying more efficient (but log still contains the whole text)
 - `vector.Vector` -> `seq.Seq`
+- added write to input file, when user use `:w` without specifying an output file, program will load input file into memory and write it back to the input file
 
 # TODO
 
