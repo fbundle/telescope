@@ -193,22 +193,14 @@ func (c *Editor) MoveEnd() {
 func (c *Editor) MovePageUp() {
 	c.lock(func() {
 		c.e.MovePageUp()
-		if c.state.mode == ModeSelect {
-			row := c.e.Render().Cursor.Row
-			c.state.selector.End = row
-			c.writeWithoutLock("select more")
-		}
+		c.maybeUpdateSelectorEndWithoutLock()
 	})
 }
 
 func (c *Editor) MovePageDown() {
 	c.lock(func() {
 		c.e.MovePageDown()
-		if c.state.mode == ModeSelect {
-			row := c.e.Render().Cursor.Row
-			c.state.selector.End = row
-			c.writeWithoutLock("select more")
-		}
+		c.maybeUpdateSelectorEndWithoutLock()
 	})
 }
 

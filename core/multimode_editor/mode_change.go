@@ -37,6 +37,14 @@ func (c *Editor) Enter() {
 	})
 }
 
+func (c *Editor) maybeUpdateSelectorEndWithoutLock() {
+	if c.state.mode == ModeSelect {
+		row := c.e.Render().Cursor.Row
+		c.state.selector.End = row
+		c.writeWithoutLock("select more")
+	}
+}
+
 func (c *Editor) Type(ch rune) {
 	c.lock(func() {
 		switch c.state.mode {
@@ -96,11 +104,14 @@ func (c *Editor) Type(ch rune) {
 				c.state.clipboard = seq.Slice(l, beg, end+1)
 				c.enterNormalModeWithoutLock()
 				c.writeWithoutLock("copied")
+
 			case 'b', 'g': // go to beg of file
 				c.e.Goto(0, 0)
+				c.maybeUpdateSelectorEndWithoutLock()
 			case 'e', 'G': // go to end of file
 				row := c.e.Render().Text.Len() - 1
 				c.e.Goto(row, 0)
+				c.maybeUpdateSelectorEndWithoutLock()
 			}
 		default:
 			side_channel.Panic("unknown mode: ", c.state)
