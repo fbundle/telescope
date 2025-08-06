@@ -120,7 +120,7 @@ func parseCommand(cmd string) (command, []string) {
 	if cmd == ":i" || cmd == ":insert" {
 		return commandInsert, nil
 	}
-	if cmd == ":q" || cmd == ":quit" {
+	if cmd == ":q" || cmd == ":quit" || cmd == ":q!" {
 		return commandQuit, nil
 	}
 	if cmd == ":w" || cmd == ":write" || cmd == ":wq" {
