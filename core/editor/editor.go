@@ -51,10 +51,11 @@ type Edit interface {
 	Tabular()
 	Undo()
 	Redo()
-	Apply(entry LogEntry)
 
 	InsertLine(lines seq.Seq[text.Line])
 	DeleteLine(count int)
+
+	Apply(entry LogEntry)
 }
 
 type Render interface {
