@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"os"
-	"path/filepath"
 	"telescope/core/editor"
 	"telescope/core/insert_editor"
 	"telescope/core/log_writer"
@@ -17,14 +16,13 @@ func makeInsertEditor(ctx context.Context, inputFilename string, logFilename str
 	closerList := make([]func() error, 0)
 	closer := func() {
 		for i := len(closerList) - 1; i >= 0; i-- {
-			closerList[i]()
+			_ = closerList[i]()
 		}
 	}
 
 	var err error
 	// input text
 	var inputBuffer buffer.Reader = nil
-	var winName string = "telescope"
 	if len(inputFilename) > 0 {
 		inputMmapReader, err := mmap.Open(inputFilename)
 		if err != nil {
@@ -33,7 +31,6 @@ func makeInsertEditor(ctx context.Context, inputFilename string, logFilename str
 		}
 		inputBuffer = inputMmapReader
 		closerList = append(closerList, inputMmapReader.Close)
-		winName += " " + filepath.Base(inputFilename)
 	}
 
 	// log_writer
