@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -66,9 +67,12 @@ type Config struct {
 	VIEW_CHANNEL_SIZE          int
 	MAX_SEACH_TIME             time.Duration
 	TAB_SIZE                   int
+	LOG_DIR                    string
 }
 
 func Load() Config {
+	tempDir := os.TempDir()
+
 	// TODO - export these into environment variables
 	return Config{
 		VERSION:                   VERSION,
@@ -83,6 +87,7 @@ func Load() Config {
 		VIEW_CHANNEL_SIZE:          64,
 		MAX_SEACH_TIME:             5 * time.Second,
 		TAB_SIZE:                   2,
+		LOG_DIR:                    filepath.Join(tempDir, "telescope_log"),
 	}
 }
 

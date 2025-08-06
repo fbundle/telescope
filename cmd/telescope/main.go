@@ -133,14 +133,12 @@ func fileNonEmpty(filename string) bool {
 }
 
 func getDefaultLogFilename(inputFilename string) (firstFilename string, secondFilename string) {
-	tempDir := os.TempDir()
-
 	if fileNonEmpty(inputFilename) {
 		firstFilename, _ = filepath.Abs(inputFilename)
-		secondFilename = filepath.Join(tempDir, "telescope_log", firstFilename)
+		secondFilename = filepath.Join(config.Load().LOG_DIR, firstFilename)
 	} else {
 		firstFilename = ""
-		secondFilename = filepath.Join(tempDir, "telescope_log", "empty_file")
+		secondFilename = filepath.Join(config.Load().LOG_DIR, "empty_file")
 	}
 	err := os.MkdirAll(filepath.Dir(secondFilename), 0o700)
 	if err != nil {
