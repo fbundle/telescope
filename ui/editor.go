@@ -43,7 +43,10 @@ func getSelector(m map[string]any) *multimode_editor.Selector {
 	if !ok {
 		return nil
 	}
-	return selector
+	if selector == nil {
+		return nil
+	}
+	return selector.Sort()
 }
 
 func draw(s tcell.Screen, view editor.View) {
@@ -60,20 +63,17 @@ func draw(s tcell.Screen, view editor.View) {
 	s.Clear()
 	screenWidth, screenHeight := s.Size()
 	selector := getSelector(view.Status.Other)
-	// Draw insert_editor content from (0, 0)
+	// Draw content from (0, 0)
 	for row, line := range view.Window.Data {
 		style := textStyle
 		if selector != nil {
-			beg, end := selector.Beg, selector.End
-			if beg > end {
-				beg, end = end, beg
-			}
 			textRow := view.Window.TopLeft.Row + row
-			if beg <= textRow && textRow <= end {
+			if selector.Beg <= textRow && textRow <= selector.End {
 				style = highlightStyle
 			}
 		}
-		for col, ch := range line {
+		for col := 0; col < min(screenWidth, len(line)); col++ {
+			ch := line[col]
 			s.SetContent(col, row, ch, nil, style)
 		}
 	}

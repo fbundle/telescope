@@ -25,6 +25,17 @@ type Selector struct {
 	End int
 }
 
+func (s *Selector) Sort() *Selector {
+	beg, end := s.Beg, s.End
+	if beg > end {
+		beg, end = end, beg
+	}
+	return &Selector{
+		Beg: beg,
+		End: end,
+	}
+}
+
 type clipboard = text.Text
 
 type state struct {
