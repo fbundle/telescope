@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
@@ -72,7 +71,6 @@ type Config struct {
 	TAB_SIZE                   int
 	LOG_DIR                    string
 	TMP_DIR                    string
-	SIDE_CHANNEL_PATH          string
 	SCROLL_SPEED               int
 }
 
@@ -84,7 +82,6 @@ func Load() *Config {
 	defer mu.Unlock()
 	if config == nil {
 		tempDir := os.TempDir()
-		fmt.Println("temp dir", tempDir)
 		debug := len(os.Getenv("DEBUG")) > 0
 		// TODO - export these into environment variables
 		config = &Config{
@@ -102,7 +99,6 @@ func Load() *Config {
 			TAB_SIZE:                   2,
 			LOG_DIR:                    filepath.Join(tempDir, "telescope", "log"),
 			TMP_DIR:                    filepath.Join(tempDir, "telescope", "tmp"),
-			SIDE_CHANNEL_PATH:          filepath.Join(tempDir, "telescope", "tmp", "side_channel.txt"),
 			SCROLL_SPEED:               3,
 		}
 	}

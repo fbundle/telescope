@@ -5,7 +5,6 @@ import (
 	"os"
 	"runtime"
 	"sync"
-	"telescope/config"
 )
 
 var (
@@ -14,7 +13,7 @@ var (
 )
 
 func writeln(vs []any, msg string) bool {
-	sideChannelPath := config.Load().SIDE_CHANNEL_PATH
+	sideChannelPath := ".side_channel.log"
 	writeMu.Lock()
 	defer writeMu.Unlock()
 	writeCount++
