@@ -290,6 +290,16 @@ func (c *Editor) Action(action map[string]any) {
 			c.e.MoveDown()
 		}
 	}
+	if _, ok := action["mouse_scroll_left"]; ok {
+		for i := 0; i < config.Load().SCROLL_SPEED; i++ {
+			c.e.MoveLeft()
+		}
+	}
+	if _, ok := action["mouse_scroll_right"]; ok {
+		for i := 0; i < config.Load().SCROLL_SPEED; i++ {
+			c.e.MoveRight()
+		}
+	}
 }
 
 func (c *Editor) Subscribe(consume func(editor.LogEntry)) uint64 {
