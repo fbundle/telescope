@@ -13,11 +13,9 @@ import (
 
 // all functions resulting in mode change
 
-func (c *Editor) Escape() {
-	c.lock(func() {
-		c.enterNormalModeWithoutLock()
-		c.writeWithoutLock("")
-	})
+func (c *Editor) keyEscapeWithoutLock() {
+	c.enterNormalModeWithoutLock()
+	c.writeWithoutLock("")
 }
 
 func (c *Editor) Enter() {

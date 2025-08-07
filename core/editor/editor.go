@@ -46,7 +46,6 @@ type Edit interface {
 	Backspace()
 	Delete()
 	Enter()
-	Tabular()
 	Undo()
 	Redo()
 
@@ -63,7 +62,6 @@ type Render interface {
 
 type Editor interface {
 	Load(ctx context.Context, reader buffer.Reader) (context.Context, error)
-	Escape()
 	Resize(height int, width int)
 	Status(update func(status Status) Status)
 	Action(key string, vals ...any) // arbitrary action

@@ -299,6 +299,14 @@ func (c *Editor) Action(key string, vals ...any) {
 			for i := 0; i < config.Load().SCROLL_SPEED; i++ {
 				c.e.MoveRight()
 			}
+		case "key_escape":
+			c.keyEscapeWithoutLock()
+		case "key_tabular":
+			if c.state.mode == ModeInsert {
+				for i := 0; i < config.Load().TAB_SIZE; i++ {
+					c.e.Type(' ')
+				}
+			}
 		default:
 			c.writeWithoutLock(fmt.Sprintf("action not supported: %s", key))
 		}
