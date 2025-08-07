@@ -6,7 +6,6 @@ import (
 	"telescope/util/text"
 )
 
-type Object = map[string]any
 type Position struct {
 	Row int
 	Col int
@@ -15,7 +14,7 @@ type Position struct {
 type Status struct {
 	Message    string
 	Background string
-	Other      Object // arbitrary view
+	Other      map[string]any // arbitrary view
 }
 
 type Window struct {
@@ -67,7 +66,7 @@ type Editor interface {
 	Escape()
 	Resize(height int, width int)
 	Status(update func(status Status) Status)
-	Action(Object) // arbitrary action
+	Action(key string, val any) // arbitrary action
 	Subscribe(func(LogEntry)) uint64
 	Unsubscribe(key uint64)
 	Render

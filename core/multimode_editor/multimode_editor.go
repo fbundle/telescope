@@ -3,7 +3,6 @@ package multimode_editor
 import (
 	"context"
 	"sync"
-	"telescope/config"
 	"telescope/core/editor"
 	"telescope/core/insert_editor"
 	"telescope/util/buffer"
@@ -270,36 +269,8 @@ func (c *Editor) writeWithoutLock(message string) {
 	})
 }
 
-func (c *Editor) Action(action map[string]any) {
-	if action == nil {
-		return
-	}
-	if o, ok := action["mouse_click"]; ok {
-		p := o.(editor.Position)
-		row, col := p.Row, p.Col
-		tl := c.e.Render().Window.TopLeft
-		c.e.Goto(tl.Row+row, tl.Col+col)
-	}
-	if _, ok := action["mouse_scroll_up"]; ok {
-		for i := 0; i < config.Load().SCROLL_SPEED; i++ {
-			c.e.MoveUp()
-		}
-	}
-	if _, ok := action["mouse_scroll_down"]; ok {
-		for i := 0; i < config.Load().SCROLL_SPEED; i++ {
-			c.e.MoveDown()
-		}
-	}
-	if _, ok := action["mouse_scroll_left"]; ok {
-		for i := 0; i < config.Load().SCROLL_SPEED; i++ {
-			c.e.MoveLeft()
-		}
-	}
-	if _, ok := action["mouse_scroll_right"]; ok {
-		for i := 0; i < config.Load().SCROLL_SPEED; i++ {
-			c.e.MoveRight()
-		}
-	}
+func (c *Editor) Action(key string, val any) {
+	c.e.Action(key, val)
 }
 
 func (c *Editor) Subscribe(consume func(editor.LogEntry)) uint64 {

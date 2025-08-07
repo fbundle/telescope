@@ -171,6 +171,32 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 	return loadCtx, err
 }
 
-func (e *Editor) Action(map[string]any) {
-	// do nothing
+func (e *Editor) Action(key string, val any) {
+	switch key {
+	case "mouse_click":
+		p := val.(editor.Position)
+		relRow, relCol := p.Row, p.Col
+		tl := e.window.TopLeft
+		row, col := tl.Row+relRow, tl.Col+relCol
+		e.Goto(row, col)
+	case "mouse_scroll_up":
+		for i := 0; i < config.Load().SCROLL_SPEED; i++ {
+			e.MoveUp()
+		}
+	case "mouse_scroll_down":
+		for i := 0; i < config.Load().SCROLL_SPEED; i++ {
+			e.MoveDown()
+		}
+	case "mouse_scroll_left":
+		for i := 0; i < config.Load().SCROLL_SPEED; i++ {
+			e.MoveLeft()
+		}
+	case "mouse_scroll_right":
+		for i := 0; i < config.Load().SCROLL_SPEED; i++ {
+			e.MoveRight()
+		}
+	default:
+		e.setMessageWithoutLock("action not supported: %s", key)
+	}
+
 }

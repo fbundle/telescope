@@ -292,11 +292,9 @@ func handleEditorMouse(e editor.Editor, ev *tcell.EventMouse) {
 	switch {
 	case button&tcell.Button1 != 0:
 		// msg = fmt.Sprintf("Left click at (%d, %d)", col, row)
-		e.Action(map[string]any{
-			"mouse_click": editor.Position{
-				Row: row,
-				Col: col,
-			},
+		e.Action("mouse_click", editor.Position{
+			Row: row,
+			Col: col,
 		})
 	case button&tcell.Button2 != 0:
 		//msg = fmt.Sprintf("Middle click at (%d, %d)", col, row)
@@ -304,26 +302,18 @@ func handleEditorMouse(e editor.Editor, ev *tcell.EventMouse) {
 		//msg = fmt.Sprintf("Right click at (%d, %d)", col, row)
 	case button&tcell.Button4 != 0:
 		// Possibly horizontal scroll left
-		e.Action(map[string]any{
-			"mouse_scroll_left": nil,
-		})
+		e.Action("mouse_scroll_left", nil)
 
 	case button&tcell.Button5 != 0:
 		// Possibly horizontal scroll right
-		e.Action(map[string]any{
-			"mouse_scroll_right": nil,
-		})
+		e.Action("mouse_scroll_right", nil)
 	case button&tcell.WheelUp != 0:
 		//msg = "Mouse wheel up"
-		e.Action(map[string]any{
-			"mouse_scroll_up": nil,
-		})
+		e.Action("mouse_scroll_up", nil)
 
 	case button&tcell.WheelDown != 0:
 		//msg = "Mouse wheel down"
-		e.Action(map[string]any{
-			"mouse_scroll_down": nil,
-		})
+		e.Action("mouse_scroll_down", nil)
 	case button == tcell.ButtonNone:
 		// msg = fmt.Sprintf("Mouse move at (%d, %d)", col, row)
 	}
