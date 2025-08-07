@@ -112,23 +112,6 @@ func (c *Editor) Backspace() {
 	})
 }
 
-func (c *Editor) Tabular() {
-	c.lock(func() {
-		switch c.state.mode {
-		case ModeNormal:
-			// do nothing
-		case ModeInsert:
-			c.e.Tabular()
-		case ModeCommand:
-		// do nothing
-		case ModeSelect:
-			// do nothing
-		default:
-			side_channel.Panic("unknown mode: ", c.state)
-		}
-	})
-}
-
 func (c *Editor) Goto(row int, col int) {
 	c.lock(func() {
 		c.e.Goto(row, col)

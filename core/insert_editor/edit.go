@@ -2,7 +2,6 @@ package insert_editor
 
 import (
 	"slices"
-	"telescope/config"
 	"telescope/core/editor"
 	"telescope/util/side_channel"
 	"telescope/util/text"
@@ -155,12 +154,6 @@ func (e *Editor) Enter() {
 		e.moveRelativeAndFixWithoutLock(0, -e.cursor.Col) // move home
 		e.setMessageWithoutLock("enter")
 	})
-}
-
-func (e *Editor) Tabular() {
-	for i := 0; i < config.Load().TAB_SIZE; i++ {
-		e.Type(' ')
-	}
 }
 
 func (e *Editor) Undo() {
