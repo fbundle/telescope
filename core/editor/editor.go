@@ -66,7 +66,7 @@ type Editor interface {
 	Escape()
 	Resize(height int, width int)
 	Status(update func(status Status) Status)
-	Action(key string, val any) // arbitrary action
+	Action(key string, vals ...any) // arbitrary action
 	Subscribe(func(LogEntry)) uint64
 	Unsubscribe(key uint64)
 	Render

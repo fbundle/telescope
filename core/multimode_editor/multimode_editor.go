@@ -269,8 +269,8 @@ func (c *Editor) writeWithoutLock(message string) {
 	})
 }
 
-func (c *Editor) Action(key string, val any) {
-	c.e.Action(key, val)
+func (c *Editor) Action(key string, vals ...any) {
+	c.e.Action(key, vals...)
 }
 
 func (c *Editor) Subscribe(consume func(editor.LogEntry)) uint64 {

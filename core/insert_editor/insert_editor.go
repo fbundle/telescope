@@ -171,10 +171,10 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 	return loadCtx, err
 }
 
-func (e *Editor) Action(key string, val any) {
+func (e *Editor) Action(key string, vals ...any) {
 	switch key {
 	case "mouse_click":
-		p := val.(editor.Position)
+		p := vals[0].(editor.Position)
 		relRow, relCol := p.Row, p.Col
 		tl := e.window.TopLeft
 		row, col := tl.Row+relRow, tl.Col+relCol

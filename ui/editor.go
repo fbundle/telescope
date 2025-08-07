@@ -302,18 +302,18 @@ func handleEditorMouse(e editor.Editor, ev *tcell.EventMouse) {
 		//msg = fmt.Sprintf("Right click at (%d, %d)", col, row)
 	case button&tcell.Button4 != 0:
 		// Possibly horizontal scroll left
-		e.Action("mouse_scroll_left", nil)
+		e.Action("mouse_scroll_left")
 
 	case button&tcell.Button5 != 0:
 		// Possibly horizontal scroll right
-		e.Action("mouse_scroll_right", nil)
+		e.Action("mouse_scroll_right")
 	case button&tcell.WheelUp != 0:
 		//msg = "Mouse wheel up"
-		e.Action("mouse_scroll_up", nil)
+		e.Action("mouse_scroll_up")
 
 	case button&tcell.WheelDown != 0:
 		//msg = "Mouse wheel down"
-		e.Action("mouse_scroll_down", nil)
+		e.Action("mouse_scroll_down")
 	case button == tcell.ButtonNone:
 		// msg = fmt.Sprintf("Mouse move at (%d, %d)", col, row)
 	}
