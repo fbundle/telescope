@@ -196,7 +196,9 @@ func (e *Editor) Action(key string, vals ...any) {
 			e.MoveRight()
 		}
 	default:
-		e.setMessageWithoutLock("action not supported: %s", key)
+		e.lockRender(func() {
+			e.setMessageWithoutLock("action not supported: %s", key)
+		})
 	}
 
 }
