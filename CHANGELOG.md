@@ -41,9 +41,11 @@
 - added commands: `:w` to overwrite the file, `:q! = :q`, `:wq = :w`
 - added using `b` or `g` to go to beg of file, `e` or `G` to go to end of file 
 - added basic mouse support: scroll up, scroll down, left click
+- update interface
 
 # TODO
 
+- change `moveRelativeAndFixWithoutLock` to absolute position
 - optimize size of `core.text.Line` to a single `int64`
 - make binary serializer works with delete lines and insert lines
 - add compressed log: compress multiple `type` into a single `type` (`Text []rune` instead of `Rune rune`)
