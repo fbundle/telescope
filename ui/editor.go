@@ -291,17 +291,17 @@ func handleEditorMouse(e editor.Editor, ev *tcell.EventMouse) {
 	button := ev.Buttons()
 	switch {
 	case button&tcell.Button1 != 0:
-		e.Action("mouse_click", editor.Position{
+		e.Action("mouse_click_left", editor.Position{
 			Row: row,
 			Col: col,
 		})
 	case button&tcell.Button2 != 0:
-		e.Action("mouse_right_click", editor.Position{
+		e.Action("mouse_click_right", editor.Position{
 			Row: row,
 			Col: col,
 		})
 	case button&tcell.Button3 != 0:
-		e.Action("mouse_middle_click", editor.Position{
+		e.Action("mouse_click_right", editor.Position{
 			Row: row,
 			Col: col,
 		})

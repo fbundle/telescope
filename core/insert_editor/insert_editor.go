@@ -174,7 +174,7 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 func (e *Editor) Action(key string, vals ...any) {
 	// TODO - consider if we should move these mouse action into the API
 	switch key {
-	case "mouse_click":
+	case "mouse_click_left":
 		p := vals[0].(editor.Position)
 		relRow, relCol := p.Row, p.Col
 		tl := e.window.TopLeft

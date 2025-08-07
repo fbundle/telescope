@@ -2,6 +2,7 @@ package multimode_editor
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"telescope/core/editor"
 	"telescope/core/insert_editor"
@@ -270,7 +271,15 @@ func (c *Editor) writeWithoutLock(message string) {
 }
 
 func (c *Editor) Action(key string, vals ...any) {
-	c.e.Action(key, vals...)
+	if strings.HasPrefix(key, "mouse_scroll_") {
+		// forward mouse_scroll_
+		c.e.Action(key, vals...)
+	}
+
+	if strings.HasPrefix(key, "mouse_click_") && c.state.mode == ModeInsert {
+		// forward mouse_click_ if and only if in insert mode
+		c.e.Action(key, vals...)
+	}
 }
 
 func (c *Editor) Subscribe(consume func(editor.LogEntry)) uint64 {
