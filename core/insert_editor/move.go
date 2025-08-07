@@ -92,6 +92,6 @@ func (e *Editor) Goto(row int, col int) {
 		moveRow := row - e.cursor.Row
 		moveCol := col - e.cursor.Col
 		e.moveRelativeAndFixWithoutLock(moveRow, moveCol)
-		e.setMessageWithoutLock("goto (%d, %d)", row, col)
+		e.setMessageWithoutLock("goto (%d, %d)", row+1, col+1)
 	})
 }
