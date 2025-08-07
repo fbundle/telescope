@@ -2,8 +2,9 @@ package multimode_editor
 
 import (
 	"context"
-	"strings"
+	"fmt"
 	"sync"
+	"telescope/config"
 	"telescope/core/editor"
 	"telescope/core/insert_editor"
 	"telescope/util/buffer"
@@ -271,15 +272,37 @@ func (c *Editor) writeWithoutLock(message string) {
 }
 
 func (c *Editor) Action(key string, vals ...any) {
-	if strings.HasPrefix(key, "mouse_scroll_") {
-		// forward mouse_scroll_
-		c.e.Action(key, vals...)
-	}
-
-	if strings.HasPrefix(key, "mouse_click_") && c.state.mode == ModeInsert {
-		// forward mouse_click_ if and only if in insert mode
-		c.e.Action(key, vals...)
-	}
+	c.lock(func() {
+		// TODO - consider if we should move these mouse action into the API
+		switch key {
+		case "mouse_click_left":
+			if c.state.mode == ModeInsert { // click only works for insert mode
+				p := vals[0].(editor.Position)
+				relRow, relCol := p.Row, p.Col
+				tl := c.e.Render().Window.TopLeft
+				row, col := tl.Row+relRow, tl.Col+relCol
+				c.e.Goto(row, col)
+			}
+		case "mouse_scroll_up":
+			for i := 0; i < config.Load().SCROLL_SPEED; i++ {
+				c.e.MoveUp()
+			}
+		case "mouse_scroll_down":
+			for i := 0; i < config.Load().SCROLL_SPEED; i++ {
+				c.e.MoveDown()
+			}
+		case "mouse_scroll_left":
+			for i := 0; i < config.Load().SCROLL_SPEED; i++ {
+				c.e.MoveLeft()
+			}
+		case "mouse_scroll_right":
+			for i := 0; i < config.Load().SCROLL_SPEED; i++ {
+				c.e.MoveRight()
+			}
+		default:
+			c.writeWithoutLock(fmt.Sprintf("action not supported: %s", key))
+		}
+	})
 }
 
 func (c *Editor) Subscribe(consume func(editor.LogEntry)) uint64 {

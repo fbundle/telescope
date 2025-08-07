@@ -172,34 +172,5 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 }
 
 func (e *Editor) Action(key string, vals ...any) {
-	// TODO - consider if we should move these mouse action into the API
-	switch key {
-	case "mouse_click_left":
-		p := vals[0].(editor.Position)
-		relRow, relCol := p.Row, p.Col
-		tl := e.window.TopLeft
-		row, col := tl.Row+relRow, tl.Col+relCol
-		e.Goto(row, col)
-	case "mouse_scroll_up":
-		for i := 0; i < config.Load().SCROLL_SPEED; i++ {
-			e.MoveUp()
-		}
-	case "mouse_scroll_down":
-		for i := 0; i < config.Load().SCROLL_SPEED; i++ {
-			e.MoveDown()
-		}
-	case "mouse_scroll_left":
-		for i := 0; i < config.Load().SCROLL_SPEED; i++ {
-			e.MoveLeft()
-		}
-	case "mouse_scroll_right":
-		for i := 0; i < config.Load().SCROLL_SPEED; i++ {
-			e.MoveRight()
-		}
-	default:
-		e.lockRender(func() {
-			e.setMessageWithoutLock("action not supported: %s", key)
-		})
-	}
-
+	// nothing
 }
