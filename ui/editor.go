@@ -65,8 +65,12 @@ func makeDrawContext(s tcell.Screen, offsetX int, offsetY int, width int, height
 
 func draw(s tcell.Screen, view editor.View) {
 	statusStyle := tcell.StyleDefault.
-		Background(tcell.ColorLightGray).
+		Background(tcell.ColorGreen).
 		Foreground(tcell.ColorBlack)
+	insertStatusStyle := tcell.StyleDefault.
+		Background(tcell.ColorYellow).
+		Foreground(tcell.ColorBlack)
+
 	textStyle := tcell.StyleDefault
 	highlightStyle := tcell.StyleDefault.
 		Background(tcell.ColorLightGray).
@@ -124,13 +128,20 @@ func draw(s tcell.Screen, view editor.View) {
 	// Draw the status bar at the bottom (screenHeight-1)
 	statusDrawContext := makeDrawContext(s, 0, screenHeight-1, screenWidth, 1)
 	statusDrawContext(func(width int, height int, draw drawFunc) {
-		for col := 0; col < width; col++ {
-			draw(col, 0, ' ', nil, statusStyle)
+		style := statusStyle
+
+		mode, command := getModeAndCommand(view.Status.Other)
+
+		if mode == multimode_editor.ModeInsert {
+			style = insertStatusStyle
 		}
-		header, command := getModeAndCommand(view.Status.Other)
+
+		for col := 0; col < width; col++ {
+			draw(col, 0, ' ', nil, style)
+		}
 		sep := []rune(" > ")
 		var fromLeft []rune
-		fromLeft = append(fromLeft, []rune(fmt.Sprintf(" %s (%d, %d)", header, view.Cursor.Row+1, view.Cursor.Col+1))...)
+		fromLeft = append(fromLeft, []rune(fmt.Sprintf(" %s (%d, %d)", mode, view.Cursor.Row+1, view.Cursor.Col+1))...)
 		if len(command) > 0 {
 			fromLeft = append(fromLeft, sep...)
 			fromLeft = append(fromLeft, []rune(command)...)
@@ -140,7 +151,7 @@ func draw(s tcell.Screen, view editor.View) {
 			fromLeft = append(fromLeft, []rune(view.Status.Message)...)
 		}
 		for col, ch := range fromLeft {
-			draw(col, 0, ch, nil, statusStyle)
+			draw(col, 0, ch, nil, style)
 		}
 		var fromRight []rune = nil
 		if len(view.Status.Background) > 0 {
@@ -150,7 +161,7 @@ func draw(s tcell.Screen, view editor.View) {
 		}
 		for i, ch := range fromRight {
 			col := i + width - len(fromRight)
-			draw(col, 0, ch, nil, statusStyle)
+			draw(col, 0, ch, nil, style)
 		}
 	})
 
