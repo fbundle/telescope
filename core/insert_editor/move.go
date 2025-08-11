@@ -48,7 +48,6 @@ func (e *Editor) gotoAndFixWithoutLock(row int, col int) {
 	}
 }
 
-// moveRelativeAndFixWithoutLock - textCursor is either in the text or at the end of a line
 func (e *Editor) moveRelativeAndFixWithoutLock(moveRow int, moveCol int) {
 	e.gotoAndFixWithoutLock(e.cursor.Row+moveRow, e.cursor.Col+moveCol)
 }
