@@ -5,43 +5,43 @@ import (
 	"telescope/util/text"
 )
 
-func finalizeCursorAndWindow(row int, col int, tlRow int, tlCol int, width int, height int, t text.Text) (newRow int, newCol int, newTlRow int, newTlCol int) {
-	// fix cursor according text
-	if t.Len() == 0 {
-		row, col = 0, 0
-	} else {
-		if row < 0 {
-			row = 0
-		}
-		if row >= t.Len() {
-			row = t.Len() - 1
-		}
-		if col < 0 {
-			col = 0
-		}
-		line := t.Get(row)
-		if col > len(line) {
-			col = len(line) // col can be 1 character outside of text
-		}
-	}
-	// fix window according to cursor
-	if row < tlRow {
-		tlRow = row
-	}
-	if row >= tlRow+height {
-		tlRow = row - height + 1
-	}
-	if col < tlCol {
-		tlCol = col
-	}
-	if col >= tlCol+width {
-		tlCol = col - width + 1
-	}
-
-	return row, col, tlRow, tlCol
-}
-
 func (e *Editor) gotoAndFixWithoutLock(row int, col int) {
+	finalizeCursorAndWindow := func(curRow int, curCol int, tlRow int, tlCol int, width int, height int, t text.Text) (newCurRow int, newCurCol int, newTlRow int, newTlCol int) {
+		// fix cursor according text
+		if t.Len() == 0 {
+			curRow, curCol = 0, 0
+		} else {
+			if curRow < 0 {
+				curRow = 0
+			}
+			if curRow >= t.Len() {
+				curRow = t.Len() - 1
+			}
+			if curCol < 0 {
+				curCol = 0
+			}
+			line := t.Get(curRow)
+			if curCol > len(line) {
+				curCol = len(line) // col can be 1 character outside of text
+			}
+		}
+		// fix window according to cursor
+		if curRow < tlRow {
+			tlRow = curRow
+		}
+		if curRow >= tlRow+height {
+			tlRow = curRow - height + 1
+		}
+		if curCol < tlCol {
+			tlCol = curCol
+		}
+		if curCol >= tlCol+width {
+			tlCol = curCol - width + 1
+		}
+
+		return curRow, curCol, tlRow, tlCol
+	}
+
 	t := e.text.Get()
 	tlRow, tlCol := e.window.TopLeft.Row, e.window.TopLeft.Col
 	width, height := e.window.Dimension.Col, e.window.Dimension.Row
