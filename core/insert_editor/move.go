@@ -1,9 +1,11 @@
 package insert_editor
 
-import "telescope/core/editor"
+import (
+	"telescope/core/editor"
+	"telescope/util/text"
+)
 
-func (e *Editor) gotoAndFixWithoutLock(row int, col int) {
-	t := e.text.Get()
+func finalizeCursorAndWindow(row int, col int, tlRow int, tlCol int, width int, height int, t text.Text) (newRow int, newCol int, newTlRow int, newTlCol int) {
 	// fix cursor according text
 	if t.Len() == 0 {
 		row, col = 0, 0
@@ -23,8 +25,6 @@ func (e *Editor) gotoAndFixWithoutLock(row int, col int) {
 		}
 	}
 	// fix window according to cursor
-	tlRow, tlCol := e.window.TopLeft.Row, e.window.TopLeft.Col
-	width, height := e.window.Dimension.Col, e.window.Dimension.Row
 	if row < tlRow {
 		tlRow = row
 	}
@@ -37,6 +37,17 @@ func (e *Editor) gotoAndFixWithoutLock(row int, col int) {
 	if col >= tlCol+width {
 		tlCol = col - width + 1
 	}
+
+	return row, col, tlRow, tlCol
+}
+
+func (e *Editor) gotoAndFixWithoutLock(row int, col int) {
+	t := e.text.Get()
+	tlRow, tlCol := e.window.TopLeft.Row, e.window.TopLeft.Col
+	width, height := e.window.Dimension.Col, e.window.Dimension.Row
+
+	row, col, tlRow, tlCol = finalizeCursorAndWindow(row, col, tlRow, tlCol, width, height, t)
+
 	// set
 	e.cursor = editor.Position{
 		Row: row,
