@@ -6,7 +6,7 @@ import (
 	"telescope/util/text"
 )
 
-type Position struct {
+type Cursor struct {
 	Row int
 	Col int
 }
@@ -18,13 +18,15 @@ type Status struct {
 }
 
 type Window struct {
-	TopLeft   Position
-	Dimension Position
+	TlRow  int
+	TlCol  int
+	Width  int
+	Height int
 }
 
 type View struct {
 	Text   text.Text
-	Cursor Position
+	Cursor Cursor
 	Window Window
 	Status Status
 }

@@ -43,19 +43,21 @@ func (e *Editor) gotoAndFixWithoutLock(row int, col int) {
 	}
 
 	t := e.text.Get()
-	tlRow, tlCol := e.window.TopLeft.Row, e.window.TopLeft.Col
-	width, height := e.window.Dimension.Col, e.window.Dimension.Row
+	tlRow, tlCol := e.window.TlRow, e.window.TlCol
+	width, height := e.window.Width, e.window.Height
 
 	row, col, tlRow, tlCol = finalizeCursorAndWindow(row, col, tlRow, tlCol, width, height, t)
 
 	// set
-	e.cursor = editor.Position{
+	e.cursor = editor.Cursor{
 		Row: row,
 		Col: col,
 	}
-	e.window.TopLeft = editor.Position{
-		Row: tlRow,
-		Col: tlCol,
+	e.window = editor.Window{
+		TlRow:  tlRow,
+		TlCol:  tlCol,
+		Width:  width,
+		Height: height,
 	}
 }
 
@@ -105,13 +107,13 @@ func (e *Editor) MoveEnd() {
 }
 func (e *Editor) MovePageUp() {
 	e.lockRender(func() {
-		e.moveRelativeAndFixWithoutLock(-e.window.Dimension.Row, 0)
+		e.moveRelativeAndFixWithoutLock(-e.window.Height, 0)
 		e.setMessageWithoutLock("move page up")
 	})
 }
 func (e *Editor) MovePageDown() {
 	e.lockRender(func() {
-		e.moveRelativeAndFixWithoutLock(e.window.Dimension.Row, 0)
+		e.moveRelativeAndFixWithoutLock(e.window.Height, 0)
 		e.setMessageWithoutLock("move page down")
 	})
 }

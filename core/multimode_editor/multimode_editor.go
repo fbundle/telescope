@@ -260,10 +260,11 @@ func (c *Editor) Action(key string, vals ...any) {
 		switch key {
 		case "mouse_click_left":
 			if c.state.mode == ModeInsert { // click only works for insert mode
-				p := vals[0].(editor.Position)
+				p := vals[0].(editor.Cursor)
 				relRow, relCol := p.Row, p.Col
-				tl := c.e.Render().Window.TopLeft
-				row, col := tl.Row+relRow, tl.Col+relCol
+				view := c.e.Render()
+				tlRow, tlCol := view.Window.TlRow, view.Window.TlCol
+				row, col := tlRow+relRow, tlCol+relCol
 				c.e.Goto(row, col)
 			}
 		case "mouse_scroll_up":

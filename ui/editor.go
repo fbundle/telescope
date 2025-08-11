@@ -90,8 +90,8 @@ func draw(s tcell.Screen, view editor.View) {
 	}
 
 	// Draw cursor from (0, 0)
-	relRow := view.Cursor.Row - view.Window.TopLeft.Row
-	relCol := view.Cursor.Col - view.Window.TopLeft.Col
+	relRow := view.Cursor.Row - view.Window.TlRow
+	relCol := view.Cursor.Col - view.Window.TlCol
 	s.ShowCursor(relCol, relRow)
 
 	// Draw content from (0, 0) -> (screenWidth-1, screenHeight-2)
@@ -102,7 +102,7 @@ func draw(s tcell.Screen, view editor.View) {
 		}
 		t := view.Text
 		for relRow := 0; relRow < height; relRow++ {
-			row := view.Window.TopLeft.Row + relRow
+			row := view.Window.TlRow + relRow
 			style := getStyle(row)
 			var line []rune = nil
 			if row < t.Len() {
@@ -110,7 +110,7 @@ func draw(s tcell.Screen, view editor.View) {
 			}
 
 			for relCol := 0; relCol < width; relCol++ {
-				col := view.Window.TopLeft.Col + relCol
+				col := view.Window.TlCol + relCol
 				ch := ' '
 				if col < len(line) {
 					ch = line[col]
@@ -302,17 +302,17 @@ func handleEditorMouse(e editor.Editor, ev *tcell.EventMouse) {
 	button := ev.Buttons()
 	switch {
 	case button&tcell.Button1 != 0:
-		e.Action("mouse_click_left", editor.Position{
+		e.Action("mouse_click_left", editor.Cursor{
 			Row: row,
 			Col: col,
 		})
 	case button&tcell.Button2 != 0:
-		e.Action("mouse_click_right", editor.Position{
+		e.Action("mouse_click_right", editor.Cursor{
 			Row: row,
 			Col: col,
 		})
 	case button&tcell.Button3 != 0:
-		e.Action("mouse_click_right", editor.Position{
+		e.Action("mouse_click_right", editor.Cursor{
 			Row: row,
 			Col: col,
 		})

@@ -20,7 +20,7 @@ type Editor struct {
 
 	mu     sync.Mutex // the fields below are protected by mu
 	text   *hist.Hist[text.Text]
-	cursor editor.Position
+	cursor editor.Cursor
 	window editor.Window
 	status editor.Status
 	pool   *subsciber_pool.Pool[func(editor.LogEntry)]
@@ -35,12 +35,14 @@ func New(
 
 		mu:   sync.Mutex{},
 		text: nil, // awaiting Load
-		cursor: editor.Position{
+		cursor: editor.Cursor{
 			Row: 0, Col: 0,
 		},
 		window: editor.Window{
-			TopLeft:   editor.Position{Row: 0, Col: 0},
-			Dimension: editor.Position{Row: height, Col: width},
+			TlRow:  0,
+			TlCol:  0,
+			Width:  width,
+			Height: height,
 		},
 		status: editor.Status{
 			Message:    "",
@@ -93,10 +95,10 @@ func (e *Editor) Unsubscribe(key uint64) {
 
 func (e *Editor) Resize(height int, width int) {
 	e.lockRender(func() {
-		if e.window.Dimension.Row == height && e.window.Dimension.Col == width {
+		if e.window.Height == height && e.window.Width == width {
 			return
 		}
-		e.window.Dimension.Row, e.window.Dimension.Col = height, width
+		e.window.Height, e.window.Width = height, width
 		e.moveRelativeAndFixWithoutLock(0, 0)
 		e.setMessageWithoutLock("resize to %dx%d", height, width)
 	})
