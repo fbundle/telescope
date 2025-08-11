@@ -108,10 +108,7 @@ func (e *Editor) MovePageDown() {
 
 func (e *Editor) Goto(row int, col int) {
 	e.lockRender(func() {
-		// move to absolute position
-		moveRow := row - e.cursor.Row
-		moveCol := col - e.cursor.Col
-		e.moveRelativeAndFixWithoutLock(moveRow, moveCol)
+		e.gotoAndFixWithoutLock(row, col)
 		e.setMessageWithoutLock("goto (%d, %d)", row+1, col+1)
 	})
 }
