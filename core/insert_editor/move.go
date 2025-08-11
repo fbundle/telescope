@@ -1,36 +1,56 @@
 package insert_editor
 
+import "telescope/core/editor"
+
+func (e *Editor) gotoAndFixWithoutLock(row int, col int) {
+	t := e.text.Get()
+	// fix cursor
+	if t.Len() == 0 {
+		row, col = 0, 0
+	} else {
+		if row < 0 {
+			row = 0
+		}
+		if row >= t.Len() {
+			row = t.Len() - 1
+		}
+		if col < 0 {
+			col = 0
+		}
+		line := t.Get(row)
+		if col > len(line) {
+			col = len(line) // col can be 1 character outside of text
+		}
+	}
+	// fix window
+	tlRow, tlCol := e.window.TopLeft.Row, e.window.TopLeft.Col
+	width, height := e.window.Dimension.Col, e.window.Dimension.Row
+	if row < tlRow {
+		tlRow = row
+	}
+	if row >= tlRow+height {
+		tlRow = row - height + 1
+	}
+	if col < tlCol {
+		tlCol = col
+	}
+	if col >= tlCol+width {
+		tlCol = col - width + 1
+	}
+	// set
+	e.cursor = editor.Position{
+		Row: row,
+		Col: col,
+	}
+	e.window.TopLeft = editor.Position{
+		Row: tlRow,
+		Col: tlCol,
+	}
+}
+
 // moveRelativeAndFixWithoutLock - textCursor is either in the text or at the end of a line
 func (e *Editor) moveRelativeAndFixWithoutLock(moveRow int, moveCol int) {
-	t := e.text.Get()
-
-	e.cursor.Row += moveRow
-	e.cursor.Col += moveCol
-
-	// fix text cursor
-	if t.Len() == 0 { // NOTE - handle empty file
-		e.cursor.Row = 0
-		e.cursor.Col = 0
-	} else {
-		e.cursor.Row = max(0, e.cursor.Row)
-		e.cursor.Col = max(0, e.cursor.Col)
-		e.cursor.Row = min(e.cursor.Row, t.Len()-1)
-		e.cursor.Col = min(e.cursor.Col, len(t.Get(e.cursor.Row))) // textCursor col can be 1 char outside of text
-	}
-
-	// fix window
-	if e.cursor.Row < e.window.TopLeft.Row {
-		e.window.TopLeft.Row = e.cursor.Row
-	}
-	if e.cursor.Row >= e.window.TopLeft.Row+e.window.Dimension.Row {
-		e.window.TopLeft.Row = e.cursor.Row - e.window.Dimension.Row + 1
-	}
-	if e.cursor.Col < e.window.TopLeft.Col {
-		e.window.TopLeft.Col = e.cursor.Col
-	}
-	if e.cursor.Col >= e.window.TopLeft.Col+e.window.Dimension.Col {
-		e.window.TopLeft.Col = e.cursor.Col - e.window.Dimension.Col + 1
-	}
+	e.gotoAndFixWithoutLock(e.cursor.Row+moveRow, e.cursor.Col+moveCol)
 }
 
 func (e *Editor) MoveLeft() {
