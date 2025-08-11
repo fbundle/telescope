@@ -31,6 +31,8 @@ type View struct {
 	Status Status
 }
 
+// window is a part of view since moving the cursor changes window's position
+
 type Move interface {
 	MoveLeft()
 	MoveRight()
