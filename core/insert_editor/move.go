@@ -4,7 +4,7 @@ import "telescope/core/editor"
 
 func (e *Editor) gotoAndFixWithoutLock(row int, col int) {
 	t := e.text.Get()
-	// fix cursor
+	// fix cursor according text
 	if t.Len() == 0 {
 		row, col = 0, 0
 	} else {
@@ -22,7 +22,7 @@ func (e *Editor) gotoAndFixWithoutLock(row int, col int) {
 			col = len(line) // col can be 1 character outside of text
 		}
 	}
-	// fix window
+	// fix window according to cursor
 	tlRow, tlCol := e.window.TopLeft.Row, e.window.TopLeft.Col
 	width, height := e.window.Dimension.Col, e.window.Dimension.Row
 	if row < tlRow {
