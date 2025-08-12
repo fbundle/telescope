@@ -63,14 +63,22 @@ func makeDrawContext(s tcell.Screen, offsetX int, offsetY int, width int, height
 	}
 }
 
-func draw(s tcell.Screen, view editor.View) {
-	statusStyle := tcell.StyleDefault.
-		Background(tcell.ColorGreen).
-		Foreground(tcell.ColorBlack)
-	insertStatusStyle := tcell.StyleDefault.
-		Background(tcell.ColorYellow).
-		Foreground(tcell.ColorBlack)
+func getStatusStyle(mode string) tcell.Style {
+	switch mode {
+	case multimode_editor.ModeNormal:
+		return tcell.StyleDefault.Background(tcell.ColorGreen).Foreground(tcell.ColorBlack)
+	case multimode_editor.ModeInsert:
+		return tcell.StyleDefault.Background(tcell.ColorBlue).Foreground(tcell.ColorBlack)
+	case multimode_editor.ModeSelect:
+		return tcell.StyleDefault.Background(tcell.ColorPurple).Foreground(tcell.ColorBlack)
+	case multimode_editor.ModeCommand:
+		return tcell.StyleDefault.Background(tcell.ColorYellow).Foreground(tcell.ColorBlack)
+	default:
+		return tcell.StyleDefault.Background(tcell.ColorLightGray).Foreground(tcell.ColorBlack)
+	}
+}
 
+func draw(s tcell.Screen, view editor.View) {
 	textStyle := tcell.StyleDefault
 	highlightStyle := tcell.StyleDefault.
 		Background(tcell.ColorLightGray).
@@ -97,9 +105,6 @@ func draw(s tcell.Screen, view editor.View) {
 	// Draw content from (0, 0) -> (screenWidth-1, screenHeight-2)
 	contentDrawContext := makeDrawContext(s, 0, 0, screenWidth, screenHeight-1)
 	contentDrawContext(func(width int, height int, draw drawFunc) {
-		for col := 0; col < width; col++ {
-			draw(col, 0, ' ', nil, statusStyle)
-		}
 		t := view.Text
 		for relRow := 0; relRow < height; relRow++ {
 			row := view.Window.TlRow + relRow
@@ -128,13 +133,8 @@ func draw(s tcell.Screen, view editor.View) {
 	// Draw the status bar at the bottom (screenHeight-1)
 	statusDrawContext := makeDrawContext(s, 0, screenHeight-1, screenWidth, 1)
 	statusDrawContext(func(width int, height int, draw drawFunc) {
-		style := statusStyle
-
 		mode, command := getModeAndCommand(view.Status.Other)
-
-		if mode == multimode_editor.ModeInsert {
-			style = insertStatusStyle
-		}
+		style := getStatusStyle(mode)
 
 		for col := 0; col < width; col++ {
 			draw(col, 0, ' ', nil, style)
