@@ -78,12 +78,10 @@ func getStatusStyle(mode string) tcell.Style {
 	}
 }
 
-func draw(s tcell.Screen, view editor.View) {
-	textStyle := tcell.StyleDefault
-	highlightStyle := tcell.StyleDefault.
-		Background(tcell.ColorLightGray).
-		Foreground(tcell.ColorBlack)
+var textStyle = tcell.StyleDefault
+var highlightStyle = tcell.StyleDefault.Background(tcell.ColorLightGray).Foreground(tcell.ColorBlack)
 
+func draw(s tcell.Screen, view editor.View) {
 	s.Clear()
 	screenWidth, screenHeight := s.Size()
 	selector := getSelector(view.Status.Other)
