@@ -245,6 +245,7 @@ func (c *Editor) applyCommandWithoutLock() {
 				return
 			}
 		}
+		c.e.Goto(t.Len()-1, 0)
 		c.enterNormalModeWithoutLock()
 		c.writeWithoutLock("end of file")
 		return
