@@ -129,7 +129,7 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 
 			t0 := time.Now()
 			l := newLoader(reader.Len())
-			err = text.LoadFile(ctx, reader, func(line text.Line) {
+			update := func(line text.Line) {
 				e.lock(func() {
 					e.text.Update(func(t text.Text) text.Text {
 						return t.AppendLine(line)
@@ -142,7 +142,8 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 						e.renderWithoutLock()
 					}
 				})
-			})
+			}
+			err = text.LoadFile(ctx, reader, update)
 			if err != nil {
 				side_channel.Panic("error load file", err)
 				return

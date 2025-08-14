@@ -42,10 +42,11 @@
 - added using `b` or `g` to go to beg of file, `e` or `G` to go to end of file 
 - added basic mouse support: scroll up, scroll down, left click
 - update interface
+- added `gotoAndFixWithoutLock` to absolute position
 
 # TODO
 
-- change `moveRelativeAndFixWithoutLock` to absolute position
+- added cache for file loading
 - optimize size of `core.text.Line` to a single `int64`
 - make binary serializer works with delete lines and insert lines
 - add compressed log: compress multiple `type` into a single `type` (`Text []rune` instead of `Rune rune`)
