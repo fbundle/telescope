@@ -46,6 +46,7 @@
 
 # TODO
 
+- make main loop logic more robust
 - added cache for file loading
 - optimize size of `core.text.Line` to a single `int64`
 - make binary serializer works with delete lines and insert lines
