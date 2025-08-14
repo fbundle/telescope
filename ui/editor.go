@@ -64,22 +64,20 @@ func getStatusStyle(mode string) tcell.Style {
 	}
 }
 
-var textStyle = tcell.StyleDefault
-var highlightStyle = tcell.StyleDefault.Background(tcell.ColorLightGray).Foreground(tcell.ColorBlack)
+func getTextStyle(textRow int, selector *multimode_editor.Selector) tcell.Style {
+	if selector != nil {
+		beg, end := selector.Interval()
+		if beg <= textRow && textRow <= end {
+			return tcell.StyleDefault.Background(tcell.ColorLightGray).Foreground(tcell.ColorBlack)
+		}
+	}
+	return tcell.StyleDefault
+}
 
 func draw(s tcell.Screen, view editor.View) {
 	s.Clear()
 	screenWidth, screenHeight := s.Size()
 	selector := getSelector(view.Status.Other)
-	getStyle := func(textRow int) tcell.Style {
-		if selector != nil {
-			beg, end := selector.Interval()
-			if beg <= textRow && textRow <= end {
-				return highlightStyle
-			}
-		}
-		return textStyle
-	}
 
 	// Draw cursor from (0, 0)
 	relRow := view.Cursor.Row - view.Window.TlRow
@@ -92,7 +90,7 @@ func draw(s tcell.Screen, view editor.View) {
 		t := view.Text
 		for relRow := 0; relRow < height; relRow++ {
 			row := view.Window.TlRow + relRow
-			style := getStyle(row)
+			style := getTextStyle(row, selector)
 			var line []rune = nil
 			if row < t.Len() {
 				line = t.Get(row)
