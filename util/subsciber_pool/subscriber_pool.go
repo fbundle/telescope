@@ -1,41 +1,32 @@
 package subsciber_pool
 
-import "sync"
+import (
+	"sync/atomic"
+	"telescope/util/sync_map"
+)
 
 type Pool[T any] struct {
-	mu         sync.RWMutex
-	handlerMap map[uint64]T
+	handlerMap *sync_map.Map[uint64, T]
 	lastKey    uint64
 }
 
 func New[T any]() *Pool[T] {
 	return &Pool[T]{
-		mu:         sync.RWMutex{},
-		handlerMap: make(map[uint64]T),
+		handlerMap: &sync_map.Map[uint64, T]{},
 		lastKey:    0,
 	}
 }
 
 func (p *Pool[T]) Subscribe(a T) uint64 {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	p.lastKey++
-	p.handlerMap[p.lastKey] = a
-	return p.lastKey
+	key := atomic.AddUint64(&p.lastKey, 1)
+	p.handlerMap.Store(key, a)
+	return key
 }
 
 func (p *Pool[T]) Unsubscribe(key uint64) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	delete(p.handlerMap, key)
+	p.handlerMap.Delete(key)
 }
 
 func (p *Pool[T]) Iter(f func(k uint64, v T) bool) {
-	p.mu.RLock()
-	defer p.mu.RUnlock()
-	for k, v := range p.handlerMap {
-		if !f(k, v) {
-			break
-		}
-	}
+	p.handlerMap.Range(f)
 }
