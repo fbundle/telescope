@@ -103,10 +103,8 @@ func draw(s tcell.Screen, view editor.View) {
 					ch = line[col]
 				}
 				if row >= t.Len() && relCol == 0 {
-					// special case
-					ch = '~'
+					ch = '~' // special case
 				}
-				// s.SetContent(relCol, relRow, ch, nil, style)
 				draw(relCol, relRow, ch, nil, style)
 			}
 		}
