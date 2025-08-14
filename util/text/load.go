@@ -18,10 +18,12 @@ func indexFile(ctx context.Context, reader buffer.Reader, update func(offset int
 	var line []byte
 
 	for i := 0; i < reader.Len(); i++ {
-		select {
-		case <-ctx.Done():
-			return nil
-		default:
+		if i%(1024*1024*1024) == 0 { // check every 1GB
+			select {
+			case <-ctx.Done():
+				return nil
+			default:
+			}
 		}
 
 		b := reader.At(i)
