@@ -31,7 +31,7 @@ func (m Map[T]) Iter(f func(entryOut T) bool) {
 	iter(m.node, f)
 }
 
-func (m Map[T]) Len() uint {
+func (m Map[T]) Len() uint64 {
 	return weight(m.node)
 }
 

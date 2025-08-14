@@ -7,14 +7,14 @@ const (
 // implement persistent sequence using weight-balanced tree
 
 type node[T any] struct {
-	weight uint
-	// height uint
+	weight uint64
+	// height uint64
 	entry T
 	left  *node[T]
 	right *node[T]
 }
 
-func height[T any](n *node[T]) uint {
+func height[T any](n *node[T]) uint64 {
 	if n == nil {
 		return 0
 	}
@@ -22,7 +22,7 @@ func height[T any](n *node[T]) uint {
 	return 0
 }
 
-func weight[T any](n *node[T]) uint {
+func weight[T any](n *node[T]) uint64 {
 	if n == nil {
 		return 0
 	}
@@ -39,7 +39,7 @@ func makeNode[T any](entry T, left *node[T], right *node[T]) *node[T] {
 	}
 }
 
-func get[T any](n *node[T], i uint) T {
+func get[T any](n *node[T], i uint64) T {
 	if n == nil {
 		panic("index out of range")
 	}
@@ -116,7 +116,7 @@ func balance[T any](n *node[T]) *node[T] {
 	return n
 }
 
-func set[T any](n *node[T], i uint, entry T) *node[T] {
+func set[T any](n *node[T], i uint64, entry T) *node[T] {
 	if n == nil {
 		panic("index out of range")
 	}
@@ -137,7 +137,7 @@ func set[T any](n *node[T], i uint, entry T) *node[T] {
 	panic("index out of range")
 }
 
-func ins[T any](n *node[T], i uint, entry T) *node[T] {
+func ins[T any](n *node[T], i uint64, entry T) *node[T] {
 	if n == nil && i > 0 {
 		panic("index out of range")
 	}
@@ -162,7 +162,7 @@ func ins[T any](n *node[T], i uint, entry T) *node[T] {
 	panic("index out of range")
 }
 
-func del[T any](n *node[T], i uint) *node[T] {
+func del[T any](n *node[T], i uint64) *node[T] {
 	if n == nil {
 		panic("index out of range")
 	}
@@ -210,7 +210,7 @@ func merge[T any](l *node[T], r *node[T]) *node[T] {
 }
 
 // split - ([0, 1, 2, 3, 4], 2) -> [0, 1] , [2, 3, 4]
-func split[T any](n *node[T], i uint) (*node[T], *node[T]) {
+func split[T any](n *node[T], i uint64) (*node[T], *node[T]) {
 	if n == nil {
 		return nil, nil
 	}

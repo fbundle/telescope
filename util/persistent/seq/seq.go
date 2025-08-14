@@ -11,19 +11,19 @@ type Seq[T any] struct {
 }
 
 func (s Seq[T]) Get(i int) T {
-	return get(s.node, uint(i))
+	return get(s.node, uint64(i))
 }
 
 func (s Seq[T]) Set(i int, val T) Seq[T] {
-	return Seq[T]{node: set(s.node, uint(i), val)}
+	return Seq[T]{node: set(s.node, uint64(i), val)}
 }
 
 func (s Seq[T]) Ins(i int, val T) Seq[T] {
-	return Seq[T]{node: ins(s.node, uint(i), val)}
+	return Seq[T]{node: ins(s.node, uint64(i), val)}
 }
 
 func (s Seq[T]) Del(i int) Seq[T] {
-	return Seq[T]{node: del(s.node, uint(i))}
+	return Seq[T]{node: del(s.node, uint64(i))}
 }
 
 func (s Seq[T]) Iter(f func(i int, val T) bool) {
@@ -40,7 +40,7 @@ func (s Seq[T]) Len() int {
 }
 
 func (s Seq[T]) Split(i int) (Seq[T], Seq[T]) {
-	n1, n2 := split(s.node, uint(i))
+	n1, n2 := split(s.node, uint64(i))
 	return Seq[T]{node: n1}, Seq[T]{node: n2}
 }
 

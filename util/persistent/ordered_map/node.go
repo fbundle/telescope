@@ -11,14 +11,14 @@ type Comparable[T any] interface {
 // implement persistent ordered map using weight balanced tree
 
 type node[T Comparable[T]] struct {
-	weight uint
-	// height uint
+	weight uint64
+	// height uint64
 	entry T
 	left  *node[T]
 	right *node[T]
 }
 
-func height[T Comparable[T]](n *node[T]) uint {
+func height[T Comparable[T]](n *node[T]) uint64 {
 	if n == nil {
 		return 0
 	}
@@ -26,7 +26,7 @@ func height[T Comparable[T]](n *node[T]) uint {
 	return 0
 }
 
-func weight[T Comparable[T]](n *node[T]) uint {
+func weight[T Comparable[T]](n *node[T]) uint64 {
 	if n == nil {
 		return 0
 	}
