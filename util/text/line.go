@@ -17,7 +17,7 @@ func makeLineFromData(data []rune) Line {
 	}
 }
 
-func makeLineFromOffset(offset int) Line {
+func MakeLineFromOffset(offset int) Line {
 	return Line{
 		offset: int64(offset),
 		data:   nil,

@@ -79,7 +79,7 @@ func (c *Editor) Update() <-chan editor.View {
 	return c.e.Update()
 }
 
-func (c *Editor) Load(ctx context.Context, reader buffer.Reader, lines ...text.Line) (loadCtx context.Context, err error) {
+func (c *Editor) Load(ctx context.Context, reader buffer.Reader) (loadCtx context.Context, err error) {
 	c.lock(func() {
 		loadCtx, err = c.e.Load(ctx, reader)
 	})

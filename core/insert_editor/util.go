@@ -52,8 +52,8 @@ type loader struct {
 	lastRenderTime       time.Time
 }
 
-func (l *loader) set(loadedSize int) bool {
-	l.loadedSize = loadedSize
+func (l *loader) add(amount int) bool {
+	l.loadedSize += amount
 	percentage := int(100 * float64(l.loadedSize) / float64(l.totalSize))
 	t := time.Now()
 	if percentage > l.lastRenderPercentage || t.Sub(l.lastRenderTime) >= config.Load().LOADING_PROGRESS_INTERVAL {
