@@ -118,9 +118,11 @@ func draw(s tcell.Screen, view editor.View) {
 		mode, command := getModeAndCommand(view.Status.Other)
 		style := getStatusStyle(mode)
 
+		// draw bottom bar
 		for col := 0; col < width; col++ {
 			draw(col, 0, ' ', nil, style)
 		}
+		// draw mode, cursor, command, messge
 		sep := []rune(" > ")
 		var fromLeft []rune
 		fromLeft = append(fromLeft, []rune(fmt.Sprintf(" %s (%d, %d)", mode, view.Cursor.Row+1, view.Cursor.Col+1))...)
@@ -135,6 +137,7 @@ func draw(s tcell.Screen, view editor.View) {
 		for col, ch := range fromLeft {
 			draw(col, 0, ch, nil, style)
 		}
+		// draw background
 		var fromRight []rune = nil
 		if len(view.Status.Background) > 0 {
 			fromRight = append(fromRight, sep...)
