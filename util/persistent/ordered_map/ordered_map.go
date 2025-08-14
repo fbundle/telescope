@@ -1,14 +1,16 @@
 package ordered_map
 
-import "golang.org/x/exp/constraints"
+import (
+	"cmp"
+)
 
-func NewOrderedMap[K constraints.Ordered, V any]() OrderedMap[K, V] {
+func EmptyOrderedMap[K cmp.Ordered, V any]() OrderedMap[K, V] {
 	return OrderedMap[K, V]{
-		comparableMap: Empty[Entry[K, V]](),
+		comparableMap: EmptyComparableMap[Entry[K, V]](),
 	}
 }
 
-type Entry[K constraints.Ordered, V any] struct {
+type Entry[K cmp.Ordered, V any] struct {
 	Key K
 	Val V
 }
@@ -24,7 +26,7 @@ func (e Entry[K, V]) Cmp(o Entry[K, V]) int {
 	}
 }
 
-type OrderedMap[K constraints.Ordered, V any] struct {
+type OrderedMap[K cmp.Ordered, V any] struct {
 	comparableMap Map[Entry[K, V]]
 }
 

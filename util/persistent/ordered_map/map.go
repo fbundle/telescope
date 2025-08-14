@@ -1,6 +1,6 @@
 package ordered_map
 
-func Empty[T Comparable[T]]() Map[T] {
+func EmptyComparableMap[T Comparable[T]]() Map[T] {
 	return Map[T]{
 		node: nil,
 	}
