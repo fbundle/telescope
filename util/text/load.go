@@ -9,18 +9,17 @@ import (
 
 func IndexFile2(reader buffer.Reader) iter.Seq[int] {
 	return func(yield func(offset int) bool) {
-		var offset int = 0
-		var line []byte = nil
-
+		offset := 0
 		for i := 0; i < reader.Len(); i++ {
 			b := reader.At(i)
-			line = append(line, b)
-			if line[len(line)-1] == delim {
-				yield(offset) // line with delim
-				offset, line = i+1, nil
+			if b == delim {
+				if !yield(offset) {
+					return
+				}
+				offset = i + 1
 			}
 		}
-		if len(line) > 0 {
+		if offset < reader.Len() {
 			yield(offset)
 		}
 	}
