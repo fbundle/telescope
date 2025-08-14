@@ -115,6 +115,7 @@ func draw(s tcell.Screen, view editor.View) {
 	// Draw the status bar at the bottom (screenHeight-1)
 	statusDrawContext := makeDrawContext(s, 0, screenHeight-1, screenWidth, 1)
 	statusDrawContext(func(width int, height int, draw drawFunc) {
+		sep := []rune(" > ")
 		mode, command := getModeAndCommand(view.Status.Other)
 		style := getStatusStyle(mode)
 
@@ -122,8 +123,18 @@ func draw(s tcell.Screen, view editor.View) {
 		for col := 0; col < width; col++ {
 			draw(col, 0, ' ', nil, style)
 		}
+		// draw background
+		var fromRight []rune = nil
+		if len(view.Status.Background) > 0 {
+			fromRight = append(fromRight, sep...)
+			fromRight = append(fromRight, []rune(view.Status.Background)...)
+			fromRight = append(fromRight, ' ')
+		}
+		for i, ch := range fromRight {
+			col := i + width - len(fromRight)
+			draw(col, 0, ch, nil, style)
+		}
 		// draw mode, cursor, command, messge
-		sep := []rune(" > ")
 		var fromLeft []rune
 		fromLeft = append(fromLeft, []rune(fmt.Sprintf(" %s (%d, %d)", mode, view.Cursor.Row+1, view.Cursor.Col+1))...)
 		if len(command) > 0 {
@@ -137,17 +148,7 @@ func draw(s tcell.Screen, view editor.View) {
 		for col, ch := range fromLeft {
 			draw(col, 0, ch, nil, style)
 		}
-		// draw background
-		var fromRight []rune = nil
-		if len(view.Status.Background) > 0 {
-			fromRight = append(fromRight, sep...)
-			fromRight = append(fromRight, []rune(view.Status.Background)...)
-			fromRight = append(fromRight, ' ')
-		}
-		for i, ch := range fromRight {
-			col := i + width - len(fromRight)
-			draw(col, 0, ch, nil, style)
-		}
+
 	})
 
 	s.Show()
