@@ -80,10 +80,9 @@ func draw(s tcell.Screen, view editor.View) {
 	selector := getSelector(view.Status.Other)
 
 	// Draw cursor from (0, 0)
-	s.ShowCursor(
-		view.Cursor.Col-view.Window.TlCol,
-		view.Cursor.Row-view.Window.TlRow,
-	)
+	col := view.Cursor.Col - view.Window.TlCol
+	row := view.Cursor.Row - view.Window.TlRow
+	s.ShowCursor(col, row)
 
 	// Draw content from (0, 0) -> (screenWidth-1, screenHeight-2)
 	contentDrawContext := makeDrawContext(s, 0, 0, screenWidth, screenHeight-1)
