@@ -17,13 +17,17 @@ func indexFile(ctx context.Context, reader buffer.Reader, update func(offset int
 	return indexFileFrom(ctx, reader, update, 0)
 }
 
-func LoadFileAfter(ctx context.Context, reader buffer.Reader, update func(Line), lastLine Line) error {
-	beg := reader.Len()
-	for i := int(lastLine.offset); i < reader.Len(); i++ {
-		b := reader.At(i)
-		if b == delim {
-			beg = i + 1
-			break
+func LoadFileAfter(ctx context.Context, reader buffer.Reader, update func(Line), lines ...Line) error {
+	beg := 0
+	if len(lines) > 0 {
+		lastLine := lines[len(lines)-1]
+		beg = reader.Len()
+		for i := int(lastLine.offset); i < reader.Len(); i++ {
+			b := reader.At(i)
+			if b == delim {
+				beg = i + 1
+				break
+			}
 		}
 	}
 

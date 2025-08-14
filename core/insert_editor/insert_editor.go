@@ -147,20 +147,12 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader, lines ...text.L
 				}
 			})
 
-			if len(lines) > 0 {
-				err = text.LoadFileAfter(ctx, reader, func(line text.Line) {
-					e.lock(func() {
-						updateWithoutLock(line)
-					})
-				}, lines[len(lines)-1])
-
-			} else {
-				err = text.LoadFile(ctx, reader, func(line text.Line) {
-					e.lock(func() {
-						updateWithoutLock(line)
-					})
+			err = text.LoadFileAfter(ctx, reader, func(line text.Line) {
+				e.lock(func() {
+					updateWithoutLock(line)
 				})
-			}
+			}, lines...)
+
 			if err != nil {
 				side_channel.Panic("error load file", err)
 				return
