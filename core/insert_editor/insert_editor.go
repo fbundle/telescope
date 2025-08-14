@@ -137,7 +137,7 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 				}
 			}
 
-			for i, offset := range text.IndexFile(reader) {
+			for i, offset := range toIndexedIterator(text.IndexFile(reader)) {
 				if i%config.Load().LOAD_ESCAPE_INTERVAL == 0 && ctxDone() {
 					break
 				}

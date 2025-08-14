@@ -5,20 +5,20 @@ import (
 	"telescope/util/buffer"
 )
 
-func IndexFile(reader buffer.Reader) iter.Seq2[int, int] {
-	return func(yield func(index int, offset int) bool) {
-		index, offset := 0, 0
+func IndexFile(reader buffer.Reader) iter.Seq[int] {
+	return func(yield func(offset int) bool) {
+		offset := 0
 		for i := 0; i < reader.Len(); i++ {
 			b := reader.At(i)
 			if b == delim {
-				if !yield(index, offset) {
+				if !yield(offset) {
 					return
 				}
-				index, offset = index+1, i+1
+				offset = i + 1
 			}
 		}
 		if offset < reader.Len() {
-			yield(index, offset)
+			yield(offset)
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package insert_editor
 
 import (
+	"iter"
 	"telescope/config"
 	"telescope/util/side_channel"
 	"time"
@@ -34,6 +35,18 @@ func concatSlices[T any](ls ...[]T) []T {
 		c = append(c, l...)
 	}
 	return c
+}
+
+func toIndexedIterator[T any](i iter.Seq[T]) iter.Seq2[int, T] {
+	return func(yield func(int, T) bool) {
+		index := 0
+		for v := range i {
+			if !yield(index, v) {
+				return
+			}
+			index++
+		}
+	}
 }
 
 func newLoader(totalSize int) *loader {
