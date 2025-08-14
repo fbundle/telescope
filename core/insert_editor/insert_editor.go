@@ -9,7 +9,6 @@ import (
 	"telescope/core/editor"
 	"telescope/util/buffer"
 	"telescope/util/hist"
-	"telescope/util/side_channel"
 	"telescope/util/subsciber_pool"
 	"telescope/util/text"
 	"time"
@@ -30,7 +29,7 @@ func New(
 	height int, width int,
 ) (*Editor, error) {
 	e := &Editor{
-		// buffered channel is necessary  for preventing deadlock
+		// buffered iterator is necessary  for preventing deadlock
 		renderCh: make(chan editor.View, config.Load().VIEW_CHANNEL_SIZE),
 
 		mu:   sync.Mutex{},
@@ -129,12 +128,13 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 
 			t0 := time.Now()
 			loader := newLoader(reader.Len())
-			update := func(offset int, line []byte) {
+
+			for offset := range text.IndexFile2(reader) {
 				e.lock(func() {
 					e.text.Update(func(t text.Text) text.Text {
 						return t.AppendLine(text.MakeLineFromOffset(offset))
 					})
-					if loader.add(len(line)) {
+					if loader.set(offset) {
 						e.status.Background = fmt.Sprintf(
 							"loading %d/%d (%d%%)",
 							loader.loadedSize, loader.totalSize, loader.lastRenderPercentage,
@@ -144,12 +144,6 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 				})
 			}
 
-			err = text.IndexFile(ctx, reader, update)
-
-			if err != nil {
-				side_channel.Panic("error load file", err)
-				return
-			}
 			e.lockRender(func() {
 				totalTime := time.Since(t0)
 				e.status.Background = ""

@@ -2,9 +2,29 @@ package text
 
 import (
 	"context"
+	"iter"
 	"telescope/config"
 	"telescope/util/buffer"
 )
+
+func IndexFile2(reader buffer.Reader) iter.Seq[int] {
+	return func(yield func(offset int) bool) {
+		var offset int = 0
+		var line []byte = nil
+
+		for i := 0; i < reader.Len(); i++ {
+			b := reader.At(i)
+			line = append(line, b)
+			if line[len(line)-1] == delim {
+				yield(offset) // line with delim
+				offset, line = i+1, nil
+			}
+		}
+		if len(line) > 0 {
+			yield(offset)
+		}
+	}
+}
 
 func IndexFile(ctx context.Context, reader buffer.Reader, update func(offset int, line []byte)) error {
 	var offset int = 0

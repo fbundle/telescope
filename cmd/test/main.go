@@ -2,15 +2,19 @@ package main
 
 import (
 	"fmt"
-	"telescope/util/persistent/ordered_map"
+	"telescope/util/iterator"
 )
 
+func echo(ch iterator.Iterator[int]) {
+	for i := range ch {
+		fmt.Println(i)
+	}
+}
+
 func main() {
-	m := ordered_map.EmptyOrderedMap[int, string]()
-	m = m.Set(1, "one")
-	m = m.Set(2, "two")
-	m = m.Set(3, "three")
-	m = m.Set(2, "hai")
-	m = m.Del(3)
-	fmt.Println(m.Repr())
+	echo(func(f func(int) bool) {
+		for i := 0; i < 10; i++ {
+			f(i)
+		}
+	})
 }
