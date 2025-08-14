@@ -6,20 +6,10 @@ import (
 	"telescope/util/buffer"
 )
 
-func LoadFile(ctx context.Context, reader buffer.Reader, update func(Line)) error {
-	return indexFile(ctx, reader, func(offset int, line []byte) {
-		l := makeLineFromOffset(offset)
-		update(l)
-	})
-}
-
-func indexFile(ctx context.Context, reader buffer.Reader, update func(offset int, line []byte)) error {
-	return indexFileFrom(ctx, reader, update, 0)
-}
-
 func LoadFileAfter(ctx context.Context, reader buffer.Reader, update func(Line), lines ...Line) error {
 	beg := 0
 	if len(lines) > 0 {
+		// if lines is non-empty, these are the lines already loaded, we just need to continue
 		lastLine := lines[len(lines)-1]
 		beg = reader.Len()
 		for i := int(lastLine.offset); i < reader.Len(); i++ {
