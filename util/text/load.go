@@ -7,20 +7,20 @@ import (
 	"telescope/util/buffer"
 )
 
-func IndexFile2(reader buffer.Reader) iter.Seq[int] {
-	return func(yield func(offset int) bool) {
-		offset := 0
+func IndexFile2(reader buffer.Reader) iter.Seq2[int, int] {
+	return func(yield func(index int, offset int) bool) {
+		index, offset := 0, 0
 		for i := 0; i < reader.Len(); i++ {
 			b := reader.At(i)
 			if b == delim {
-				if !yield(offset) {
+				if !yield(index, offset) {
 					return
 				}
-				offset = i + 1
+				index, offset = index+1, i+1
 			}
 		}
 		if offset < reader.Len() {
-			yield(offset)
+			yield(index, offset)
 		}
 	}
 }
@@ -30,7 +30,7 @@ func IndexFile(ctx context.Context, reader buffer.Reader, update func(offset int
 	var line []byte = nil
 
 	for i := 0; i < reader.Len(); i++ {
-		if i%config.Load().LOAD_ESCAPE_INTERVAL_BYTES == 0 {
+		if i%config.Load().LOAD_ESCAPE_INTERVAL == 0 {
 			// check every 10MB
 			select {
 			case <-ctx.Done():

@@ -128,8 +128,19 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 
 			t0 := time.Now()
 			loader := newLoader(reader.Len())
+			ctxDone := func() bool {
+				select {
+				case <-ctx.Done():
+					return true
+				default:
+					return false
+				}
+			}
 
-			for offset := range text.IndexFile2(reader) {
+			for i, offset := range text.IndexFile2(reader) {
+				if i%config.Load().LOAD_ESCAPE_INTERVAL == 0 && ctxDone() {
+					break
+				}
 				e.lock(func() {
 					e.text.Update(func(t text.Text) text.Text {
 						return t.AppendLine(text.MakeLineFromOffset(offset))
