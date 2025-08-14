@@ -6,7 +6,7 @@ import (
 	"telescope/util/buffer"
 )
 
-func IndexFile(ctx context.Context, reader buffer.Reader, delim byte, update func(offset int, line []byte)) error {
+func IndexFile(ctx context.Context, reader buffer.Reader, update func(offset int, line []byte)) error {
 	var offset int = 0
 	var line []byte = nil
 

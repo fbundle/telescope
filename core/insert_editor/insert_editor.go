@@ -15,10 +15,6 @@ import (
 	"time"
 )
 
-const (
-	lineDelim byte = '\n'
-)
-
 type Editor struct {
 	renderCh chan editor.View
 
@@ -148,7 +144,7 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 				})
 			}
 
-			err = text.IndexFile(ctx, reader, lineDelim, update)
+			err = text.IndexFile(ctx, reader, update)
 
 			if err != nil {
 				side_channel.Panic("error load file", err)
