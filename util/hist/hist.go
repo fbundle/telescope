@@ -20,7 +20,7 @@ func (h *Hist[T]) Update(modifier func(T) T) {
 	next := modifier(h.stack[h.latest])
 	h.stack = append(h.stack[:h.latest+1], next)
 	h.latest++
-	if len(h.stack) > config.Load().MAXSIZE_HISTORY {
+	if len(h.stack) > config.Load().MAXSIZE_HISTORY_STACK {
 		h.stack = h.stack[1:]
 		h.latest--
 	}
