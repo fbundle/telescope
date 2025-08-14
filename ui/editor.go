@@ -52,13 +52,13 @@ func getSelector(m map[string]any) *multimode_editor.Selector {
 func getStatusStyle(mode string) tcell.Style {
 	switch mode {
 	case multimode_editor.ModeNormal:
-		return tcell.StyleDefault.Background(tcell.ColorGreen).Foreground(tcell.ColorBlack)
+		return tcell.StyleDefault.Background(tcell.ColorLightGray).Foreground(tcell.ColorBlack)
 	case multimode_editor.ModeInsert:
-		return tcell.StyleDefault.Background(tcell.ColorBlue).Foreground(tcell.ColorBlack)
-	case multimode_editor.ModeSelect:
-		return tcell.StyleDefault.Background(tcell.ColorPurple).Foreground(tcell.ColorBlack)
-	case multimode_editor.ModeCommand:
 		return tcell.StyleDefault.Background(tcell.ColorYellow).Foreground(tcell.ColorBlack)
+	case multimode_editor.ModeSelect:
+		return tcell.StyleDefault.Background(tcell.ColorGreen).Foreground(tcell.ColorBlack)
+	case multimode_editor.ModeCommand:
+		return tcell.StyleDefault.Background(tcell.ColorBlue).Foreground(tcell.ColorBlack)
 	default:
 		return tcell.StyleDefault.Background(tcell.ColorLightGray).Foreground(tcell.ColorBlack)
 	}
