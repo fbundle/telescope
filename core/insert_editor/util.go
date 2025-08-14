@@ -1,6 +1,7 @@
 package insert_editor
 
 import (
+	"context"
 	"iter"
 	"telescope/config"
 	"telescope/util/side_channel"
@@ -46,6 +47,15 @@ func toIndexedIterator[T any](i iter.Seq[T]) iter.Seq2[int, T] {
 			}
 			index++
 		}
+	}
+}
+
+func pollCtx(ctx context.Context) bool {
+	select {
+	case <-ctx.Done():
+		return false
+	default:
+		return true
 	}
 }
 

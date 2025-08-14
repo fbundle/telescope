@@ -128,17 +128,9 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 
 			t0 := time.Now()
 			loader := newLoader(reader.Len())
-			ctxDone := func() bool {
-				select {
-				case <-ctx.Done():
-					return true
-				default:
-					return false
-				}
-			}
 
 			for i, offset := range toIndexedIterator(text.IndexFile(reader)) {
-				if i%config.Load().LOAD_ESCAPE_INTERVAL == 0 && ctxDone() {
+				if i%config.Load().LOAD_ESCAPE_INTERVAL == 0 && !pollCtx(ctx) {
 					break
 				}
 				e.lock(func() {
