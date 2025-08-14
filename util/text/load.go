@@ -14,11 +14,30 @@ func LoadFile(ctx context.Context, reader buffer.Reader, update func(Line)) erro
 }
 
 func indexFile(ctx context.Context, reader buffer.Reader, update func(offset int, line []byte)) error {
-	var offset int = 0
+	return indexFileFrom(ctx, reader, update, 0)
+}
 
-	var line []byte
+func LoadFileAfter(ctx context.Context, reader buffer.Reader, update func(Line), lastLine Line) error {
+	beg := reader.Len()
+	for i := int(lastLine.offset); i < reader.Len(); i++ {
+		b := reader.At(i)
+		if b == delim {
+			beg = i + 1
+			break
+		}
+	}
 
-	for i := 0; i < reader.Len(); i++ {
+	return indexFileFrom(ctx, reader, func(offset int, line []byte) {
+		l := makeLineFromOffset(offset)
+		update(l)
+	}, beg)
+}
+
+func indexFileFrom(ctx context.Context, reader buffer.Reader, update func(offset int, line []byte), beg int) error {
+	var offset int = beg
+	var line []byte = nil
+
+	for i := beg; i < reader.Len(); i++ {
 		if i%config.Load().LOAD_ESCAPE_INTERVAL_BYTES == 0 {
 			// check every 10MB
 			select {

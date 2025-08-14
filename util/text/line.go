@@ -6,32 +6,36 @@ const delim byte = '\n'
 
 // Line - if offset >= 0, this is a file else this is a []rune buffer
 type Line struct {
-	Offset int64   // 8 bytes
-	Data   *[]rune // 8 bytes on 64-bit system
+	offset int64   // 8 bytes
+	data   *[]rune // 8 bytes on 64-bit system
 }
 
 func makeLineFromData(data []rune) Line {
 	return Line{
-		Offset: -1,
-		Data:   &data,
+		offset: -1,
+		data:   &data,
 	}
 }
 
 func makeLineFromOffset(offset int) Line {
 	return Line{
-		Offset: int64(offset),
-		Data:   nil,
+		offset: int64(offset),
+		data:   nil,
 	}
 }
 
+func (l Line) Offset() int64 {
+	return l.offset
+}
+
 func (l Line) Repr(reader buffer.Reader) []rune {
-	if l.Offset < 0 {
+	if l.offset < 0 {
 		// in-memory
-		return *l.Data
+		return *l.data
 	} else {
 		// from file
 		buf := make([]byte, 0)
-		for i := int(l.Offset); i < reader.Len(); i++ {
+		for i := int(l.offset); i < reader.Len(); i++ {
 			b := reader.At(i)
 			if b == delim {
 				break

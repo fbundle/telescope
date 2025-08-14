@@ -110,7 +110,7 @@ func (e *Editor) Status(update func(status editor.Status) editor.Status) {
 	})
 }
 
-func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Context, error) {
+func (e *Editor) Load(ctx context.Context, reader buffer.Reader, lines ...text.Line) (context.Context, error) {
 	loadCtx, loadDone := context.WithCancel(context.Background())
 	var err error = nil
 	e.lockRender(func() {
@@ -129,21 +129,38 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 
 			t0 := time.Now()
 			l := newLoader(reader.Len())
-			update := func(line text.Line) {
-				e.lock(func() {
-					e.text.Update(func(t text.Text) text.Text {
-						return t.AppendLine(line)
+			updateWithoutLock := func(line text.Line) {
+				e.text.Update(func(t text.Text) text.Text {
+					return t.AppendLine(line)
+				})
+				if l.set(int(line.Offset())) { // to makeView
+					e.status.Background = fmt.Sprintf(
+						"loading %d/%d (%d%%)",
+						l.loadedSize, l.totalSize, l.lastRenderPercentage,
+					)
+					e.renderWithoutLock()
+				}
+			}
+			e.lock(func() {
+				for _, line := range lines {
+					updateWithoutLock(line)
+				}
+			})
+
+			if len(lines) > 0 {
+				err = text.LoadFileAfter(ctx, reader, func(line text.Line) {
+					e.lock(func() {
+						updateWithoutLock(line)
 					})
-					if l.set(int(line.Offset)) { // to makeView
-						e.status.Background = fmt.Sprintf(
-							"loading %d/%d (%d%%)",
-							l.loadedSize, l.totalSize, l.lastRenderPercentage,
-						)
-						e.renderWithoutLock()
-					}
+				}, lines[len(lines)-1])
+
+			} else {
+				err = text.LoadFile(ctx, reader, func(line text.Line) {
+					e.lock(func() {
+						updateWithoutLock(line)
+					})
 				})
 			}
-			err = text.LoadFile(ctx, reader, update)
 			if err != nil {
 				side_channel.Panic("error load file", err)
 				return
