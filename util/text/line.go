@@ -10,7 +10,7 @@ type Line struct {
 	data   *[]rune // 8 bytes on 64-bit system
 }
 
-func makeLineFromData(data []rune) Line {
+func MakeLineFromData(data []rune) Line {
 	return Line{
 		offset: -1,
 		data:   &data,

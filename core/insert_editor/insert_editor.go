@@ -143,7 +143,7 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 				}
 				e.lock(func() {
 					e.text.Update(func(t text.Text) text.Text {
-						return t.AppendLine(text.MakeLineFromOffset(offset))
+						return t.Append(text.MakeLineFromOffset(offset))
 					})
 					if loader.set(offset) {
 						e.status.Background = fmt.Sprintf(

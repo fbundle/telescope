@@ -25,18 +25,18 @@ func (t Text) Get(i int) []rune {
 func (t Text) Set(i int, val []rune) Text {
 	return Text{
 		reader: t.reader,
-		lines:  t.lines.Set(i, makeLineFromData(val)),
+		lines:  t.lines.Set(i, MakeLineFromData(val)),
 	}
 }
 
 func (t Text) Ins(i int, val []rune) Text {
 	return Text{
 		reader: t.reader,
-		lines:  t.lines.Ins(i, makeLineFromData(val)),
+		lines:  t.lines.Ins(i, MakeLineFromData(val)),
 	}
 }
 
-func (t Text) AppendLine(line Line) Text {
+func (t Text) Append(line Line) Text {
 	return Text{
 		reader: t.reader,
 		lines:  t.lines.Ins(t.lines.Len(), line),
