@@ -2,6 +2,7 @@ package text
 
 import (
 	"context"
+	"telescope/config"
 	"telescope/util/buffer"
 )
 
@@ -18,7 +19,8 @@ func indexFile(ctx context.Context, reader buffer.Reader, update func(offset int
 	var line []byte
 
 	for i := 0; i < reader.Len(); i++ {
-		if i%(1*1024*1024) == 0 { // check every 1MB
+		if i%config.Load().LOAD_ESCAPE_INTERVAL_BYTES == 0 {
+			// check every 10MB
 			select {
 			case <-ctx.Done():
 				return nil
