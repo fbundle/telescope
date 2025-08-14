@@ -31,7 +31,7 @@ func (m Map[T]) Iter(f func(entryOut T) bool) {
 	iter(m.node, f)
 }
 
-func (m Map[T]) Weight() uint {
+func (m Map[T]) Len() uint {
 	return weight(m.node)
 }
 
@@ -49,7 +49,7 @@ func (m Map[T]) Min() Comparable[T] {
 }
 
 func (m Map[T]) Repr() []Comparable[T] {
-	buf := make([]Comparable[T], 0, m.Weight())
+	buf := make([]Comparable[T], 0, m.Len())
 	for entryOut := range m.Iter {
 		buf = append(buf, entryOut)
 	}

@@ -52,7 +52,7 @@ func (m OrderedMap[K, V]) Iter(f func(K, V) bool) {
 }
 
 func (m OrderedMap[K, V]) Len() int {
-	return int(m.comparableMap.Weight())
+	return int(m.comparableMap.Len())
 }
 
 func (m OrderedMap[K, V]) Split(key K) (OrderedMap[K, V], OrderedMap[K, V]) {
