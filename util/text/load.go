@@ -6,10 +6,10 @@ import (
 	"telescope/util/buffer"
 )
 
-func LoadFile(ctx context.Context, reader buffer.Reader, update func(Line, int)) error {
+func LoadFile(ctx context.Context, reader buffer.Reader, update func(Line)) error {
 	return indexFile(ctx, reader, func(offset int, line []byte) {
 		l := makeLineFromOffset(offset)
-		update(l, len(line))
+		update(l)
 	})
 }
 
