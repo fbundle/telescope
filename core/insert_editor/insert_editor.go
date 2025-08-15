@@ -129,9 +129,14 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 			t0 := time.Now()
 			loader := newLoader(reader.Len())
 
-			for i, offset := range toIndexedIterator(text.IndexFile(reader)) {
-				if i%config.Load().LOAD_ESCAPE_INTERVAL == 0 && !pollCtx(ctx) {
-					break
+			lastPoll := time.Now()
+			for offset := range text.IndexFile(reader) {
+				now := time.Now()
+				if now.Sub(lastPoll) >= config.Load().LOAD_ESCAPE_INTERVAL {
+					lastPoll = now
+					if !pollCtx(ctx) {
+						return
+					}
 				}
 				e.lock(func() {
 					e.text.Update(func(t text.Text) text.Text {

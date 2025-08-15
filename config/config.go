@@ -73,7 +73,7 @@ type Config struct {
 	LOG_DIR                    string
 	TMP_DIR                    string
 	SCROLL_SPEED               int
-	LOAD_ESCAPE_INTERVAL       int
+	LOAD_ESCAPE_INTERVAL       time.Duration
 }
 
 var mu sync.Mutex = sync.Mutex{}
@@ -103,7 +103,7 @@ func Load() *Config {
 			LOG_DIR:                    filepath.Join(tempDir, "telescope", "log"),
 			TMP_DIR:                    filepath.Join(tempDir, "telescope", "tmp"),
 			SCROLL_SPEED:               3,
-			LOAD_ESCAPE_INTERVAL:       1024 * 1024, // 1024*1024 lines
+			LOAD_ESCAPE_INTERVAL:       100 * time.Millisecond,
 		}
 	}
 	return config
