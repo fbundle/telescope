@@ -162,20 +162,18 @@ func (e quitEvent) When() time.Time {
 	return e.when
 }
 
-func sendQuitEvent(s tcell.Screen) func() {
-	return func() {
-		now := time.Now()
-		for i := 0; i < 5; i++ {
-			if err := s.PostEvent(quitEvent{when: now}); err != nil {
-				if errors.Is(err, tcell.ErrEventQFull) {
-					time.Sleep(100 * time.Millisecond) // retry stopping
-					continue
-				}
-				side_channel.Panic(err)
-				return
-			} else {
-				return
+func sendQuitEvent(s tcell.Screen) {
+	now := time.Now()
+	for i := 0; i < 5; i++ {
+		if err := s.PostEvent(quitEvent{when: now}); err != nil {
+			if errors.Is(err, tcell.ErrEventQFull) {
+				time.Sleep(100 * time.Millisecond) // retry stopping
+				continue
 			}
+			side_channel.Panic(err)
+			return
+		} else {
+			return
 		}
 	}
 }
@@ -213,7 +211,11 @@ func RunEditor(inputFilename string, logFilename string, multiMode bool) error {
 	}
 
 	if multiMode {
-		e = multimode_editor.New(insertEditor, sendQuitEvent(s), inputFilename)
+		stop := func() {
+			cancel()
+			sendQuitEvent(s)
+		}
+		e = multimode_editor.New(insertEditor, stop, inputFilename)
 	} else {
 		e = insertEditor
 	}
