@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"runtime/debug"
 	"telescope/config"
 	"telescope/core/editor"
 	"telescope/core/multimode_editor"
@@ -179,6 +180,13 @@ func sendQuitEvent(s tcell.Screen) {
 }
 
 func RunEditor(inputFilename string, logFilename string, multiMode bool) error {
+	defer func() {
+		if r := recover(); r != nil {
+			side_channel.WriteLn(string(debug.Stack()))
+			side_channel.Panic(r)
+		}
+	}()
+
 	s, err := tcell.NewScreen()
 	if err != nil {
 		return err
