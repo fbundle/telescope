@@ -84,7 +84,7 @@ func Load() *Config {
 	defer mu.Unlock()
 	if config == nil {
 		tempDir := os.TempDir()
-		side_channel.WriteLn(tempDir)
+		side_channel.WriteLn("temp dir:", tempDir)
 		debug := len(os.Getenv("DEBUG")) > 0
 		// TODO - export these into environment variables
 		config = &Config{
