@@ -246,20 +246,7 @@ func RunEditor(inputFilename string, logFilename string, multiMode bool) error {
 		case *tcell.EventMouse:
 			handleEditorMouse(e, event)
 		case *tcell.EventKey:
-			if event.Key() == tcell.KeyCtrlC {
-				// Ctrl+C to stop
-				running = false
-			} else if event.Key() == tcell.KeyCtrlS {
-				// Ctrl+S to flush
-				err := finalizer.Flush()
-				if err != nil {
-					writeMessage(e, fmt.Sprintf("flush error: %v", err))
-				} else {
-					writeMessage(e, "log_writer flushed")
-				}
-			} else {
-				handleEditorKey(e, event)
-			}
+			handleEditorKey(e, event, finalizer.Flush)
 
 		case *tcell.EventResize:
 			s.Sync()
@@ -318,8 +305,15 @@ func handleEditorMouse(e editor.Editor, ev *tcell.EventMouse) {
 	}
 }
 
-func handleEditorKey(e editor.Editor, ev *tcell.EventKey) {
+func handleEditorKey(e editor.Editor, ev *tcell.EventKey, flush func() error) {
 	switch ev.Key() {
+	case tcell.KeyCtrlS:
+		// Ctrl+S to flush
+		if err := flush(); err != nil {
+			writeMessage(e, fmt.Sprintf("flush error: %v", err))
+		} else {
+			writeMessage(e, "log_writer flushed")
+		}
 	case tcell.KeyRune:
 		e.Type(ev.Rune())
 	case tcell.KeyEnter:
