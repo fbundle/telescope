@@ -187,7 +187,7 @@ func (c *Editor) applyCommandWithoutLock() {
 		c.writeWithoutLock("")
 		return
 	case commandQuit:
-		c.cancel()
+		c.stop()
 		return
 	case commandOverwriteQuit:
 		filename := c.defaultOutputFile
@@ -203,7 +203,7 @@ func (c *Editor) applyCommandWithoutLock() {
 		c.writeWithoutLock("file written into " + filename)
 
 		// exit
-		c.cancel()
+		c.stop()
 		return
 	case commandSearch, commandRegex:
 		if len(args) == 0 {

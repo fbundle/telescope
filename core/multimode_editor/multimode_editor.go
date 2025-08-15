@@ -44,7 +44,7 @@ type state struct {
 }
 
 type Editor struct {
-	cancel            func()
+	stop              func()
 	mu                sync.Mutex
 	e                 *insert_editor.Editor
 	defaultOutputFile string
@@ -217,9 +217,9 @@ func (c *Editor) DeleteLine(count int) {
 	})
 }
 
-func New(cancel func(), e *insert_editor.Editor, defaultOutputFile string) *Editor {
+func New(e *insert_editor.Editor, stop func(), defaultOutputFile string) *Editor {
 	c := &Editor{
-		cancel:            cancel,
+		stop:              stop,
 		mu:                sync.Mutex{},
 		e:                 e,
 		defaultOutputFile: defaultOutputFile,
