@@ -218,14 +218,11 @@ func RunEditor(inputFilename string, logFilename string, multiMode bool) error {
 		}
 	}
 
-	stop := func() {
-		cancel()
-		writeMessage(e, "exiting... ")
-		_ = os.Remove(logFilename)
-		<-loadCtx.Done()
-		sendQuitEvent(s)
-	}
 	if multiMode {
+		stop := func() {
+			cancel()
+			sendQuitEvent(s)
+		}
 		e = multimode_editor.New(insertEditor, stop, inputFilename)
 	} else {
 		e = insertEditor
@@ -262,6 +259,9 @@ func RunEditor(inputFilename string, logFilename string, multiMode bool) error {
 		switch event := event.(type) {
 		case quitEvent, *quitEvent:
 			// quit from insert_editor - delete log
+			writeMessage(e, "exiting... ")
+			_ = os.Remove(logFilename)
+			<-loadCtx.Done()
 			return nil
 		case *tcell.EventMouse:
 			handleEditorMouse(e, event)
