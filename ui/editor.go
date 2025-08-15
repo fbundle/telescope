@@ -189,7 +189,6 @@ func RunEditor(inputFilename string, logFilename string, multiMode bool) error {
 		return err
 	}
 	defer s.Fini()
-	defer s.Clear() // last thing to do - clear screen, delete log_writer file
 
 	s.EnableMouse()
 
@@ -273,7 +272,6 @@ func RunEditor(inputFilename string, logFilename string, multiMode bool) error {
 			// nothing
 		}
 	}
-	return nil
 }
 
 func handleEditorMouse(e editor.Editor, ev *tcell.EventMouse) {
