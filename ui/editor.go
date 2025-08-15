@@ -14,6 +14,8 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+var interruptError = errors.New("interrupted")
+
 func getModeAndCommand(m map[string]any) (string, string) {
 	if m == nil {
 		return "", ""
@@ -160,6 +162,22 @@ func (e quitEvent) When() time.Time {
 	return e.when
 }
 
+func sendQuitEvent(s tcell.Screen) {
+	now := time.Now()
+	for i := 0; i < 5; i++ {
+		if err := s.PostEvent(quitEvent{when: now}); err != nil {
+			if errors.Is(err, tcell.ErrEventQFull) {
+				time.Sleep(100 * time.Millisecond) // retry stopping
+				continue
+			}
+			side_channel.Panic(err)
+			return
+		} else {
+			return
+		}
+	}
+}
+
 func RunEditor(inputFilename string, logFilename string, multiMode bool) error {
 	s, err := tcell.NewScreen()
 	if err != nil {
@@ -169,23 +187,14 @@ func RunEditor(inputFilename string, logFilename string, multiMode bool) error {
 		return err
 	}
 	defer s.Fini()
+	defer s.Clear() // last thing to do - clear screen, delete log_writer file
 
 	s.EnableMouse()
 
 	ctx, cancel := context.WithCancel(context.Background())
-	stop := func() {
-		cancel()
-		var err error
-		for i := 0; i < 5; i++ {
-			err = s.PostEvent(quitEvent{when: time.Now()})
-			if err == nil {
-				break
-			}
-			if !errors.Is(err, tcell.ErrEventQFull) {
-				side_channel.Panic(err)
-			}
-			time.Sleep(100 * time.Millisecond) // retry stopping
-		}
+	defer cancel()
+	sendStopSignal := func() {
+		sendQuitEvent(s)
 	}
 
 	width, height := s.Size()
@@ -194,13 +203,19 @@ func RunEditor(inputFilename string, logFilename string, multiMode bool) error {
 	// make editor
 	insertEditor, loadCtx, finalizer, err := makeInsertEditor(ctx, inputFilename, logFilename, width, height-1)
 	if err != nil {
-		cancel()
 		return err
 	}
 	defer finalizer.Close()
+	flush := func() {
+		if err := finalizer.Flush(); err != nil {
+			writeMessage(e, fmt.Sprintf("flush error: %v", err))
+		} else {
+			writeMessage(e, "log_writer flushed")
+		}
+	}
 
 	if multiMode {
-		e = multimode_editor.New(stop, insertEditor, inputFilename)
+		e = multimode_editor.New(sendStopSignal, insertEditor, inputFilename)
 	} else {
 		e = insertEditor
 	}
@@ -225,28 +240,31 @@ func RunEditor(inputFilename string, logFilename string, multiMode bool) error {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				err := finalizer.Flush()
-				if err != nil {
-					writeMessage(e, fmt.Sprintf("flush error: %v", err))
-				} else {
-					writeMessage(e, "log_writer flushed")
-				}
+				flush()
 			}
 		}
 	}()
 
 	// event loop
-	running := true
-	for running {
+	for {
 		event := s.PollEvent()
 		switch event := event.(type) {
 		case quitEvent, *quitEvent:
-			// quit from insert_editor
-			running = false
+			// quit from insert_editor - delete log
+			writeMessage(e, "exiting... ")
+			_ = os.Remove(logFilename)
+			<-loadCtx.Done()
+			return nil
 		case *tcell.EventMouse:
 			handleEditorMouse(e, event)
 		case *tcell.EventKey:
-			handleEditorKey(e, event, finalizer.Flush)
+			if event.Key() == tcell.KeyCtrlC {
+				return interruptError
+			} else if event.Key() == tcell.KeyCtrlS {
+				flush()
+			} else {
+				handleEditorKey(e, event)
+			}
 
 		case *tcell.EventResize:
 			s.Sync()
@@ -256,15 +274,6 @@ func RunEditor(inputFilename string, logFilename string, multiMode bool) error {
 			// nothing
 		}
 	}
-
-	// we have to cancel here first, then wait for a while before exiting
-	// since exiting will close all the files; waiting time is necessary for all background tasks to stop reading files
-	writeMessage(e, "exiting... ")
-	cancel()
-	<-loadCtx.Done() // wait for load context then exit, exec deferred closer function
-
-	s.Clear() // last thing to do - clear screen, delete log_writer file
-	_ = os.Remove(logFilename)
 	return nil
 }
 
@@ -305,15 +314,8 @@ func handleEditorMouse(e editor.Editor, ev *tcell.EventMouse) {
 	}
 }
 
-func handleEditorKey(e editor.Editor, ev *tcell.EventKey, flush func() error) {
+func handleEditorKey(e editor.Editor, ev *tcell.EventKey) {
 	switch ev.Key() {
-	case tcell.KeyCtrlS:
-		// Ctrl+S to flush
-		if err := flush(); err != nil {
-			writeMessage(e, fmt.Sprintf("flush error: %v", err))
-		} else {
-			writeMessage(e, "log_writer flushed")
-		}
 	case tcell.KeyRune:
 		e.Type(ev.Rune())
 	case tcell.KeyEnter:
