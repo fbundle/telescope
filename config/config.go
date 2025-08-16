@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-const VERSION = "0.1.8"
+const VERSION = "0.1.8a"
 
 const HELP = `
 Usage: "telescope [option] file [logfile]"
