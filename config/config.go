@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"telescope/util/atomic_util"
@@ -74,6 +75,11 @@ type Config struct {
 	TMP_DIR                    string
 	SCROLL_SPEED               int
 	LOAD_ESCAPE_INTERVAL       time.Duration
+}
+
+func (c Config) String() string {
+	b, _ := json.Marshal(c)
+	return string(b)
 }
 
 var config *atomic_util.Once[Config] = atomic_util.NewOnce[Config]()

@@ -6,7 +6,8 @@ import (
 
 func NewOnce[T any]() *Once[T] {
 	return &Once[T]{
-		mu: sync.Mutex{},
+		mu:   sync.Mutex{},
+		full: false,
 	}
 }
 
@@ -20,7 +21,7 @@ func (o *Once[T]) LoadOrStore(store func() T) T {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 	if !o.full {
-		o.v = store()
+		o.v, o.full = store(), true
 	}
 	return o.v
 }
