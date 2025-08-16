@@ -109,6 +109,56 @@ func (e *Editor) Status(update func(status editor.Status) editor.Status) {
 	})
 }
 
+func (e *Editor) load(ctx context.Context, reader buffer.Reader, loadDone func()) {
+	t0 := time.Now()
+	defer loadDone()
+	defer e.lockRender(func() {
+		totalTime := time.Since(t0)
+		e.status.Background = ""
+		select {
+		case <-ctx.Done():
+			e.status.Message = fmt.Sprintf(
+				"loading was cancelled after %d seconds",
+				int(totalTime.Seconds()),
+			)
+		default:
+			e.status.Message = fmt.Sprintf(
+				"loaded for %d seconds",
+				int(totalTime.Seconds()),
+			)
+		}
+	})
+	if reader == nil {
+		return // nothing to load
+	}
+
+	loader := newLoader(reader.Len())
+
+	lastPoll := time.Now()
+	for offset := range text.IndexFile(reader) {
+		now := time.Now()
+		if now.Sub(lastPoll) >= config.Load().LOAD_ESCAPE_INTERVAL {
+			lastPoll = now
+			if !pollCtx(ctx) {
+				return
+			}
+		}
+		e.lock(func() {
+			e.text.Update(func(t text.Text) text.Text {
+				return t.Append(text.MakeLineFromOffset(offset))
+			})
+			if loader.set(offset) {
+				e.status.Background = fmt.Sprintf(
+					"loading %d/%d (%d%%)",
+					loader.loadedSize, loader.totalSize, loader.lastRenderPercentage,
+				)
+				e.renderWithoutLock()
+			}
+		})
+	}
+
+}
+
 func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Context, error) {
 	loadCtx, loadDone := context.WithCancel(context.Background())
 	var err error = nil
@@ -119,56 +169,9 @@ func (e *Editor) Load(ctx context.Context, reader buffer.Reader) (context.Contex
 			return
 		}
 		e.text = hist.New(text.New(reader))
+		// load file asynchronously
+		go e.load(ctx, reader, loadDone)
 		e.status.Background = "loading started"
-		go func() { // load file asynchronously
-			defer loadDone()
-			if reader == nil {
-				return // nothing to load
-			}
-
-			t0 := time.Now()
-			loader := newLoader(reader.Len())
-
-			lastPoll := time.Now()
-			for offset := range text.IndexFile(reader) {
-				now := time.Now()
-				if now.Sub(lastPoll) >= config.Load().LOAD_ESCAPE_INTERVAL {
-					lastPoll = now
-					if !pollCtx(ctx) {
-						return
-					}
-				}
-				e.lock(func() {
-					e.text.Update(func(t text.Text) text.Text {
-						return t.Append(text.MakeLineFromOffset(offset))
-					})
-					if loader.set(offset) {
-						e.status.Background = fmt.Sprintf(
-							"loading %d/%d (%d%%)",
-							loader.loadedSize, loader.totalSize, loader.lastRenderPercentage,
-						)
-						e.renderWithoutLock()
-					}
-				})
-			}
-
-			e.lockRender(func() {
-				totalTime := time.Since(t0)
-				e.status.Background = ""
-				select {
-				case <-ctx.Done():
-					e.status.Message = fmt.Sprintf(
-						"loading was cancelled after %d seconds",
-						int(totalTime.Seconds()),
-					)
-				default:
-					e.status.Message = fmt.Sprintf(
-						"loaded for %d seconds",
-						int(totalTime.Seconds()),
-					)
-				}
-			})
-		}()
 	})
 
 	return loadCtx, err
