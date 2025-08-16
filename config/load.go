@@ -2,12 +2,17 @@ package config
 
 import (
 	"os"
+	"runtime"
 	"strconv"
+	"telescope/util/side_channel"
 	"time"
 )
 
 func loadConfVar[T any](varname string, parser func(string) (T, error), defaultVal T) T {
-	// return defaultVal
+	if runtime.GOOS != "linux" {
+		side_channel.WriteLn("disable conf_var from env since GOOS is not linux")
+		return defaultVal
+	}
 
 	s, ok := os.LookupEnv("TELESCOPE_" + varname)
 	if !ok {
