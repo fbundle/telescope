@@ -7,6 +7,8 @@ import (
 )
 
 func loadConfVar[T any](varname string, parser func(string) (T, error), defaultVal T) T {
+	return defaultVal
+
 	s := os.Getenv(varname)
 	if len(s) == 0 {
 		return defaultVal
