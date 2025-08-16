@@ -1,10 +1,7 @@
 package config
 
 import (
-	"os"
-	"path/filepath"
-	"sync"
-	"telescope/util/side_channel"
+	"telescope/util/atomic_util"
 	"time"
 )
 
@@ -76,35 +73,8 @@ type Config struct {
 	LOAD_ESCAPE_INTERVAL       time.Duration
 }
 
-var mu sync.Mutex = sync.Mutex{}
-var config *Config = nil
+var config *atomic_util.Once[Config] = atomic_util.NewOnce[Config]()
 
-func Load() *Config {
-	mu.Lock()
-	defer mu.Unlock()
-	if config == nil {
-		tempDir := os.TempDir()
-		side_channel.WriteLn("temp dir:", tempDir)
-		debug := len(os.Getenv("DEBUG")) > 0
-		// TODO - export these into environment variables
-		config = &Config{
-			DEBUG:                     debug,
-			VERSION:                   VERSION,
-			HELP:                      HELP,
-			LOG_AUTOFLUSH_INTERVAL:    60 * time.Second,
-			LOADING_PROGRESS_INTERVAL: 100 * time.Millisecond,
-			// SERIALIZER_VERSION:         BINARY_SERIALIZER,
-			SERIALIZER_VERSION:         HUMAN_READABLE_SERIALIZER, // TODO - update serializer and enable binary version
-			INITIAL_SERIALIZER_VERSION: HUMAN_READABLE_SERIALIZER,
-			MAXSIZE_HISTORY_STACK:      1024,
-			VIEW_CHANNEL_SIZE:          64,
-			MAX_SEACH_TIME:             5 * time.Second,
-			TAB_SIZE:                   2,
-			LOG_DIR:                    filepath.Join(tempDir, "telescope", "log"),
-			TMP_DIR:                    filepath.Join(tempDir, "telescope", "tmp"),
-			SCROLL_SPEED:               3,
-			LOAD_ESCAPE_INTERVAL:       100 * time.Millisecond,
-		}
-	}
-	return config
+func Load() Config {
+	return config.LoadOrStore(loadConfig)
 }
