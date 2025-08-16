@@ -43,10 +43,10 @@
 - added basic mouse support: scroll up, scroll down, left click
 - update interface
 - added `gotoAndFixWithoutLock` to absolute position
+- improve robustness, now, interrupt like `SIGINT` (`Ctrl+C`) will preserve the log to restore later
 
 # TODO
 
-- make main loop logic more robust
 - added cache for file loading
 - optimize size of `core.text.Line` to a single `int64`
 - make binary serializer works with delete lines and insert lines
