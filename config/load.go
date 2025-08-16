@@ -7,10 +7,10 @@ import (
 )
 
 func loadConfVar[T any](varname string, parser func(string) (T, error), defaultVal T) T {
-	return defaultVal
+	// return defaultVal
 
-	s := os.Getenv(varname)
-	if len(s) == 0 {
+	s, ok := os.LookupEnv("TELESCOPE_" + varname)
+	if !ok {
 		return defaultVal
 	}
 	val, err := parser(s)
