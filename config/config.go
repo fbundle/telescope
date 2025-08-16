@@ -1,9 +1,10 @@
 package config
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
-	"sync"
+	"telescope/util/atomic_util"
 	"telescope/util/side_channel"
 	"time"
 )
@@ -76,35 +77,37 @@ type Config struct {
 	LOAD_ESCAPE_INTERVAL       time.Duration
 }
 
-var mu sync.Mutex = sync.Mutex{}
-var config *Config = nil
+func (c Config) String() string {
+	b, _ := json.Marshal(c)
+	return string(b)
+}
 
-func Load() *Config {
-	mu.Lock()
-	defer mu.Unlock()
-	if config == nil {
+var config *atomic_util.Once[Config] = atomic_util.NewOnce[Config]()
+
+func Load() Config {
+	return config.LoadOrStore(func() Config {
 		tempDir := os.TempDir()
 		side_channel.WriteLn("temp dir:", tempDir)
-		debug := len(os.Getenv("DEBUG")) > 0
-		// TODO - export these into environment variables
-		config = &Config{
-			DEBUG:                     debug,
-			VERSION:                   VERSION,
-			HELP:                      HELP,
-			LOG_AUTOFLUSH_INTERVAL:    60 * time.Second,
-			LOADING_PROGRESS_INTERVAL: 100 * time.Millisecond,
-			// SERIALIZER_VERSION:         BINARY_SERIALIZER,
-			SERIALIZER_VERSION:         HUMAN_READABLE_SERIALIZER, // TODO - update serializer and enable binary version
+		defaultLogDir := filepath.Join(tempDir, "telescope", "log")
+		defaultTmpDir := filepath.Join(tempDir, "telescope", "tmp")
+		config := Config{
+			DEBUG:                      loadConfVarBool("DEBUG", false),
+			VERSION:                    VERSION,
+			HELP:                       HELP,
+			LOG_AUTOFLUSH_INTERVAL:     LoadConfVarDuration("LOG_AUTOFLUSH_INTERVAL", 5*time.Second),
+			LOADING_PROGRESS_INTERVAL:  LoadConfVarDuration("LOADING_PROGRESS_INTERVAL", 100*time.Millisecond),
+			SERIALIZER_VERSION:         HUMAN_READABLE_SERIALIZER,
 			INITIAL_SERIALIZER_VERSION: HUMAN_READABLE_SERIALIZER,
-			MAXSIZE_HISTORY_STACK:      1024,
-			VIEW_CHANNEL_SIZE:          64,
-			MAX_SEACH_TIME:             5 * time.Second,
-			TAB_SIZE:                   2,
-			LOG_DIR:                    filepath.Join(tempDir, "telescope", "log"),
-			TMP_DIR:                    filepath.Join(tempDir, "telescope", "tmp"),
-			SCROLL_SPEED:               3,
-			LOAD_ESCAPE_INTERVAL:       100 * time.Millisecond,
+			MAXSIZE_HISTORY_STACK:      loadConfVarInt("MAXSIZE_HISTORY_STACK", 128),
+			VIEW_CHANNEL_SIZE:          loadConfVarInt("VIEW_CHANNEL_SIZE", 16),
+			MAX_SEACH_TIME:             LoadConfVarDuration("MAX_SEACH_TIME", 5*time.Second),
+			TAB_SIZE:                   loadConfVarInt("TAB_SIZE", 2),
+			LOG_DIR:                    loadConfVarString("LOG_DIR", defaultLogDir),
+			TMP_DIR:                    loadConfVarString("TMP_DIR", defaultTmpDir),
+			SCROLL_SPEED:               loadConfVarInt("SCROLL_SPEED", 3),
+			LOAD_ESCAPE_INTERVAL:       LoadConfVarDuration("LOAD_ESCAPE_INTERVAL", 100*time.Millisecond),
 		}
-	}
-	return config
+		side_channel.WriteLn("config:", config)
+		return config
+	})
 }

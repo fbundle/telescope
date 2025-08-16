@@ -2,17 +2,17 @@ package subsciber_pool
 
 import (
 	"sync/atomic"
-	"telescope/util/sync_map"
+	"telescope/util/sync_util"
 )
 
 type Pool[T any] struct {
-	handlerMap *sync_map.Map[uint64, T]
+	handlerMap *sync_util.Map[uint64, T]
 	lastKey    uint64
 }
 
 func New[T any]() *Pool[T] {
 	return &Pool[T]{
-		handlerMap: &sync_map.Map[uint64, T]{},
+		handlerMap: &sync_util.Map[uint64, T]{},
 		lastKey:    0,
 	}
 }
