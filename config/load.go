@@ -41,7 +41,7 @@ func loadConfig() Config {
 	side_channel.WriteLn("temp dir:", tempDir)
 	defaultLogDir := filepath.Join(tempDir, "telescope", "log")
 	defaultTmpDir := filepath.Join(tempDir, "telescope", "tmp")
-	return Config{
+	config := Config{
 		DEBUG:                      loadConfVarBool("DEBUG", false),
 		VERSION:                    VERSION,
 		HELP:                       HELP,
@@ -58,5 +58,6 @@ func loadConfig() Config {
 		SCROLL_SPEED:               loadConfVarInt("SCROLL_SPEED", 3),
 		LOAD_ESCAPE_INTERVAL:       LoadConfVarDuration("LOAD_ESCAPE_INTERVAL", 100*time.Millisecond),
 	}
-
+	side_channel.WriteLn("config:", config)
+	return config
 }
