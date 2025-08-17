@@ -1,4 +1,4 @@
-package sync_map
+package sync_util
 
 import "sync"
 
