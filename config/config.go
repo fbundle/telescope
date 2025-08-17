@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
-	"telescope/util/atomic_util"
+	"sync"
 	"telescope/util/file"
 	"telescope/util/side_channel"
 	"time"
@@ -83,7 +83,8 @@ func (c Config) String() string {
 	return string(b)
 }
 
-var config *atomic_util.Once[*Config] = atomic_util.NewOnce[*Config]()
+var mu sync.Mutex = sync.Mutex{}
+var config *Config = nil
 
 func getConfigPath() string {
 	home, err := os.UserHomeDir()
@@ -94,59 +95,66 @@ func getConfigPath() string {
 	return filepath.Join(home, ".telescope", "config.json")
 }
 
+func getConfig() *Config {
+	configPath := getConfigPath()
+	c := &Config{}
+	if !file.NonEmpty(configPath) {
+		c = &Config{
+			DEBUG:                      false,
+			VERSION:                    VERSION,
+			HELP:                       HELP,
+			LOG_AUTOFLUSH_INTERVAL:     5 * time.Second,
+			LOADING_PROGRESS_INTERVAL:  100 * time.Millisecond,
+			SERIALIZER_VERSION:         HUMAN_READABLE_SERIALIZER,
+			INITIAL_SERIALIZER_VERSION: HUMAN_READABLE_SERIALIZER,
+			MAXSIZE_HISTORY_STACK:      128,
+			VIEW_CHANNEL_SIZE:          16,
+			MAX_SEACH_TIME:             5 * time.Second,
+			TAB_SIZE:                   2,
+			LOG_DIR:                    "",
+			TMP_DIR:                    "",
+			SCROLL_SPEED:               3,
+			LOAD_ESCAPE_INTERVAL:       100 * time.Millisecond,
+		}
+
+		b, err := json.Marshal(c)
+		if err != nil {
+			side_channel.Panic(err)
+			return nil
+		}
+		err = file.WriteFile(configPath, b, 0600)
+		if err != nil {
+			side_channel.Panic(err)
+			return nil
+		}
+	}
+
+	b, err := file.ReadFile(configPath)
+	if err != nil {
+		side_channel.Panic(err)
+		return nil
+	}
+	err = json.Unmarshal(b, &c)
+	if err != nil {
+		side_channel.Panic(err)
+		return nil
+	}
+
+	tempDir := os.TempDir()
+	defaultLogDir := filepath.Join(tempDir, "telescope", "log")
+	defaultTmpDir := filepath.Join(tempDir, "telescope", "tmp")
+	c.LOG_DIR = defaultLogDir
+	c.TMP_DIR = defaultTmpDir
+
+	side_channel.WriteLn("config", c)
+	return c
+}
+
 func Load() *Config {
-	return config.LoadOrStore(func() *Config {
-		configPath := getConfigPath()
-		c := &Config{}
-		if !file.NonEmpty(configPath) {
-			c = &Config{
-				DEBUG:                      false,
-				VERSION:                    VERSION,
-				HELP:                       HELP,
-				LOG_AUTOFLUSH_INTERVAL:     5 * time.Second,
-				LOADING_PROGRESS_INTERVAL:  100 * time.Millisecond,
-				SERIALIZER_VERSION:         HUMAN_READABLE_SERIALIZER,
-				INITIAL_SERIALIZER_VERSION: HUMAN_READABLE_SERIALIZER,
-				MAXSIZE_HISTORY_STACK:      128,
-				VIEW_CHANNEL_SIZE:          16,
-				MAX_SEACH_TIME:             5 * time.Second,
-				TAB_SIZE:                   2,
-				LOG_DIR:                    "",
-				TMP_DIR:                    "",
-				SCROLL_SPEED:               3,
-				LOAD_ESCAPE_INTERVAL:       100 * time.Millisecond,
-			}
-
-			b, err := json.Marshal(c)
-			if err != nil {
-				side_channel.Panic(err)
-				return nil
-			}
-			err = file.WriteFile(configPath, b, 0600)
-			if err != nil {
-				side_channel.Panic(err)
-				return nil
-			}
-		}
-
-		b, err := file.ReadFile(configPath)
-		if err != nil {
-			side_channel.Panic(err)
-			return nil
-		}
-		err = json.Unmarshal(b, &c)
-		if err != nil {
-			side_channel.Panic(err)
-			return nil
-		}
-
-		tempDir := os.TempDir()
-		defaultLogDir := filepath.Join(tempDir, "telescope", "log")
-		defaultTmpDir := filepath.Join(tempDir, "telescope", "tmp")
-		c.LOG_DIR = defaultLogDir
-		c.TMP_DIR = defaultTmpDir
-
-		side_channel.WriteLn("config", c)
-		return c
-	})
+	mu.Lock()
+	defer mu.Unlock()
+	if config == nil {
+		config = getConfig()
+	}
+	return config
 }
