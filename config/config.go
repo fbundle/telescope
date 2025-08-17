@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"sync"
@@ -76,6 +77,11 @@ type Config struct {
 	LOAD_ESCAPE_INTERVAL       time.Duration
 }
 
+func (c Config) String() string {
+	b, _ := json.Marshal(c)
+	return string(b)
+}
+
 var mu sync.Mutex = sync.Mutex{}
 var config *Config = nil
 
@@ -105,6 +111,7 @@ func Load() *Config {
 			SCROLL_SPEED:               3,
 			LOAD_ESCAPE_INTERVAL:       100 * time.Millisecond,
 		}
+		side_channel.WriteLn("config:", config.String())
 	}
 	return config
 }
