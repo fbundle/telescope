@@ -92,7 +92,6 @@ func Load() *Config {
 		tempDir := os.TempDir()
 		defaultLogDir := filepath.Join(tempDir, "telescope", "log")
 		defaultTmpDir := filepath.Join(tempDir, "telescope", "tmp")
-		side_channel.WriteLn("temp dir:", tempDir)
 		debug := len(os.Getenv("DEBUG")) > 0
 		// TODO - export these into environment variables
 		config = &Config{
