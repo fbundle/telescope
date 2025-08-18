@@ -85,33 +85,38 @@ func (c Config) String() string {
 var mu sync.Mutex = sync.Mutex{}
 var config *Config = nil
 
+func loadDefaultConfig() *Config {
+	tempDir := os.TempDir()
+	defaultLogDir := filepath.Join(tempDir, "telescope", "log")
+	defaultTmpDir := filepath.Join(tempDir, "telescope", "tmp")
+	debug := len(os.Getenv("DEBUG")) > 0
+	// TODO - export these into environment variables
+	config := &Config{
+		DEBUG:                      debug,
+		VERSION:                    VERSION,
+		HELP:                       HELP,
+		LOG_AUTOFLUSH_INTERVAL:     60 * time.Second,
+		LOADING_PROGRESS_INTERVAL:  100 * time.Millisecond,
+		SERIALIZER_VERSION:         HUMAN_READABLE_SERIALIZER, // TODO - update serializer and enable binary version
+		INITIAL_SERIALIZER_VERSION: HUMAN_READABLE_SERIALIZER,
+		MAXSIZE_HISTORY_STACK:      1024,
+		VIEW_CHANNEL_SIZE:          64,
+		MAX_SEACH_TIME:             5 * time.Second,
+		TAB_SIZE:                   2,
+		LOG_DIR:                    defaultLogDir,
+		TMP_DIR:                    defaultTmpDir,
+		SCROLL_SPEED:               3,
+		LOAD_ESCAPE_INTERVAL:       100 * time.Millisecond,
+	}
+	side_channel.WriteLn("config:", config.String())
+	return config
+}
+
 func Load() *Config {
 	mu.Lock()
 	defer mu.Unlock()
 	if config == nil {
-		tempDir := os.TempDir()
-		defaultLogDir := filepath.Join(tempDir, "telescope", "log")
-		defaultTmpDir := filepath.Join(tempDir, "telescope", "tmp")
-		debug := len(os.Getenv("DEBUG")) > 0
-		// TODO - export these into environment variables
-		config = &Config{
-			DEBUG:                      debug,
-			VERSION:                    VERSION,
-			HELP:                       HELP,
-			LOG_AUTOFLUSH_INTERVAL:     60 * time.Second,
-			LOADING_PROGRESS_INTERVAL:  100 * time.Millisecond,
-			SERIALIZER_VERSION:         HUMAN_READABLE_SERIALIZER, // TODO - update serializer and enable binary version
-			INITIAL_SERIALIZER_VERSION: HUMAN_READABLE_SERIALIZER,
-			MAXSIZE_HISTORY_STACK:      1024,
-			VIEW_CHANNEL_SIZE:          64,
-			MAX_SEACH_TIME:             5 * time.Second,
-			TAB_SIZE:                   2,
-			LOG_DIR:                    defaultLogDir,
-			TMP_DIR:                    defaultTmpDir,
-			SCROLL_SPEED:               3,
-			LOAD_ESCAPE_INTERVAL:       100 * time.Millisecond,
-		}
-		side_channel.WriteLn("config:", config.String())
+		config = loadDefaultConfig()
 	}
 	return config
 }
