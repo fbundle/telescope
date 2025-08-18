@@ -10,6 +10,7 @@ import (
 	"strings"
 	"telescope/config"
 	"telescope/ui"
+	"telescope/util/file_util"
 	"telescope/util/side_channel"
 )
 
@@ -108,19 +109,8 @@ func promptYesNo(prompt string, defaultOption bool) bool {
 	}
 }
 
-func fileNonEmpty(filename string) bool {
-	info, err := os.Stat(filename)
-	if err != nil {
-		return false
-	}
-	if !info.Mode().IsRegular() {
-		return false
-	}
-	return info.Size() > 0
-}
-
 func promptDeleteLogFile(args programArgs) bool {
-	if fileNonEmpty(args.secondFilename) {
+	if file_util.NonEmpty(args.secondFilename) {
 		ok := promptYesNo(fmt.Sprintf("log_writer file exists (%s), delete it?", args.secondFilename), false)
 		if !ok {
 			return false
@@ -135,7 +125,7 @@ func promptDeleteLogFile(args programArgs) bool {
 }
 
 func getDefaultLogFilename(inputFilename string) (firstFilename string, secondFilename string) {
-	if fileNonEmpty(inputFilename) {
+	if file_util.NonEmpty(inputFilename) {
 		firstFilename, _ = filepath.Abs(inputFilename)
 		secondFilename = filepath.Join(config.Load().LOG_DIR, firstFilename)
 	} else {
