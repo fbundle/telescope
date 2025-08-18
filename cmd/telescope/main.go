@@ -99,12 +99,13 @@ func promptYesNo(prompt string, defaultOption bool) bool {
 		if len(input) == 0 {
 			return defaultOption
 		}
-		if input == "y" || input == "yes" {
+		switch input {
+		case "y", "yes":
 			return true
-		} else if input == "n" || input == "no" {
+		case "n", "no":
 			return false
-		} else {
-			fmt.Println("Please enter y or n.")
+		default:
+			return false
 		}
 	}
 }
