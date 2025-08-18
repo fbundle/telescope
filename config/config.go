@@ -141,10 +141,8 @@ func getConfig() *Config {
 	}
 
 	tempDir := os.TempDir()
-	defaultLogDir := filepath.Join(tempDir, "telescope", "log")
-	defaultTmpDir := filepath.Join(tempDir, "telescope", "tmp")
-	c.LOG_DIR = defaultLogDir
-	c.TMP_DIR = defaultTmpDir
+	c.LOG_DIR = filepath.Join(tempDir, "telescope", "log")
+	c.TMP_DIR = filepath.Join(tempDir, "telescope", "tmp")
 
 	side_channel.WriteLn("config", c)
 	return c
