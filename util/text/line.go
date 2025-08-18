@@ -4,13 +4,13 @@ import "telescope/util/buffer"
 
 const delim byte = '\n'
 
-// Line - if offset >= 0, this is a file else this is a []rune buffer
+// Line - if offset >= 0, this is a file else this is a []byte buffer
 type Line struct {
 	offset int64   // 8 bytes
-	data   *[]rune // 8 bytes on 64-bit system
+	data   *[]byte // 8 bytes on 64-bit system
 }
 
-func MakeLineFromData(data []rune) Line {
+func MakeLineFromData(data []byte) Line {
 	return Line{
 		offset: -1,
 		data:   &data,
@@ -28,7 +28,7 @@ func (l Line) Offset() int64 {
 	return l.offset
 }
 
-func (l Line) Repr(reader buffer.Reader) []rune {
+func (l Line) Repr(reader buffer.Reader) []byte {
 	if l.offset < 0 {
 		// in-memory
 		return *l.data
@@ -42,6 +42,6 @@ func (l Line) Repr(reader buffer.Reader) []rune {
 			}
 			buf = append(buf, b)
 		}
-		return []rune(string(buf))
+		return buf
 	}
 }

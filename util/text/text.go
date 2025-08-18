@@ -19,20 +19,20 @@ type Text struct {
 }
 
 func (t Text) Get(i int) []rune {
-	return t.lines.Get(i).Repr(t.reader)
+	return bytesToRunes(t.lines.Get(i).Repr(t.reader))
 }
 
 func (t Text) Set(i int, val []rune) Text {
 	return Text{
 		reader: t.reader,
-		lines:  t.lines.Set(i, MakeLineFromData(val)),
+		lines:  t.lines.Set(i, MakeLineFromData(runesToBytes(val))),
 	}
 }
 
 func (t Text) Ins(i int, val []rune) Text {
 	return Text{
 		reader: t.reader,
-		lines:  t.lines.Ins(i, MakeLineFromData(val)),
+		lines:  t.lines.Ins(i, MakeLineFromData(runesToBytes(val))),
 	}
 }
 
@@ -52,7 +52,7 @@ func (t Text) Del(i int) Text {
 
 func (t Text) Iter(f func(i int, val []rune) bool) {
 	t.lines.Iter(func(i int, l Line) bool {
-		return f(i, l.Repr(t.reader))
+		return f(i, bytesToRunes(l.Repr(t.reader)))
 	})
 }
 
@@ -62,8 +62,8 @@ func (t Text) Len() int {
 
 func (t Text) Repr() [][]rune {
 	text := make([][]rune, 0, t.lines.Len())
-	for _, line := range t.lines.Iter {
-		text = append(text, line.Repr(t.reader))
+	for _, l := range t.lines.Iter {
+		text = append(text, bytesToRunes(l.Repr(t.reader)))
 	}
 	return text
 }
