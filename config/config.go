@@ -75,6 +75,7 @@ type Config struct {
 	TMP_DIR                    string
 	SCROLL_SPEED               int
 	LOAD_ESCAPE_INTERVAL       time.Duration
+	BYTES_MODE_LINE_SIZE       int
 }
 
 func (c Config) String() string {
@@ -107,6 +108,7 @@ func loadDefaultConfig() *Config {
 		TMP_DIR:                    defaultTmpDir,
 		SCROLL_SPEED:               3,
 		LOAD_ESCAPE_INTERVAL:       100 * time.Millisecond,
+		BYTES_MODE_LINE_SIZE:       0,
 	}
 	side_channel.WriteLn("config:", config.String())
 	return config
