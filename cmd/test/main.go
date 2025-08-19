@@ -4,7 +4,8 @@ import (
 	"context"
 	"os/signal"
 	"syscall"
-	"telescope/util/unbounded"
+
+	"github.com/fbundle/go_util/pkg/unbounded"
 )
 
 func main() {
