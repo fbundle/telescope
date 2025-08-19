@@ -7,10 +7,11 @@ import (
 	"sync"
 	"telescope/config"
 	"telescope/core/editor"
-	"telescope/util/hist"
-	"github.com/fbundle/go_util/pkg/subsciber_pool"
-	"telescope/util/text"
+	"telescope/core/util/hist"
+	"telescope/core/util/text"
 	"time"
+
+	"github.com/fbundle/go_util/pkg/subsciber_pool"
 
 	"github.com/fbundle/go_util/pkg/buffer"
 )

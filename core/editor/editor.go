@@ -2,7 +2,7 @@ package editor
 
 import (
 	"context"
-	"telescope/util/text"
+	"telescope/core/util/text"
 
 	"github.com/fbundle/go_util/pkg/buffer"
 )

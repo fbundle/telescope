@@ -7,7 +7,7 @@ import (
 	"telescope/config"
 	"telescope/core/editor"
 	"telescope/core/insert_editor"
-	"telescope/util/text"
+	"telescope/core/util/text"
 
 	"github.com/fbundle/go_util/pkg/side_channel"
 

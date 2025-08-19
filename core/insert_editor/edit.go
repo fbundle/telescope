@@ -3,7 +3,7 @@ package insert_editor
 import (
 	"slices"
 	"telescope/core/editor"
-	"telescope/util/text"
+	"telescope/core/util/text"
 
 	"github.com/fbundle/go_util/pkg/side_channel"
 )

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"telescope/config"
-	"telescope/util/text"
+	"telescope/core/util/text"
 	"time"
 
 	"github.com/fbundle/go_util/pkg/side_channel"

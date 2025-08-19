@@ -2,7 +2,7 @@ package insert_editor
 
 import (
 	"telescope/core/editor"
-	"telescope/util/text"
+	"telescope/core/util/text"
 )
 
 func (e *Editor) gotoAndFixWithoutLock(row int, col int) {
