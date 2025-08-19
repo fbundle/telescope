@@ -10,8 +10,9 @@ import (
 	"strings"
 	"telescope/config"
 	"telescope/ui"
-	"telescope/util/file_util"
 	"telescope/util/side_channel"
+
+	"github.com/fbundle/go_util/pkg/file_util"
 )
 
 func printHelp() {

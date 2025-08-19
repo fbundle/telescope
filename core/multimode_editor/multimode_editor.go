@@ -7,9 +7,10 @@ import (
 	"telescope/config"
 	"telescope/core/editor"
 	"telescope/core/insert_editor"
-	"telescope/util/buffer"
 	"telescope/util/side_channel"
 	"telescope/util/text"
+
+	"github.com/fbundle/go_util/pkg/buffer"
 )
 
 type Mode = string

@@ -7,11 +7,12 @@ import (
 	"sync"
 	"telescope/config"
 	"telescope/core/editor"
-	"telescope/util/buffer"
 	"telescope/util/hist"
-	"telescope/util/subsciber_pool"
+	"github.com/fbundle/go_util/pkg/subsciber_pool"
 	"telescope/util/text"
 	"time"
+
+	"github.com/fbundle/go_util/pkg/buffer"
 )
 
 type Editor struct {

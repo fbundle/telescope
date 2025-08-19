@@ -2,7 +2,7 @@ package text
 
 import (
 	"iter"
-	"telescope/util/buffer"
+	"github.com/fbundle/go_util/pkg/buffer"
 )
 
 func IndexFile(reader buffer.Reader) iter.Seq[int] {

@@ -1,6 +1,6 @@
 package text
 
-import "telescope/util/buffer"
+import "github.com/fbundle/go_util/pkg/buffer"
 
 const delim byte = '\n'
 

@@ -2,8 +2,9 @@ package editor
 
 import (
 	"context"
-	"telescope/util/buffer"
 	"telescope/util/text"
+
+	"github.com/fbundle/go_util/pkg/buffer"
 )
 
 type Cursor struct {
