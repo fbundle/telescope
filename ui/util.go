@@ -7,7 +7,8 @@ import (
 	"telescope/core/editor"
 	"telescope/core/insert_editor"
 	"telescope/core/log_writer"
-	"telescope/util/side_channel"
+
+	"github.com/fbundle/go_util/pkg/side_channel"
 
 	"github.com/fbundle/go_util/pkg/buffer"
 

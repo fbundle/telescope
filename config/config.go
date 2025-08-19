@@ -5,8 +5,9 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
-	"telescope/util/side_channel"
 	"time"
+
+	"github.com/fbundle/go_util/pkg/side_channel"
 )
 
 const VERSION = "0.1.8a"

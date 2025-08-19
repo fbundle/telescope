@@ -5,7 +5,8 @@ import (
 	"errors"
 	"telescope/config"
 	"telescope/core/editor"
-	"telescope/util/side_channel"
+
+	"github.com/fbundle/go_util/pkg/side_channel"
 )
 
 type Serializer interface {

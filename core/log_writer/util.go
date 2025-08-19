@@ -4,7 +4,8 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
-	"telescope/util/side_channel"
+
+	"github.com/fbundle/go_util/pkg/side_channel"
 )
 
 func uint64ToBytes(x uint64) []byte {

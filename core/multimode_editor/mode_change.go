@@ -6,9 +6,10 @@ import (
 	"strconv"
 	"strings"
 	"telescope/config"
-	"telescope/util/side_channel"
 	"telescope/util/text"
 	"time"
+
+	"github.com/fbundle/go_util/pkg/side_channel"
 )
 
 // all functions resulting in mode change

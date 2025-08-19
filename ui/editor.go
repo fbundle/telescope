@@ -9,8 +9,9 @@ import (
 	"telescope/config"
 	"telescope/core/editor"
 	"telescope/core/multimode_editor"
-	"telescope/util/side_channel"
 	"time"
+
+	"github.com/fbundle/go_util/pkg/side_channel"
 
 	"github.com/gdamore/tcell/v2"
 )

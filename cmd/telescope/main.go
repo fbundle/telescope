@@ -10,7 +10,8 @@ import (
 	"strings"
 	"telescope/config"
 	"telescope/ui"
-	"telescope/util/side_channel"
+
+	"github.com/fbundle/go_util/pkg/side_channel"
 
 	"github.com/fbundle/go_util/pkg/file_util"
 )

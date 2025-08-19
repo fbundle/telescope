@@ -3,8 +3,9 @@ package insert_editor
 import (
 	"slices"
 	"telescope/core/editor"
-	"telescope/util/side_channel"
 	"telescope/util/text"
+
+	"github.com/fbundle/go_util/pkg/side_channel"
 )
 
 func (e *Editor) Type(ch rune) {

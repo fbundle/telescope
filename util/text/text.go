@@ -1,7 +1,7 @@
 package text
 
 import (
-	"telescope/util/side_channel"
+	"github.com/fbundle/go_util/pkg/side_channel"
 
 	"github.com/fbundle/go_util/pkg/buffer"
 	"github.com/fbundle/go_util/pkg/persistent/seq"
