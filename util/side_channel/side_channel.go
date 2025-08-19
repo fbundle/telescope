@@ -9,17 +9,19 @@ import (
 
 var (
 	writeMu    sync.Mutex = sync.Mutex{}
-	writeCount uint64     = 0
+	writeCount bool       = false
 )
 
 func writeln(vs []any, msg string) bool {
-	sideChannelPath := ".telescope_side_channel.log"
+	sideChannelPath, ok := os.LookupEnv("SIDE_CHANNEL_PATH")
+	if !ok {
+		sideChannelPath = ".side_channel.log"
+	}
 	writeMu.Lock()
 	defer writeMu.Unlock()
-	writeCount++
 
-	if writeCount == 1 {
-		// first call
+	if !writeCount { // first call
+		writeCount = true
 		_ = os.Remove(sideChannelPath)
 	}
 
