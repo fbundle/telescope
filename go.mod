@@ -3,7 +3,7 @@ module telescope
 go 1.24.5
 
 require (
-	github.com/fbundle/go_util v0.0.0-20250819040526-6d94096d5b91
+	github.com/fbundle/go_util v0.0.0-20250819041546-bb0501eaaef2
 	github.com/gdamore/tcell/v2 v2.8.1
 	golang.org/x/exp v0.0.0-20250813145105-42675adae3e6
 )

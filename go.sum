@@ -1,5 +1,5 @@
-github.com/fbundle/go_util v0.0.0-20250819040526-6d94096d5b91 h1:KaVS3MdPgdj/Q1ktw9mh8ttVEW6q5yKS1QIaXcbbKSk=
-github.com/fbundle/go_util v0.0.0-20250819040526-6d94096d5b91/go.mod h1:NWqh5OWf5ThK3dIYanzo3SR2X3S2BnbsCFYERYri0u8=
+github.com/fbundle/go_util v0.0.0-20250819041546-bb0501eaaef2 h1:wXkqcxednE4nKi8m6oRbw6ka0TwOPdyABUcxab+DnW8=
+github.com/fbundle/go_util v0.0.0-20250819041546-bb0501eaaef2/go.mod h1:Gf0IYHPyIjQyXrW0Lf2spDD68yaOiotw8oqNj5f7dYI=
 github.com/gdamore/encoding v1.0.1 h1:YzKZckdBL6jVt2Gc+5p82qhrGiqMdG/eNs6Wy0u3Uhw=
 github.com/gdamore/encoding v1.0.1/go.mod h1:0Z0cMFinngz9kS1QfMjCP8TY7em3bZYeeklsSDPivEo=
 github.com/gdamore/tcell/v2 v2.8.1 h1:KPNxyqclpWpWQlPLx6Xui1pMk8S+7+R37h3g07997NU=
