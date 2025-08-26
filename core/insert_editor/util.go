@@ -6,7 +6,7 @@ import (
 	"telescope/config"
 	"time"
 
-	"github.com/fbundle/go_util/pkg/side_channel"
+	"github.com/fbundle/lab_public/lab/go_util/pkg/side_channel"
 )
 
 func insertToSlice[T any](l []T, i int, v T) []T {

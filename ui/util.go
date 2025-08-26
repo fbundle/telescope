@@ -8,9 +8,9 @@ import (
 	"telescope/core/insert_editor"
 	"telescope/core/log_writer"
 
-	"github.com/fbundle/go_util/pkg/side_channel"
+	"github.com/fbundle/lab_public/lab/go_util/pkg/side_channel"
 
-	"github.com/fbundle/go_util/pkg/buffer"
+	"github.com/fbundle/lab_public/lab/go_util/pkg/buffer"
 
 	"golang.org/x/exp/mmap"
 )

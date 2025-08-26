@@ -11,7 +11,7 @@ import (
 	"telescope/core/multimode_editor"
 	"time"
 
-	"github.com/fbundle/go_util/pkg/side_channel"
+	"github.com/fbundle/lab_public/lab/go_util/pkg/side_channel"
 
 	"github.com/gdamore/tcell/v2"
 )

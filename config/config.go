@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fbundle/go_util/pkg/side_channel"
+	"github.com/fbundle/lab_public/lab/go_util/pkg/side_channel"
 )
 
 const VERSION = "0.1.8a"

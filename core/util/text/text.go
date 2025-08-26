@@ -1,10 +1,10 @@
 package text
 
 import (
-	"github.com/fbundle/go_util/pkg/side_channel"
+	"github.com/fbundle/lab_public/lab/go_util/pkg/side_channel"
 
-	"github.com/fbundle/go_util/pkg/buffer"
-	"github.com/fbundle/go_util/pkg/persistent/seq"
+	"github.com/fbundle/lab_public/lab/go_util/pkg/buffer"
+	"github.com/fbundle/lab_public/lab/go_util/pkg/persistent/seq"
 )
 
 func New(reader buffer.Reader) Text {

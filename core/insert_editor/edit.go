@@ -5,7 +5,7 @@ import (
 	"telescope/core/editor"
 	"telescope/core/util/text"
 
-	"github.com/fbundle/go_util/pkg/side_channel"
+	"github.com/fbundle/lab_public/lab/go_util/pkg/side_channel"
 )
 
 func (e *Editor) Type(ch rune) {

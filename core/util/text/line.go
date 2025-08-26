@@ -1,6 +1,6 @@
 package text
 
-import "github.com/fbundle/go_util/pkg/buffer"
+import "github.com/fbundle/lab_public/lab/go_util/pkg/buffer"
 
 const delim byte = '\n'
 

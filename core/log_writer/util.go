@@ -5,7 +5,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/fbundle/go_util/pkg/side_channel"
+	"github.com/fbundle/lab_public/lab/go_util/pkg/side_channel"
 )
 
 func uint64ToBytes(x uint64) []byte {

@@ -5,7 +5,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/fbundle/go_util/pkg/unbounded"
+	"github.com/fbundle/lab_public/lab/go_util/pkg/unbounded"
 )
 
 func main() {

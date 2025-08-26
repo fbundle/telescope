@@ -4,7 +4,7 @@ import (
 	"context"
 	"telescope/core/util/text"
 
-	"github.com/fbundle/go_util/pkg/buffer"
+	"github.com/fbundle/lab_public/lab/go_util/pkg/buffer"
 )
 
 type Cursor struct {
