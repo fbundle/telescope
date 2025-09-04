@@ -139,7 +139,7 @@ func parseCommand(cmd string) (command, []string) {
 	if cmd == ":q" || cmd == ":quit" || cmd == ":q!" {
 		return commandQuit, nil
 	}
-	if cmd == ":w" || cmd == ":write" || cmd == ":wq" {
+	if cmd == ":w" || cmd == ":write" {
 		return commandOverwriteQuit, nil
 	}
 
