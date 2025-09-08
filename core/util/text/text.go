@@ -72,7 +72,7 @@ func (t Text) Repr() [][]rune {
 func Slice(t Text, beg int, end int) Text {
 	return Text{
 		reader: t.reader,
-		lines:  seq.Slice(t.lines, beg, end),
+		lines:  t.lines.Slice(beg, end),
 	}
 }
 

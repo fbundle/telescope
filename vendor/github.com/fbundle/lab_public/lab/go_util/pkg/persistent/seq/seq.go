@@ -56,24 +56,3 @@ func (s Seq[T]) Repr() []T {
 	})
 	return buffer
 }
-
-func Slice[T any](s Seq[T], beg int, end int) Seq[T] {
-	if beg > end {
-		panic("slice out of range")
-		return Empty[T]()
-	}
-	s, _ = s.Split(end)
-	_, s = s.Split(beg)
-	return s
-}
-
-func Merge[T any](ss ...Seq[T]) Seq[T] {
-	if len(ss) == 0 {
-		return Empty[T]()
-	}
-	s := ss[0]
-	for i := 1; i < len(ss); i++ {
-		s = s.Merge(ss[i])
-	}
-	return s
-}
