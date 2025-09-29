@@ -9,9 +9,9 @@ import (
 	"telescope/core/insert_editor"
 	"telescope/core/util/text"
 
-	"github.com/fbundle/lab_public/lab/go_util/pkg/side_channel"
+	"telescope/util/side_channel"
 
-	"github.com/fbundle/lab_public/lab/go_util/pkg/buffer"
+	"telescope/util/buffer"
 )
 
 type Mode = string

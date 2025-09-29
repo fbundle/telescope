@@ -1,10 +1,10 @@
 package text
 
 import (
-	"github.com/fbundle/lab_public/lab/go_util/pkg/side_channel"
+	"telescope/util/side_channel"
 
-	"github.com/fbundle/lab_public/lab/go_util/pkg/buffer"
-	"github.com/fbundle/lab_public/lab/go_util/pkg/persistent/seq"
+	"telescope/util/buffer"
+	"telescope/util/persistent/seq"
 )
 
 func New(reader buffer.Reader) Text {

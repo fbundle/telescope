@@ -11,9 +11,9 @@ import (
 	"telescope/config"
 	"telescope/ui"
 
-	"github.com/fbundle/lab_public/lab/go_util/pkg/side_channel"
+	"telescope/util/side_channel"
 
-	"github.com/fbundle/lab_public/lab/go_util/pkg/file_util"
+	"telescope/util/file_util"
 )
 
 func printHelp() {

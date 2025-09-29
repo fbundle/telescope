@@ -9,7 +9,7 @@ import (
 	"telescope/core/util/text"
 	"time"
 
-	"github.com/fbundle/lab_public/lab/go_util/pkg/side_channel"
+	"telescope/util/side_channel"
 )
 
 // all functions resulting in mode change

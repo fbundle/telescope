@@ -1,7 +1,7 @@
 package text
 
 import (
-	"github.com/fbundle/lab_public/lab/go_util/pkg/persistent/seq"
+	"telescope/util/persistent/seq"
 )
 
 func MakeTextFromLine(lines [][]rune) Text {

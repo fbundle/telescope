@@ -1,11 +1,10 @@
 module telescope
 
-go 1.25.0
+go 1.25.1
 
 require (
-	github.com/fbundle/lab_public/lab/go_util v0.0.0-20250905183237-d2f97bba2875
 	github.com/gdamore/tcell/v2 v2.9.0
-	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b
+	golang.org/x/exp v0.0.0-20250911091902-df9299821621
 )
 
 require (
