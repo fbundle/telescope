@@ -7,6 +7,7 @@ import (
 	"strings"
 	"telescope/config"
 	"telescope/core/util/text"
+	"telescope/util/file_util"
 	"time"
 
 	"telescope/util/side_channel"
@@ -194,7 +195,7 @@ func (c *Editor) applyCommandWithoutLock() {
 		filename := c.defaultOutputFile
 
 		// write file
-		err := safeWriteFile(filename, c.e.Render().Text.Iter)
+		err := file_util.SafeWriteFile(filename, c.e.Render().Text.Iter)
 		if err != nil {
 			c.enterNormalModeWithoutLock()
 			c.writeWithoutLock("error write file " + err.Error())
@@ -275,7 +276,7 @@ func (c *Editor) applyCommandWithoutLock() {
 		}
 		filename := args[0]
 		// write file
-		err := safeWriteFile(filename, c.e.Render().Text.Iter)
+		err := file_util.SafeWriteFile(filename, c.e.Render().Text.Iter)
 		if err != nil {
 			c.enterNormalModeWithoutLock()
 			c.writeWithoutLock("error write file " + err.Error())
