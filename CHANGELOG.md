@@ -44,6 +44,7 @@
 - update interface
 - added `gotoAndFixWithoutLock` to absolute position
 - improve robustness, now, interrupt like `SIGINT` (`Ctrl+C`) will preserve the log to restore later
+- fixed bug writing to not exist file
 
 # TODO
 
