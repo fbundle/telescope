@@ -21,7 +21,7 @@ func NonEmpty(filename string) bool {
 	return info.Size() > 0
 }
 
-func writeFile(filename string, iter func(f func(i int, val []rune) bool)) error {
+func WriteFile(filename string, iter func(f func(i int, val []rune) bool)) error {
 	file, err := os.Create(filename)
 	if err != nil {
 		return err
@@ -36,6 +36,7 @@ func writeFile(filename string, iter func(f func(i int, val []rune) bool)) error
 	}
 	return writer.Flush()
 }
+
 func SafeWriteFile(filename string, iter func(f func(i int, val []rune) bool)) error {
 	copyFileContents := func(src string, dst string) error {
 		srcFile, err := os.Open(src)
@@ -91,7 +92,7 @@ func SafeWriteFile(filename string, iter func(f func(i int, val []rune) bool)) e
 	defer os.Remove(tmpFilename) // remove tmp file at the end
 
 	// write into tmp file
-	err = writeFile(tmpFilename, iter)
+	err = WriteFile(tmpFilename, iter)
 	if err != nil {
 		side_channel.WriteLn(err)
 		return err
