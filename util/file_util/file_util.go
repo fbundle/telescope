@@ -21,7 +21,7 @@ func NonEmpty(filename string) bool {
 	return info.Size() > 0
 }
 
-func WriteFile(filename string, iter func(f func(i int, val []rune) bool)) error {
+func writeFile(filename string, iter func(f func(i int, val []rune) bool)) error {
 	file, err := os.Create(filename)
 	if err != nil {
 		return err
@@ -37,49 +37,49 @@ func WriteFile(filename string, iter func(f func(i int, val []rune) bool)) error
 	return writer.Flush()
 }
 
+func copyFileContents(src string, dst string) error {
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	dstFile, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+
+	if _, err := io.Copy(dstFile, srcFile); err != nil {
+		return err
+	}
+	return nil
+}
+func overwriteFile(dstFilename string, srcFilename string) error {
+	// save mode
+	var dstMode fs.FileMode = 0600
+	if dstInfo, err := os.Stat(dstFilename); err == nil {
+		dstMode = dstInfo.Mode()
+	}
+
+	// save file
+	err := os.Rename(srcFilename, dstFilename)
+	if err != nil {
+		// try copy file content
+		err = copyFileContents(srcFilename, dstFilename)
+		if err != nil {
+			return err
+		}
+	}
+
+	// restore mode
+	err = os.Chmod(dstFilename, dstMode)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 func SafeWriteFile(filename string, iter func(f func(i int, val []rune) bool)) error {
-	copyFileContents := func(src string, dst string) error {
-		srcFile, err := os.Open(src)
-		if err != nil {
-			return err
-		}
-		defer srcFile.Close()
-
-		dstFile, err := os.Create(dst)
-		if err != nil {
-			return err
-		}
-		defer dstFile.Close()
-
-		if _, err := io.Copy(dstFile, srcFile); err != nil {
-			return err
-		}
-		return nil
-	}
-	overwriteFile := func(dstFilename string, srcFilename string) error {
-		// save mode
-		var dstMode fs.FileMode = 0600
-		if dstInfo, err := os.Stat(dstFilename); err == nil {
-			dstMode = dstInfo.Mode()
-		}
-
-		// save file
-		err := os.Rename(srcFilename, dstFilename)
-		if err != nil {
-			// try copy file content
-			err = copyFileContents(srcFilename, dstFilename)
-			if err != nil {
-				return err
-			}
-		}
-
-		// restore mode
-		err = os.Chmod(dstFilename, dstMode)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
 
 	absPath, _ := filepath.Abs(filename)
 	tmpFilename := filepath.Join(config.Load().TMP_DIR, absPath)
@@ -92,7 +92,7 @@ func SafeWriteFile(filename string, iter func(f func(i int, val []rune) bool)) e
 	defer os.Remove(tmpFilename) // remove tmp file at the end
 
 	// write into tmp file
-	err = WriteFile(tmpFilename, iter)
+	err = writeFile(tmpFilename, iter)
 	if err != nil {
 		side_channel.WriteLn(err)
 		return err
