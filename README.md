@@ -45,3 +45,7 @@ an extremely fast text editor
 ## NOTES
 
 update `go.mod` directly from github `GOPROXY=direct go mod tidy`
+
+
+
+

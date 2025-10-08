@@ -161,8 +161,7 @@ func getProgramArgs() programArgs {
 	pargs := programArgs{}
 
 	if head := peek(args); len(head) > 0 && head[0] == '-' {
-		pargs.option = head
-		args, _ = consume(args)
+		args, pargs.option = consume(args)
 	}
 	args, pargs.firstFilename = consume(args)
 	args, pargs.secondFilename = consume(args)
