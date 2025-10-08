@@ -37,7 +37,7 @@ func writeFile(filename string, iter func(f func(i int, val []rune) bool)) error
 	return writer.Flush()
 }
 
-func copyFileContents(src string, dst string) error {
+func copyFile(src string, dst string) error {
 	srcFile, err := os.Open(src)
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func copyFileContents(src string, dst string) error {
 	}
 	return nil
 }
-func overwriteFile(dstFilename string, srcFilename string) error {
+func moveFile(dstFilename string, srcFilename string) error {
 	// save mode
 	var dstMode fs.FileMode = 0600
 	if dstInfo, err := os.Stat(dstFilename); err == nil {
@@ -66,10 +66,12 @@ func overwriteFile(dstFilename string, srcFilename string) error {
 	err := os.Rename(srcFilename, dstFilename)
 	if err != nil {
 		// try copy file content
-		err = copyFileContents(srcFilename, dstFilename)
+		err = copyFile(srcFilename, dstFilename)
 		if err != nil {
 			return err
 		}
+
+		return os.Remove(srcFilename)
 	}
 
 	// restore mode
@@ -79,6 +81,7 @@ func overwriteFile(dstFilename string, srcFilename string) error {
 	}
 	return nil
 }
+
 func SafeWriteFile(filename string, iter func(f func(i int, val []rune) bool)) error {
 
 	absPath, _ := filepath.Abs(filename)
@@ -99,7 +102,7 @@ func SafeWriteFile(filename string, iter func(f func(i int, val []rune) bool)) e
 	}
 
 	// move tmp file into output file
-	err = overwriteFile(filename, tmpFilename)
+	err = moveFile(filename, tmpFilename)
 	if err != nil {
 		side_channel.WriteLn(err)
 		return err
