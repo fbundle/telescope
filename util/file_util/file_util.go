@@ -55,27 +55,27 @@ func copyFile(src string, dst string) error {
 	}
 	return nil
 }
-func moveFile(dstFilename string, srcFilename string) error {
+func moveFile(dst string, src string) error {
 	// save mode
 	var dstMode fs.FileMode = 0600
-	if dstInfo, err := os.Stat(dstFilename); err == nil {
+	if dstInfo, err := os.Stat(dst); err == nil {
 		dstMode = dstInfo.Mode()
 	}
 
 	// save file
-	err := os.Rename(srcFilename, dstFilename)
+	err := os.Rename(src, dst)
 	if err != nil {
 		// try copy file content
-		err = copyFile(srcFilename, dstFilename)
+		err = copyFile(src, dst)
 		if err != nil {
 			return err
 		}
 
-		return os.Remove(srcFilename)
+		return os.Remove(src)
 	}
 
 	// restore mode
-	err = os.Chmod(dstFilename, dstMode)
+	err = os.Chmod(dst, dstMode)
 	if err != nil {
 		return err
 	}
@@ -91,8 +91,6 @@ func SafeWriteFile(filename string, iter func(f func(i int, val []rune) bool)) e
 		side_channel.WriteLn(err)
 		return err
 	}
-
-	defer os.Remove(tmpFilename) // remove tmp file at the end
 
 	// write into tmp file
 	err = writeFile(tmpFilename, iter)
