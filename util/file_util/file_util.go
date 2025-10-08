@@ -28,13 +28,23 @@ func writeFile(filename string, iter func(f func(i int, val []rune) bool)) error
 	}
 	defer file.Close()
 	writer := bufio.NewWriter(file)
+	defer writer.Flush()
+
 	for _, line := range iter {
 		_, err = writer.WriteString(string(line) + "\n")
 		if err != nil {
 			return err
 		}
 	}
-	return writer.Flush()
+	err = writer.Flush()
+	if err != nil {
+		return err
+	}
+	err = file.Close()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func copyFile(src string, dst string) error {
@@ -53,6 +63,15 @@ func copyFile(src string, dst string) error {
 	if _, err := io.Copy(dstFile, srcFile); err != nil {
 		return err
 	}
+	err = srcFile.Close()
+	if err != nil {
+		return err
+	}
+	err = dstFile.Close()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 func moveFile(dst string, src string) error {
@@ -83,9 +102,10 @@ func moveFile(dst string, src string) error {
 }
 
 func SafeWriteFile(filename string, iter func(f func(i int, val []rune) bool)) error {
-
 	absPath, _ := filepath.Abs(filename)
 	tmpFilename := filepath.Join(config.Load().TMP_DIR, absPath)
+
+	// make tmp dir
 	err := os.MkdirAll(filepath.Dir(tmpFilename), 0o700)
 	if err != nil {
 		side_channel.WriteLn(err)
