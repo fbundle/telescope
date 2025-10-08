@@ -122,14 +122,14 @@ func (c *Editor) Type(ch rune) {
 type command string
 
 const (
-	commandInsert        command = "i"
-	commandQuit          command = "q"
-	commandOverwriteQuit command = "owq"
-	commandSearch        command = "s"
-	commandRegex         command = "r"
-	commandGoto          command = "g"
-	commandWrite         command = "w"
-	commandUnknown       command = "u"
+	commandInsert    command = "i"
+	commandQuit      command = "q"
+	commandWriteQuit command = "wq"
+	commandSearch    command = "s"
+	commandRegex     command = "r"
+	commandGoto      command = "g"
+	commandWrite     command = "w"
+	commandUnknown   command = "u"
 )
 
 func parseCommand(cmd string) (command, []string) {
@@ -140,7 +140,7 @@ func parseCommand(cmd string) (command, []string) {
 		return commandQuit, nil
 	}
 	if cmd == ":w" || cmd == ":write" || cmd == ":wq" {
-		return commandOverwriteQuit, nil
+		return commandWriteQuit, nil
 	}
 
 	for _, prefix := range []string{"/", ":s ", ":search "} {
@@ -190,7 +190,7 @@ func (c *Editor) applyCommandWithoutLock() {
 	case commandQuit:
 		c.stop()
 		return
-	case commandOverwriteQuit:
+	case commandWriteQuit:
 		filename := c.defaultOutputFile
 
 		// write file

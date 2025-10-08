@@ -3,9 +3,11 @@ package multimode_editor
 import (
 	"bufio"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"telescope/config"
+	"telescope/util/side_channel"
 )
 
 func safeWriteFile(filename string, iter func(f func(i int, val []rune) bool)) error {
@@ -29,14 +31,13 @@ func safeWriteFile(filename string, iter func(f func(i int, val []rune) bool)) e
 	}
 	overwriteFile := func(dstFilename string, srcFilename string) error {
 		// save mode
-		dstInfo, err := os.Stat(dstFilename)
-		if err != nil {
-			return err
+		var dstMode fs.FileMode = 0600
+		if dstInfo, err := os.Stat(dstFilename); err == nil {
+			dstMode = dstInfo.Mode()
 		}
-		dstMode := dstInfo.Mode()
 
 		// save file
-		err = os.Rename(srcFilename, dstFilename)
+		err := os.Rename(srcFilename, dstFilename)
 		if err != nil {
 			// try copy file content
 			err = copyFileContents(srcFilename, dstFilename)
@@ -74,6 +75,7 @@ func safeWriteFile(filename string, iter func(f func(i int, val []rune) bool)) e
 	tmpFilename := filepath.Join(config.Load().TMP_DIR, absPath)
 	err := os.MkdirAll(filepath.Dir(tmpFilename), 0o700)
 	if err != nil {
+		side_channel.WriteLn(err)
 		return err
 	}
 
@@ -82,9 +84,15 @@ func safeWriteFile(filename string, iter func(f func(i int, val []rune) bool)) e
 	// write into tmp file
 	err = writeFile(tmpFilename, iter)
 	if err != nil {
+		side_channel.WriteLn(err)
 		return err
 	}
 
 	// move tmp file into output file
-	return overwriteFile(filename, tmpFilename)
+	err = overwriteFile(filename, tmpFilename)
+	if err != nil {
+		side_channel.WriteLn(err)
+		return err
+	}
+	return nil
 }
