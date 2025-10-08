@@ -21,18 +21,21 @@ func NonEmpty(filename string) bool {
 	return info.Size() > 0
 }
 
-func ReadFile(filename string) ([]byte, error) {
-	return os.ReadFile(filename)
-}
-
-func WriteFile(filename string, data []byte, perm os.FileMode) error {
-	dirname := filepath.Dir(filename)
-	if err := os.MkdirAll(dirname, 0700); err != nil {
+func writeFile(filename string, iter func(f func(i int, val []rune) bool)) error {
+	file, err := os.Create(filename)
+	if err != nil {
 		return err
 	}
-	return os.WriteFile(filename, data, perm)
+	defer file.Close()
+	writer := bufio.NewWriter(file)
+	for _, line := range iter {
+		_, err = writer.WriteString(string(line) + "\n")
+		if err != nil {
+			return err
+		}
+	}
+	return writer.Flush()
 }
-
 func SafeWriteFile(filename string, iter func(f func(i int, val []rune) bool)) error {
 	copyFileContents := func(src string, dst string) error {
 		srcFile, err := os.Open(src)
@@ -75,23 +78,6 @@ func SafeWriteFile(filename string, iter func(f func(i int, val []rune) bool)) e
 			return err
 		}
 		return nil
-	}
-
-	writeFile := func(filename string, iter func(f func(i int, val []rune) bool)) error {
-
-		file, err := os.Create(filename)
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-		writer := bufio.NewWriter(file)
-		for _, line := range iter {
-			_, err = writer.WriteString(string(line) + "\n")
-			if err != nil {
-				return err
-			}
-		}
-		return writer.Flush()
 	}
 
 	absPath, _ := filepath.Abs(filename)
