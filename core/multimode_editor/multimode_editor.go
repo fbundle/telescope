@@ -9,8 +9,6 @@ import (
 	"telescope/core/insert_editor"
 	"telescope/core/util/text"
 
-	"telescope/util/side_channel"
-
 	"telescope/util/buffer"
 )
 
@@ -91,26 +89,6 @@ func (c *Editor) Load(ctx context.Context, reader buffer.Reader) (loadCtx contex
 func (c *Editor) Resize(height int, width int) {
 	c.lock(func() {
 		c.e.Resize(height, width)
-	})
-}
-
-func (c *Editor) Backspace() {
-	c.lock(func() {
-		switch c.state.mode {
-		case ModeNormal:
-			// do nothing
-		case ModeInsert:
-			c.e.Backspace()
-		case ModeCommand:
-			if len(c.state.command) > 0 {
-				c.state.command = c.state.command[:len(c.state.command)-1]
-			}
-			c.writeWithoutLock("")
-		case ModeSelect:
-			// do nothing
-		default:
-			side_channel.Panic("unknown mode: ", c.state)
-		}
 	})
 }
 

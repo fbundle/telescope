@@ -308,3 +308,27 @@ func (c *Editor) Delete() {
 		}
 	})
 }
+
+func (c *Editor) Backspace() {
+	c.lock(func() {
+		switch c.state.mode {
+		case ModeNormal:
+			// do nothing
+		case ModeInsert:
+			c.e.Backspace()
+		case ModeCommand:
+			if len(c.state.command) > 0 {
+				c.state.command = c.state.command[:len(c.state.command)-1]
+				if len(c.state.command) == 0 {
+					c.enterNormalModeWithoutLock()
+					c.writeWithoutLock("")
+				}
+			}
+			c.writeWithoutLock("")
+		case ModeSelect:
+			// do nothing
+		default:
+			side_channel.Panic("unknown mode: ", c.state)
+		}
+	})
+}
