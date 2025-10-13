@@ -1,6 +1,6 @@
 module telescope
 
-go 1.25.1
+go 1.24.8
 
 require (
 	github.com/gdamore/tcell/v2 v2.9.0
