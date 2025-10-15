@@ -92,7 +92,7 @@ func balance[T any](n *node[T]) *node[T] {
 
 		l, r := n.left, n.right
 		ll, lr := l.left, l.right
-		n1 := makeNode(n.entry, lr, r)
+		n1 := balance(makeNode(n.entry, lr, r))
 		l1 := makeNode(l.entry, ll, n1)
 		return l1
 	} else if delta*weight(n.left) < weight(n.right) { // right is guaranteed to be non-nil
@@ -109,7 +109,7 @@ func balance[T any](n *node[T]) *node[T] {
 
 		l, r := n.left, n.right
 		rl, rr := r.left, r.right
-		n1 := makeNode(n.entry, l, rl)
+		n1 := balance(makeNode(n.entry, l, rl))
 		r1 := makeNode(r.entry, n1, rr)
 		return r1
 	}
