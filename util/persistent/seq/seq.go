@@ -37,6 +37,10 @@ func (s Seq[T]) Len() int {
 	return int(weight(s.node))
 }
 
+func (s Seq[T]) Depth() int {
+	return int(height(s.node))
+}
+
 func (s Seq[T]) Split(i int) (Seq[T], Seq[T]) {
 	n1, n2 := split(s.node, uint64(i))
 	return Seq[T]{node: n1}, Seq[T]{node: n2}

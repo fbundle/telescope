@@ -8,18 +8,17 @@ const (
 
 type node[T any] struct {
 	weight uint64
-	// height uint64
-	entry T
-	left  *node[T]
-	right *node[T]
+	height uint64
+	entry  T
+	left   *node[T]
+	right  *node[T]
 }
 
 func height[T any](n *node[T]) uint64 {
 	if n == nil {
 		return 0
 	}
-	// return n.height
-	return 0
+	return n.height
 }
 
 func weight[T any](n *node[T]) uint64 {
@@ -32,10 +31,10 @@ func weight[T any](n *node[T]) uint64 {
 func makeNode[T any](entry T, left *node[T], right *node[T]) *node[T] {
 	return &node[T]{
 		weight: 1 + weight(left) + weight(right),
-		// height: 1 + max(height(left), height(right)),
-		entry: entry,
-		left:  left,
-		right: right,
+		height: 1 + max(height(left), height(right)),
+		entry:  entry,
+		left:   left,
+		right:  right,
 	}
 }
 
@@ -72,6 +71,7 @@ func iter[T any](n *node[T], f func(e T) bool) bool {
 }
 
 func balance[T any](n *node[T]) *node[T] {
+	// assuming both n.left and n.right are balance, then this return a balanced tree
 	if n == nil {
 		return nil
 	}
@@ -154,7 +154,7 @@ func ins[T any](n *node[T], i uint64, entry T) *node[T] {
 		n1 := makeNode(entry, n.left, r1)
 		return balance(n1)
 	}
-	if i <= weight(n.left)+1+weight(n.right) {
+	if i <= weight(n.left)+1+weight(n.right) { // we handle both < and =
 		r1 := ins(n.right, i-(weight(n.left)+1), entry)
 		n1 := makeNode(n.entry, n.left, r1)
 		return balance(n1)
@@ -195,6 +195,7 @@ func merge[T any](l *node[T], r *node[T]) *node[T] {
 	if r == nil {
 		return l
 	}
+	// small optimization, we del from the larger subtree
 	wl, wr := weight(l), weight(r)
 	if wl > wr {
 		entry := get(l, wl-1)
