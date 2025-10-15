@@ -62,3 +62,19 @@ func Merge[T any](ss ...Seq[T]) Seq[T] {
 	}
 	return s
 }
+
+// monad
+
+func Fmap[T any, T1 any](xs Seq[T], f func(T) T1) Seq[T1] {
+	return Seq[T1]{node: _map(xs.node, f)}
+}
+
+func Ap[T any, T1 any](fs Seq[func(T) T1], xs Seq[T]) Seq[T1] {
+	return Seq[T1]{node: _seq(fs.node, xs.node)}
+}
+
+func Bind[T any, T1 any](s Seq[T], f func(T) Seq[T1]) Seq[T1] {
+	return Seq[T1]{node: _bind(s.node, func(x T) *node[T1] {
+		return f(x).node
+	})}
+}

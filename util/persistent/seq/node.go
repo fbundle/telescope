@@ -236,3 +236,34 @@ func split[T any](n *node[T], i uint64) (*node[T], *node[T]) {
 	}
 	return n, nil
 }
+
+// helper functions for monad
+
+func _pure[T any](entry T) *node[T] {
+	return makeNode(entry, nil, nil)
+}
+
+func _map[T any, T1 any](n *node[T], f func(T) T1) *node[T1] {
+	if n == nil {
+		return nil
+	}
+	return makeNode(f(n.entry), _map(n.left, f), _map(n.right, f))
+}
+
+func _seq[T any, T1 any](fs *node[func(T) T1], xs *node[T]) *node[T1] {
+	var ys *node[T1] = nil
+	iter(fs, func(f func(T) T1) bool {
+		ys = merge(ys, _map(xs, f))
+		return true
+	})
+	return ys
+}
+
+func _bind[T any, T1 any](xs *node[T], f func(T) *node[T1]) *node[T1] {
+	var ys *node[T1] = nil
+	iter(xs, func(x T) bool {
+		ys = merge(ys, f(x))
+		return true
+	})
+	return ys
+}
